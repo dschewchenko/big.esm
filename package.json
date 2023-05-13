@@ -7,10 +7,10 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "unset NODE_OPTIONS && vitest",
-    "test:ui": "unset NODE_OPTIONS && vitest --ui",
-    "test:run": "unset NODE_OPTIONS && vitest run",
-    "coverage": "unset NODE_OPTIONS && vitest run --coverage",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "coverage": "vitest run --coverage",
     "docs": "typedoc --out docs src/index.ts",
     "lint": "eslint --ext .ts,.js,.json ./src",
     "lint:fix": "eslint --fix --ext .ts,.js,.json ./src",
@@ -32,12 +32,12 @@
     "url": "https://github.com/dschewchenko/big.es.git"
   },
   "keywords": [
-    "dependencies",
-    "check",
-    "version",
-    "install",
-    "npm",
-    "package"
+    "big",
+    "number",
+    "bigint",
+    "decimal",
+    "math",
+    "operations"
   ],
   "author": "dschewchenko",
   "license": "MIT",

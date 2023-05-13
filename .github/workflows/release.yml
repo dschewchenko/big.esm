@@ -47,7 +47,7 @@ jobs:
         run: npx semantic-release
   docs:
     name: Deploy Docs
-    after: release
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write # to be able to publish to GitHub Pages
