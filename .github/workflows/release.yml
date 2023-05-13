@@ -6,8 +6,6 @@ on:
 
 permissions:
   contents: read # for checkout
-  pages: write # for publishing docs
-  id-token: write
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -50,7 +48,9 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     permissions:
-      contents: write # to be able to publish to GitHub Pages
+      contents: read # for checkout
+      pages: write # for publishing docs
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
