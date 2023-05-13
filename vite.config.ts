@@ -17,7 +17,7 @@ export default defineConfig({
     dtsPlugin(),
     visualizer({
       template: "list",
-      brotliSize: true
+      gzipSize: true
     }) as PluginOption
   ],
   test: {

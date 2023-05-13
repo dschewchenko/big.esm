@@ -38,10 +38,8 @@ jobs:
         run: npm clean-install
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
         run: npm audit signatures
-      - name: Build
-        run: npm run build
       - name: 'Test'
         run: npm run coverage
       - name: 'Report Coverage'
-        if: always() # Also generate the report if tests are failing
+        if: always() # Also generate the report if tests are failing TODO: make it work
         uses: davelosert/vitest-coverage-report-action@v1
