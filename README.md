@@ -1,4 +1,4 @@
-# big.es
+# big.esm
 
 Library for working with large numbers and fractions using `BigInt`.
 It provides advanced functionality for performing arithmetic operations with precision and decimal handling.
@@ -20,16 +20,16 @@ Full bundle size(UMD) — 3.52 kB minified and 1.58 kB gzipped.
 
 ## Installation
 
-Install `big.es` using npm:
+Install `big.esm` using npm:
     
 ```bash
-npm install big.es
+npm install big.esm
 ```
 
 ## Usage
 
 ```js
-import { createBig, addBig } from 'big.es';
+import { createBig, addBig } from 'big.esm';
 
 const a = createBig("12345678910.12345678910"); // or new Big("12345678910.12345678910")
 const b = createBig("9876543210.9876543210");
@@ -39,16 +39,16 @@ console.log(result.toString()); // 22222222121.1111111101
 
 ## Compatibility
 
-`big.es` is compatible with all modern browsers and Node.js 10+. It uses `BigInt` internally, so it is not compatible with older browsers and Node.js versions. On info from [caniuse.com](https://caniuse.com/#feat=bigint) `BigInt` is supported by 95.25% of all browsers(as of 2023-05-12).
+`big.esm` is compatible with all modern browsers and Node.js 10+. It uses `BigInt` internally, so it is not compatible with older browsers and Node.js versions. On info from [caniuse.com](https://caniuse.com/#feat=bigint) `BigInt` is supported by 95.25% of all browsers(as of 2023-05-12).
 
 ## Notes
 
-- `big.es` is not a drop-in replacement for `big.js`. It does not support the same API and does not have the same functionality. It is a completely different library.
+- `big.esm` is not a drop-in replacement for `big.js`. It does not support the same API and does not have the same functionality. It is a completely different library.
 - `powBig()` and `sqrtBig()` are heavy and slow operations. They are implemented using the Newton's method and exponentiation by squaring algorithms. Use them with caution, especially with large numbers. In most cases, there will be no problems.
 
 ## API
 
-More information in the [documentation](https://dschewchenko.github.io/big.es/).
+More information in the [documentation](https://dschewchenko.github.io/big.esm/).
 
 ### Core
 
