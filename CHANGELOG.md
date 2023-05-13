@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/dschewchenko/big.esm/compare/v1.0.0...v1.0.1) (2023-05-13)
+
+
+### Bug Fixes
+
+* rename due to npm 403 ([d54d499](https://github.com/dschewchenko/big.esm/commit/d54d499e1757530a3563fe859c2cffcb8c4fe4de))
+
 # 1.0.0 (2023-05-13)
 
 
