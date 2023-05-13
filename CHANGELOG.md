@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/dschewchenko/big.esm/compare/v1.0.1...v1.0.2) (2023-05-13)
+
+
+### Bug Fixes
+
+* update readme and add benchmark ([8e9c2fc](https://github.com/dschewchenko/big.esm/commit/8e9c2fccf23887ca2699d6120dce42733e25945d))
+
 ## [1.0.1](https://github.com/dschewchenko/big.esm/compare/v1.0.0...v1.0.1) (2023-05-13)
 
 
