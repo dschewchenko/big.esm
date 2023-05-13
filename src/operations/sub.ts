@@ -1,0 +1,27 @@
+import { createBig } from "../utils/create.ts";
+import { alignScale } from "../utils/align-scale";
+import type { Big } from "../big";
+
+/**
+ * Subtracts two big values and returns the result as a new Big instance.
+ *
+ * @param {Big} a - The first Big instance.
+ * @param {Big} b - The second Big instance.
+ * @returns {Big} The result of the subtraction.
+ *
+ * @category Operations
+ *
+ * @example
+ * subBig(new Big(1), new Big(2)); // new Big instance with value -1
+ * subBig(new Big(1.1), new Big(2.2)); // new Big instance with value -1.1
+ */
+export function subBig(a: Big, b: Big): Big {
+  // Align the scales of the two Big instances
+  const [alignedA, alignedB] = alignScale(a, b);
+
+  // Subtract the aligned values
+  const resultValue = alignedA.value - alignedB.value;
+
+  // Create and return a new Big instance with the result value and the scale of the minuend
+  return createBig(resultValue, alignedA.scale);
+}

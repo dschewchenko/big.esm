@@ -1,0 +1,78 @@
+{
+  "name": "big.es",
+  "version": "1.0.0",
+  "description": "A small, fast JavaScript library for arbitrary-precision decimal arithmetic.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "unset NODE_OPTIONS && vitest",
+    "test:ui": "unset NODE_OPTIONS && vitest --ui",
+    "test:run": "unset NODE_OPTIONS && vitest run",
+    "coverage": "unset NODE_OPTIONS && vitest run --coverage",
+    "docs": "typedoc --out docs src/index.ts",
+    "lint": "eslint --ext .ts,.js,.json ./src",
+    "lint:fix": "eslint --fix --ext .ts,.js,.json ./src",
+    "semantic-release": "semantic-release",
+    "prepare": "is-ci || husky install"
+  },
+  "main": "dist/big.es.umd.cjs",
+  "module": "dist/big.es.js",
+  "types": "dist/big.es.ts",
+  "files": [
+    "dist/*",
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dschewchenko/big.es.git"
+  },
+  "keywords": [
+    "dependencies",
+    "check",
+    "version",
+    "install",
+    "npm",
+    "package"
+  ],
+  "author": "dschewchenko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dschewchenko/big.es/issues"
+  },
+  "homepage": "https://github.com/dschewchenko/big.es#readme",
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.6.3",
+    "@commitlint/config-conventional": "^17.6.3",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/jest": "^29.5.1",
+    "@types/node": "^18.15.3",
+    "@typescript-eslint/eslint-plugin": "^5.59.5",
+    "@typescript-eslint/parser": "^5.59.5",
+    "@vitest/coverage-c8": "^0.31.0",
+    "@vitest/ui": "^0.31.0",
+    "eslint": "^8.40.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.3",
+    "is-ci": "^3.0.1",
+    "prettier": "^2.8.8",
+    "rollup-plugin-visualizer": "^5.9.0",
+    "semantic-release": "^21.0.2",
+    "ts-jest": "^29.1.0",
+    "typedoc": "^0.24.7",
+    "typedoc-plugin-mdn-links": "^3.0.3",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.5",
+    "vite-plugin-dts": "^2.3.0",
+    "vitest": "^0.31.0"
+  }
+}
