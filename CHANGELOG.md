@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/dschewchenko/big.esm/compare/v1.0.2...v1.1.0) (2023-05-14)
+
+
+### Features
+
+* to string must return value without zeros by default ([1938f08](https://github.com/dschewchenko/big.esm/commit/1938f0885a478b768f90c797bae53b6320e8b683))
+
 ## [1.0.2](https://github.com/dschewchenko/big.esm/compare/v1.0.1...v1.0.2) (2023-05-13)
 
 
