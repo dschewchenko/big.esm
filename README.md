@@ -63,10 +63,9 @@ Creates a new `Big` instance from a string, number or `BigInt`. Optionally, you 
 
 ### Utilities
 
-#### `createBig(value: string | number | bigint): Big`
+#### `createBig(value: string | number | bigint, scale?: number | string): Big`
 
-Alias for `new Big(value)`.
-But it does not support the scale parameter and if the value is instance of `Big` it will be returned without changes.
+Alias for `new Big(value, scale)`. 
 
 #### `cloneBig(a: Big): Big`
 
@@ -94,21 +93,21 @@ Subtracts two `Big` instances.
 
 Multiplies two `Big` instances.
 
-#### `divBig(a: Big, b: Big): Big`
+#### `divBig(a: Big, b: Big, precision = 20, roundingMode = "half-up"): Big`
 
-Divides two `Big` instances.
+Divides two `Big` instances. The default precision is 20. The default rounding mode is "half-up".
 
 #### `modBig(a: Big, b: Big): Big`
 
 Calculates the remainder of dividing two `Big` instances.
 
-#### `powBig(a: Big, b: Big): Big`
+#### `powBig(a: Big, exp: number): Big`
 
 Raises `a` to the power of `b`.
 
-#### `sqrtBig(a: Big): Big`
+#### `sqrtBig(a: Big, root = 2, precision = 20): Big`
 
-Calculates the square root of `a`.
+Calculates the root of `a`. The default root is 2, which means the square root. The default precision is 20.
 
 #### `absBig(a: Big): Big`
 
