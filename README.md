@@ -1,5 +1,8 @@
 # big.esm
 
+[![npm version](https://img.shields.io/npm/v/big.esm.svg)](https://www.npmjs.com/package/big.esm)
+[![npm downloads](https://img.shields.io/npm/dw/big.esm)](https://www.npmjs.com/package/big.esm)
+
 Library for working with large numbers and fractions using `BigInt`.
 It provides advanced functionality for performing arithmetic operations with precision and decimal handling.
 [Documentation](https://dschewchenko.github.io/big.esm/).
