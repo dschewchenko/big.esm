@@ -32,6 +32,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
+      - name: Use cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */*/node_modules
+          key: ${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
         run: npm clean-install
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
@@ -64,6 +71,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
+      - name: Use cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */*/node_modules
+          key: ${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
         run: npm clean-install
       - name: Build docs
