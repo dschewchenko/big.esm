@@ -1,16 +1,16 @@
 import { Big as BigJS } from "big.js";
-import { addBig, Big as BigESM, divBig, mulBig, powBig, subBig } from "./dist/big.esm.js";
+import { addBig, Big as BigESM, divBig, mulBig, powBig, subBig, sqrtBig } from "./dist/big.esm.js";
 
 import { performance } from "node:perf_hooks";
 
-const smallIntA = 123;
-const smallIntB = 456;
-const smallNumberA = 123.456;
-const smallNumberB = 789.012;
+const smallIntA = 12345;
+const smallIntB = 45678;
+const smallNumberA = 12345.67809;
+const smallNumberB = 78901.23456;
 const bigIntA = "12345678901234567890";
 const bigIntB = "67890123456789012345";
-const bigNumberA = "12345678901234567890.1234567890";
-const bigNumberB = "67890123456789012345.6789012345";
+const bigNumberA = "12345678901234567890.12345678901234567890"
+const bigNumberB = "67890123456789012345.67890123456789012345";
 
 // simple benchmark function
 function benchmark(name, func, times = 100_000) {
@@ -38,7 +38,7 @@ function runBenchmark(testCases, operations) {
       const timeESM = benchmark(`big.esm — ${testCase.name} — ${operationName}`, funcESM(...testCase.args));
       const timeJS = benchmark(`big.js — ${testCase.name} — ${operationName}`, funcJS(...testCase.args));
 
-      const diff = (timeESM - timeJS) / -timeJS * 100;
+      const diff = (timeJS - timeESM) / timeJS * 100;
       const diffFormatted = diff.toFixed(2);
 
       const performanceResult = timeESM < timeJS ? "faster" : "slower";
@@ -139,12 +139,22 @@ const operations = [
     operationName: "power of 4",
     funcESM: (a, b) => {
       const bigA = new BigESM(a);
-      const bigB = new BigESM(b);
       return () => powBig(bigA, 4);
     },
     funcJS: (a, b) => {
       const bigA = new BigJS(a);
       return () => bigA.pow(4);
+    }
+  },
+  {
+    operationName: "square root",
+    funcESM: (a, b) => {
+      const bigA = new BigESM(a);
+      return () => sqrtBig(bigA, 2, 20, );
+    },
+    funcJS: (a, b) => {
+      const bigA = new BigJS(a);
+      return () => bigA.sqrt(2);
     }
   }
 ];

@@ -7,21 +7,19 @@ Library for working with large numbers and fractions using `BigInt`.
 It provides advanced functionality for performing arithmetic operations with precision and decimal handling.
 [Documentation](https://dschewchenko.github.io/big.esm/).
 
-100% test coverage.
+- 100% test coverage.
 
-No dependencies.
+- No dependencies.
 
-No limitations on the size of the numbers, except for the limitations of `BigInt`, so limited by system memory =).
+- No limitations on the size of the numbers, except for the limitations of `BigInt`, so limited by system memory =).
 
-Fully written in TypeScript, so it provides type definitions out of the box.
+- Fully written in TypeScript, so it provides type definitions out of the box.
 
-Tree-shaking is supported. 
+- Tree-shaking is supported. 
 
 Full bundle size(ESM) — 3.12 kB minified and 1.42 kB gzipped.
 `powBig` operation is half of this size, 1.5kB/0.7kB(minified/gzip),
 because it's big and reuses most of the operations from `big.esm`.
-
-Full bundle size(UMD) — 3.43 kB minified and 1.57 kB gzipped.
 
 ## Installation
 
@@ -121,44 +119,54 @@ Compares two `Big` instances. Returns `-1` if `a < b`, `0` if `a == b` and `1` i
 
 Compare `big.esm` with `big.js`. 100_000 iterations for each operation.
 
-| Operation                | big.esm   | big.js     | Difference      |
-|--------------------------|-----------|------------|-----------------|
-| init - smallInt          | 39.856ms  | 22.169ms   | -79.78% slower  |
-| add - smallInt           | 24.227ms  | 15.125ms   | -60.17% slower  |
-| subtract - smallInt      | 22.181ms  | 15.094ms   | -46.95% slower  |
-| multiply - smallInt      | 22.276ms  | 18.538ms   | -20.16% slower  |
-| divide - smallInt        | 66.923ms  | 179.699ms  | 62.76% faster   |
-| power of 4 - smallInt    | 113.714ms | 39.359ms   | -188.92% slower |
-| init - smallNumber       | 44.606ms  | 37.136ms   | -20.12% slower  |
-| add - smallNumber        | 21.719ms  | 21.857ms   | 0.63% faster    |
-| subtract - smallNumber   | 21.090ms  | 24.064ms   | 12.36% faster   |
-| multiply - smallNumber   | 23.246ms  | 35.010ms   | 33.60% faster   |
-| divide - smallNumber     | 60.102ms  | 189.603ms  | 68.30% faster   |
-| power of 4 - smallNumber | 136.611ms | 68.859ms   | -98.39% slower  |
-| init - bigInt            | 50.278ms  | 36.880ms   | -36.33% slower  |
-| add - bigInt             | 27.485ms  | 25.402ms   | -8.20% slower   |
-| subtract - bigInt        | 27.402ms  | 24.622ms   | -11.29% slower  |
-| multiply - bigInt        | 33.650ms  | 121.126ms  | 72.22% faster   |
-| divide - bigInt          | 79.523ms  | 602.879ms  | 86.81% faster   |
-| power of 4 - bigInt      | 248.514ms | 499.246ms  | 50.22% faster   |
-| init - bigNumber         | 55.661ms  | 77.789ms   | 28.45% faster   |
-| add - bigNumber          | 29.755ms  | 47.843ms   | 37.81% faster   |
-| subtract - bigNumber     | 29.107ms  | 47.313ms   | 38.48% faster   |
-| multiply - bigNumber     | 39.976ms  | 266.814ms  | 85.02% faster   |
-| divide - bigNumber       | 78.278ms  | 931.610ms  | 91.60% faster   |
-| power of 4 - bigNumber   | 376.169ms | 1132.657ms | 66.79% faster   |
+| Operation                 | big.esm     | big.js     | Difference      |
+|---------------------------|-------------|------------|-----------------|
+| init - smallInt           | 40.267ms    | 24.225ms   | -66.22% slower  |
+| add - smallInt            | 24.570ms    | 16.543ms   | -48.52% slower  |
+| subtract - smallInt       | 22.152ms    | 16.455ms   | -34.63% slower  |
+| multiply - smallInt       | 23.394ms    | 25.183ms   | 7.10% faster    |
+| divide - smallInt         | 68.486ms    | 232.593ms  | 70.56% faster   |
+| power of 4 - smallInt     | 124.721ms   | 63.314ms   | -96.99% slower  |
+| square root - smallInt    | 5608.635ms  | 1489.536ms | -276.54% slower |
+| init - smallNumber        | 43.917ms    | 38.125ms   | -15.19% slower  |
+| add - smallNumber         | 22.342ms    | 26.888ms   | 16.91% faster   |
+| subtract - smallNumber    | 21.692ms    | 27.138ms   | 20.07% faster   |
+| multiply - smallNumber    | 27.452ms    | 56.488ms   | 51.40% faster   |
+| divide - smallNumber      | 62.497ms    | 318.407ms  | 80.37% faster   |
+| power of 4 - smallNumber  | 153.008ms   | 156.773ms  | 2.40% faster    |
+| square root - smallNumber | 5557.749ms  | 1558.616ms | -256.58% slower |
+| init - bigInt             | 50.074ms    | 36.019ms   | -39.02% slower  |
+| add - bigInt              | 27.391ms    | 24.467ms   | -11.95% slower  |
+| subtract - bigInt         | 27.009ms    | 24.022ms   | -12.43% slower  |
+| multiply - bigInt         | 33.851ms    | 120.812ms  | 71.98% faster   |
+| divide - bigInt           | 77.744ms    | 714.170ms  | 89.11% faster   |
+| power of 4 - bigInt       | 248.630ms   | 498.119ms  | 50.09% faster   |
+| square root - bigInt      | 16917.234ms | 5955.270ms | -184.07% slower |
+| init - bigNumber          | 60.159ms    | 85.812ms   | 29.89% faster   |
+| add - bigNumber           | 33.340ms    | 56.803ms   | 41.31% faster   |
+| subtract - bigNumber      | 34.255ms    | 54.496ms   | 37.14% faster   |
+| multiply - bigNumber      | 50.376ms    | 452.010ms  | 88.86% faster   |
+| divide - bigNumber        | 80.627ms    | 1376.583ms | 94.14% faster   |
+| power of 4 - bigNumber    | 553.183ms   | 2005.740ms | 72.42% faster   |
+| square root - bigNumber   | 17023.515ms | 5104.271ms | -233.52% slower |
+
+Note 1: Square root is slower because it uses Newton's method with variable root(quadratic, cubic, etc.ій) and high precision.
+The more precise the result, the more iterations are required.
+
+Node 2: On small numbers big.esm is slower because it uses bigint, which is slower on initialization.
+  And each operation returns a new instance of Big, without mutating the original instance.
 
 #### Test data:
 
 ```js
-const smallIntA = 123;
-const smallIntB = 456;
-const smallNumberA = 123.456;
-const smallNumberB = 789.012;
+const smallIntA = 12345;
+const smallIntB = 45678;
+const smallNumberA = 12345.67809;
+const smallNumberB = 78901.23456;
 const bigIntA = "12345678901234567890";
 const bigIntB = "67890123456789012345";
-const bigNumberA = "12345678901234567890.1234567890";
-const bigNumberB = "67890123456789012345.6789012345";
+const bigNumberA = "12345678901234567890.12345678901234567890"
+const bigNumberB = "67890123456789012345.67890123456789012345";
 ```
 
 Benchmarked on MacBook Pro M1 2021.
