@@ -41,7 +41,7 @@ suite("Big multiply", () => {
     const big2 = new Big(stringsDifferentScale[1]);
 
     const result = mulBig(big1, big2);
-    expect(result.toString()).toBe("1219326311370217952261849656817710639370.522778615927450");
+    expect(result.toString()).toBe("1219326311370217952261849656817710639370.52277861592745");
   });
 
   test("multiplies two Big instances with different fraction length and negative value", () => {
@@ -49,6 +49,6 @@ suite("Big multiply", () => {
     const big2 = new Big(stringsDifferentScaleNegative[1]);
 
     const result = mulBig(big1, big2);
-    expect(result.toString()).toBe("-1219326311370217952261849656817710639370.522778615927450");
+    expect(result.toString()).toBe("-1219326311370217952261849656817710639370.52277861592745");
   });
 });

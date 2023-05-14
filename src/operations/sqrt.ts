@@ -56,8 +56,7 @@ export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION): Big 
     throw new Error("The precision must be a non-negative integer.");
 
   // Calculate the precision string based on the provided precision
-  const precisionString = precision === 0 ? "1" : "0." + "0".repeat(precision - 1) + "1";
-  const precisionBig = createBig(precisionString);
+  const precisionBig = createBig(precision === 0 ? "1" : "0." + "0".repeat(precision - 1) + "1");
 
   // Create Big instances for the root, root - 1, and 2
   const rootBig = createBig(root);

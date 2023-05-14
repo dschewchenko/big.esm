@@ -58,7 +58,7 @@ suite("Big div", () => {
     const dividend = new Big(bigints[0]);
     const divisor = new Big(bigints[1]);
     const result = divBig(dividend, divisor);
-    expect(result.toString()).toBe("0.12345678901234567890");
+    expect(result.toString()).toBe("0.1234567890123456789");
   });
 
   test("divides BigInt values without fractions and with precision", () => {
@@ -107,7 +107,7 @@ suite("Big div", () => {
     const dividend = new Big(stringsDifferentScale[0]);
     const divisor = new Big(stringsDifferentScale[1]);
     const result = divBig(dividend, divisor, 7);
-    expect(result.toString()).toBe("0.1250000");
+    expect(result.toString()).toBe("0.125");
   });
 
   test("divides strings with different fraction lengths and negative value with custom precision", () => {

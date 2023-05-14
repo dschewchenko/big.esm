@@ -99,12 +99,17 @@ suite("Big", () => {
 
   test("toString with decimal places less than scale", () => {
     const big = new Big(123.456, 4);
-    expect(big.toString()).toBe("0.1230");
+    expect(big.toString()).toBe("0.123");
   });
 
   test("toString with decimal places greater than scale", () => {
     const big = new Big(9876.54321, 3);
     expect(big.toString()).toBe("9.876");
+  });
+
+  test("toString with trimFraction=false", () => {
+    const big = new Big(BigInt("123400"), 3);
+    expect(big.toString(false)).toBe("123.400");
   });
 
   // Returns the same value as toString(), so just check that it works.

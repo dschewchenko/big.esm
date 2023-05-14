@@ -1,6 +1,7 @@
 import { isNumericValue } from "./utils/numeric";
-import type { BigValue, PossibleNumber } from "./types";
+import { trimZeros } from "./utils/trim-zeros";
 import { ZERO_BIGINT } from "./utils/constants.ts";
+import type { BigValue, PossibleNumber } from "./types";
 
 /**
  * The Big class for working with large numbers and fractions using BigInt.
@@ -91,8 +92,6 @@ export class Big {
     } else {
       throw new TypeError("Invalid type provided to Big constructor.");
     }
-
-    return this;
   }
 
   /**
@@ -107,9 +106,10 @@ export class Big {
   /**
    * Returns a string representation of the Big instance.
    *
+   * @param {boolean} [shouldTrimZeros=true] - Whether to trim trailing zeros from the fractional part. Defaults to true.
    * @return {string} - A string representation of the Big instance.
    */
-  toString(): string {
+  toString(shouldTrimZeros = true): string {
     let integerPart = this.value.toString();
     const sign = integerPart.startsWith("-") ? "-" : "";
     if (sign)
@@ -119,6 +119,10 @@ export class Big {
     if (this.scale > ZERO_BIGINT) {
       const digits = integerPart.length > this.scale ? integerPart.length - Number(this.scale) : 0;
       fractionPart = integerPart.slice(digits).padStart(Number(this.scale), "0");
+
+      if (shouldTrimZeros) {
+        fractionPart = trimZeros(fractionPart);
+      }
 
       if (fractionPart.length > 0) {
         fractionPart = `.${fractionPart}`;

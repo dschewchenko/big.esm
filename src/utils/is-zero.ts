@@ -13,6 +13,4 @@ import type { Big } from "../big";
  * isZero(new Big(0)); // true
  * isZero(new Big(1)); // false
  */
-export function isZero(big: Big): boolean {
-  return big.value === ZERO_BIGINT;
-}
+export const isZero = (big: Big): boolean => big.value === ZERO_BIGINT;

@@ -11,6 +11,5 @@
  * isNumericValue(1234567891012345678910n); // true
  * isNumericValue("123abc"); // false
  */
-export function isNumericValue(value: unknown): boolean {
-  return typeof value === "bigint" || typeof value === "number" || (typeof value === "string" && !isNaN(Number(value)));
-}
+export const isNumericValue = (value: unknown): boolean => typeof value === "bigint" || typeof value === "number" ||
+  (typeof value === "string" && !isNaN(Number(value)));

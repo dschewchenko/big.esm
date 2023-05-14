@@ -14,10 +14,11 @@ Fully written in TypeScript, so it provides type definitions out of the box.
 
 Tree-shaking is supported. 
 
-Full bundle size(ES) — 5.48 kB minified and 1.98 kB gzipped.
-`sqrtBig` and `powBig` are half of this size.
+Full bundle size(ESM) — 3.12 kB minified and 1.42 kB gzipped.
+`powBig` operation is half of this size, 1.5kB/0.7kB(minified/gzip),
+because it's big and reuses most of the operations from `big.esm`.
 
-Full bundle size(UMD) — 3.52 kB minified and 1.58 kB gzipped.
+Full bundle size(UMD) — 3.43 kB minified and 1.57 kB gzipped.
 
 ## Installation
 
@@ -118,32 +119,32 @@ Compares two `Big` instances. Returns `-1` if `a < b`, `0` if `a == b` and `1` i
 
 Compare `big.esm` with `big.js`. 100_000 iterations for each operation.
 
-| Operation | big.esm | big.js | Difference |
-| --- | --- | --- | --- |
-| init - smallInt | 40.538ms | 23.042ms | -75.93% slower |
-| add - smallInt | 25.755ms | 15.443ms | -66.77% slower |
-| subtract - smallInt | 22.998ms | 15.419ms | -49.15% slower |
-| multiply - smallInt | 22.684ms | 19.931ms | -13.81% slower |
-| divide - smallInt | 67.082ms | 182.769ms | 63.30% faster |
-| power of 4 - smallInt | 115.589ms | 40.343ms | -186.51% slower |
-| init - smallNumber | 45.344ms | 37.790ms | -19.99% slower |
-| add - smallNumber | 21.636ms | 22.357ms | 3.23% faster |
-| subtract - smallNumber | 21.750ms | 24.691ms | 11.91% faster |
-| multiply - smallNumber | 23.852ms | 35.742ms | 33.27% faster |
-| divide - smallNumber | 61.577ms | 194.170ms | 68.29% faster |
-| power of 4 - smallNumber | 137.407ms | 70.480ms | -94.96% slower |
-| init - bigInt | 51.163ms | 37.148ms | -37.73% slower |
-| add - bigInt | 27.229ms | 25.447ms | -7.00% slower |
-| subtract - bigInt | 27.146ms | 24.872ms | -9.14% slower |
-| multiply - bigInt | 33.915ms | 124.638ms | 72.79% faster |
-| divide - bigInt | 81.944ms | 624.192ms | 86.87% faster |
-| power of 4 - bigInt | 251.438ms | 512.083ms | 50.90% faster |
-| init - bigNumber | 57.123ms | 77.780ms | 26.56% faster |
-| add - bigNumber | 30.457ms | 49.525ms | 38.50% faster |
-| subtract - bigNumber | 30.979ms | 49.906ms | 37.93% faster |
-| multiply - bigNumber | 41.303ms | 271.533ms | 84.79% faster |
-| divide - bigNumber | 81.252ms | 940.948ms | 91.36% faster |
-| power of 4 - bigNumber | 375.813ms | 1281.233ms | 70.67% faster |
+| Operation                | big.esm   | big.js     | Difference      |
+|--------------------------|-----------|------------|-----------------|
+| init - smallInt          | 39.856ms  | 22.169ms   | -79.78% slower  |
+| add - smallInt           | 24.227ms  | 15.125ms   | -60.17% slower  |
+| subtract - smallInt      | 22.181ms  | 15.094ms   | -46.95% slower  |
+| multiply - smallInt      | 22.276ms  | 18.538ms   | -20.16% slower  |
+| divide - smallInt        | 66.923ms  | 179.699ms  | 62.76% faster   |
+| power of 4 - smallInt    | 113.714ms | 39.359ms   | -188.92% slower |
+| init - smallNumber       | 44.606ms  | 37.136ms   | -20.12% slower  |
+| add - smallNumber        | 21.719ms  | 21.857ms   | 0.63% faster    |
+| subtract - smallNumber   | 21.090ms  | 24.064ms   | 12.36% faster   |
+| multiply - smallNumber   | 23.246ms  | 35.010ms   | 33.60% faster   |
+| divide - smallNumber     | 60.102ms  | 189.603ms  | 68.30% faster   |
+| power of 4 - smallNumber | 136.611ms | 68.859ms   | -98.39% slower  |
+| init - bigInt            | 50.278ms  | 36.880ms   | -36.33% slower  |
+| add - bigInt             | 27.485ms  | 25.402ms   | -8.20% slower   |
+| subtract - bigInt        | 27.402ms  | 24.622ms   | -11.29% slower  |
+| multiply - bigInt        | 33.650ms  | 121.126ms  | 72.22% faster   |
+| divide - bigInt          | 79.523ms  | 602.879ms  | 86.81% faster   |
+| power of 4 - bigInt      | 248.514ms | 499.246ms  | 50.22% faster   |
+| init - bigNumber         | 55.661ms  | 77.789ms   | 28.45% faster   |
+| add - bigNumber          | 29.755ms  | 47.843ms   | 37.81% faster   |
+| subtract - bigNumber     | 29.107ms  | 47.313ms   | 38.48% faster   |
+| multiply - bigNumber     | 39.976ms  | 266.814ms  | 85.02% faster   |
+| divide - bigNumber       | 78.278ms  | 931.610ms  | 91.60% faster   |
+| power of 4 - bigNumber   | 376.169ms | 1132.657ms | 66.79% faster   |
 
 #### Test data:
 

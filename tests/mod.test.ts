@@ -37,13 +37,13 @@ suite("Big mod", () => {
     const dividend = new Big(stringsDifferentScale[0]);
     const divisor = new Big(stringsDifferentScale[1]);
     const result = modBig(dividend, divisor);
-    expect(result.toString()).toBe("12345678901234567890.1234500000");
+    expect(result.toString()).toBe("12345678901234567890.12345");
   });
 
   test("modulo of strings with different fraction lengths and negative value", () => {
     const dividend = new Big(stringsDifferentScaleNegative[0]);
     const divisor = new Big(stringsDifferentScaleNegative[1]);
     const result = modBig(dividend, divisor);
-    expect(result.toString()).toBe("-12345678901234567890.1234500000");
+    expect(result.toString()).toBe("-12345678901234567890.12345");
   });
 });

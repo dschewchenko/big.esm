@@ -45,7 +45,7 @@ suite("Big subtracts", () => {
     const big2 = new Big(b);
 
     const result = subBig(big1, big2);
-    expect(result.toString()).toBe("-86419753208641975320.8642043210");
+    expect(result.toString()).toBe("-86419753208641975320.864204321");
   });
 
   test("subtracts two Big instances with different fraction length and negative value", () => {
@@ -54,6 +54,6 @@ suite("Big subtracts", () => {
     const big2 = new Big(b);
 
     const result = subBig(big1, big2);
-    expect(result.toString()).toBe("-111111111011111111101.1111043210");
+    expect(result.toString()).toBe("-111111111011111111101.111104321");
   });
 });

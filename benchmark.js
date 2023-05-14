@@ -1,5 +1,5 @@
 import { Big as BigJS } from "big.js";
-import { addBig, Big as BigESM, divBig, mulBig, powBig, subBig } from "./dist/big.es.js";
+import { addBig, Big as BigESM, divBig, mulBig, powBig, subBig } from "./dist/big.esm.js";
 
 import { performance } from "node:perf_hooks";
 

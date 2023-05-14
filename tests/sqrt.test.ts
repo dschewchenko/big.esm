@@ -61,7 +61,7 @@ suite("sqrtBig", () => {
   test("calculates the square root of a positive Big instance with default root", () => {
     const big = new Big(numbers[0]);
     const result = sqrtBig(big);
-    expect(result.toString()).toBe("11.11080555135405112450");
+    expect(result.toString()).toBe("11.1108055513540511245");
   });
 
   test("calculates the square root of a positive Big instance with custom root", () => {
@@ -105,7 +105,7 @@ suite("sqrtBig", () => {
 
   test("should return the result without decimal part when dotIndex is -1", () => {
     const result = sqrtBig(new Big(16), 2, 2);
-    expect(result.toString()).toBe("4.00");
+    expect(result.toString()).toBe("4");
   });
 
 });
