@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/dschewchenko/big.esm/compare/v1.1.0...v1.1.1) (2023-05-14)
+
+
+### Bug Fixes
+
+* readme update and ci update ([d43d486](https://github.com/dschewchenko/big.esm/commit/d43d4869a468d7092674778c97ad888cd4600af8))
+
 # [1.1.0](https://github.com/dschewchenko/big.esm/compare/v1.0.2...v1.1.0) (2023-05-14)
 
 
