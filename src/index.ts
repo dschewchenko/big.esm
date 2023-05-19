@@ -16,7 +16,9 @@ export { absBig } from "./operations/abs";
 export { compareBig } from "./operations/compare";
 
 // utils
+export { isBigObject } from "./utils/is-big-object";
 export { isNumericValue } from "./utils/numeric";
 export { alignScale } from "./utils/align-scale";
 export { createBig } from "./utils/create.ts";
 export { cloneBig } from "./utils/clone.ts";
+export { fromString } from "./utils/from-string.ts";
