@@ -1,8 +1,6 @@
 import { createBig } from "./create.ts";
 import type { Big } from "../big";
-
-// The scale multiplier is used to convert the scale
-const SCALE_MULTIPLIER = BigInt(10);
+import { TEN_BIGINT } from "./constants.ts";
 
 /**
  * Aligns the scale(decimal places) of two Big instances before performing arithmetic operations.
@@ -14,6 +12,7 @@ const SCALE_MULTIPLIER = BigInt(10);
  *
  * @param {Big} a - The first Big instance.
  * @param {Big} b - The second Big instance.
+ * @param {boolean} [mutable=false] - Whether to mutate the both Big instances. Defaults to false.
  * @returns {[Big, Big]} A tuple of two Big instances with the same scale.
  *
  * @category Utilities
@@ -25,7 +24,7 @@ const SCALE_MULTIPLIER = BigInt(10);
  * console.log(x.toString()); // "123.456000"
  * console.log(y.toString()); // "123.456789"
  */
-export function alignScale(a: Big, b: Big): [Big, Big] {
+export function alignScale(a: Big, b: Big, mutable = false): [Big, Big] {
   // Calculate the difference in scales
   const scaleDifference = a.scale - b.scale;
 
@@ -35,7 +34,19 @@ export function alignScale(a: Big, b: Big): [Big, Big] {
   }
 
   // Create new instances with aligned scales
-  const multiplier = SCALE_MULTIPLIER ** BigInt(Math.abs(scaleDifference));
+  const multiplier = TEN_BIGINT ** BigInt(Math.abs(scaleDifference));
+
+  if (mutable) {
+    if (scaleDifference > 0) {
+      b.value *= multiplier;
+      b.scale = a.scale;
+    } else {
+      a.value *= multiplier;
+      a.scale = b.scale;
+    }
+
+    return [a, b];
+  }
 
   // Adjust the value and scale of the instances
   const adjustedA = scaleDifference > 0 ? a : createBig(a.value * multiplier, b.scale);

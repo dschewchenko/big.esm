@@ -56,4 +56,14 @@ suite("Big add", () => {
     const result = addBig(big1, big2);
     expect(result.toString()).toBe("86419753208641975320.864204321");
   });
+
+  test("mutates the first Big instance when the mutable parameter is true", () => {
+    const [a, b] = numbers;
+    const big1 = new Big(a);
+    const big2 = new Big(b);
+
+    const result = addBig(big1, big2, true);
+    expect(result).toBe(big1);
+    expect(result.toString()).toBe("130.239");
+  });
 });

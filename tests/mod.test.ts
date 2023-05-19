@@ -46,4 +46,12 @@ suite("Big mod", () => {
     const result = modBig(dividend, divisor);
     expect(result.toString()).toBe("-12345678901234567890.12345");
   });
+
+  test("mutable dividend", () => {
+    const dividend = new Big(numbers[0]);
+    const divisor = new Big(numbers[1]);
+    const result = modBig(dividend, divisor, true);
+    expect(result.toString()).toBe("1.248");
+    expect(dividend.toString()).toBe("1.248");
+  });
 });

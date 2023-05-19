@@ -108,4 +108,16 @@ suite("sqrtBig", () => {
     expect(result.toString()).toBe("4");
   });
 
+  test("mutates the original Big instance", () => {
+    const big = new Big(numbers[0]);
+    console.log(big.toString());
+    sqrtBig(big, 2, 20, true);
+    console.log(big.toString());
+
+    expect(big.toString()).toBe("11.1108055513540511245");
+  });
+
+  test("mutates the original Big instance with root 3", () => {
+
+  });
 });
