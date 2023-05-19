@@ -1,15 +1,15 @@
 import { Big } from "../big.ts";
-import type { BigValue, PossibleNumber } from "../types.ts";
+import type { BigObject, BigValue, PossibleNumber } from "../types.ts";
 
 /**
  * Creates a new Big instance from the given value.
  * If the value is already a Big instance, it returns the value itself.
  * Use this function instead of the Big constructor to create a Big instance from a value.
  *
- * @param {Big} value - The value to create the Big instance from.
+ * @param {Big | BigObject} value - The value to create the Big instance from.
  * @return {Big} - A new Big instance.
  */
-export function createBig(value: Big): Big;
+export function createBig(value: Big | BigObject): Big;
 
 /**
  * Creates a new Big instance from the given value.
@@ -30,6 +30,8 @@ export function createBig(value: PossibleNumber): Big;
  * @param {number | string | undefined} [scale] - The scale for the value (optional), representing the number of decimal places. If scale provided and value has a fractional part, the fractional part will be removed.
  * @return {Big} - A new Big instance.
  *
+ * @category Utilities
+ *
  * @example
  * const big1 = createBig(123.456); // 123.456
  * const big2 = createBig("123.456"); // 123.456
@@ -45,5 +47,8 @@ export function createBig(value: PossibleNumber, scale: number | string | undefi
  * @category Utilities
  */
 export function createBig(value: BigValue, scale?: number | string | undefined): Big {
+  // issue with the type definition for the Big constructor
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   return value instanceof Big ? value : new Big(value, scale);
 }

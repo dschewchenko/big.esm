@@ -25,4 +25,11 @@ suite("Big absBig", () => {
     const result = absBig(big);
     expect(result.scale).toBe(big.scale);
   });
+
+  test("mutates the Big instance when the mutable parameter is true", () => {
+    const big = new Big(-123.45);
+    const result = absBig(big, true);
+    expect(result).toBe(big);
+    expect(result.toString()).toBe("123.45");
+  });
 });

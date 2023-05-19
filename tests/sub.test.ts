@@ -56,4 +56,14 @@ suite("Big subtracts", () => {
     const result = subBig(big1, big2);
     expect(result.toString()).toBe("-111111111011111111101.111104321");
   });
+
+  test("mutates the first Big instance when the mutable parameter is true", () => {
+    const [a, b] = numbers;
+    const big1 = new Big(a);
+    const big2 = new Big(b);
+
+    const result = subBig(big1, big2, true);
+    expect(result.toString()).toBe("116.661");
+    expect(big1.toString()).toBe("116.661");
+  });
 });

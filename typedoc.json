@@ -1,0 +1,9 @@
+{
+  "entryPoints": [
+    "src/index.ts"
+  ],
+  "out": "docs",
+  "searchInComments": true,
+  "categorizeByGroup": false,
+  "plugin": ["typedoc-plugin-mdn-links"]
+}

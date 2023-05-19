@@ -18,6 +18,7 @@ import type { Big } from "../big";
  * @param {Big} big - The Big instance.
  * @param {number} root - The root to calculate. Must be an integer. Defaults to 2.
  * @param {number} precision - The number of decimal places to keep in the result (optional). Defaults to 20.
+ * @param {boolean} [mutable=false] - Whether to mutate the first Big instance. Defaults to false.
  * @returns {Big} The nth root of the Big instance with the specified precision and rounding mode.
  * @throws {Error} - If the root is not an integer.
  *
@@ -35,7 +36,7 @@ import type { Big } from "../big";
  * console.log(sqrtBig(Big(16), -2).toString()); // throws Error
  * console.log(sqrtBig(Big(16), 4, -1).toString()); // throws Error
  */
-export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION): Big {
+export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION, mutable = false): Big {
   // Check if the input value is 0, return 0 as the square root of 0 is also 0
   if (isZero(big)) return createBig(0);
 
@@ -81,10 +82,16 @@ export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION): Big 
 
   // Get the string representation of the result
   const resultString = approximation.toString();
+  if (mutable) {
+    big.value = approximation.value;
+    big.scale = precision;
+    return big;
+  }
 
   // Truncate the decimal part of the result based on the desired precision
   const dotIndex = resultString.indexOf(".");
   const truncatedString = dotIndex !== -1 ? resultString.slice(0, dotIndex + precision + 1) : resultString;
+
 
   return createBig(truncatedString);
 }

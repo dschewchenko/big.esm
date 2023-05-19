@@ -1,7 +1,9 @@
 import { isNumericValue } from "./utils/numeric";
 import { trimZeros } from "./utils/trim-zeros";
 import { ZERO_BIGINT } from "./utils/constants.ts";
-import type { BigValue, PossibleNumber } from "./types";
+import { fromString } from "./utils/from-string";
+import { isBigObject } from "./utils/is-big-object";
+import type { BigObject, BigValue, PossibleNumber } from "./types";
 
 /**
  * The Big class for working with large numbers and fractions using BigInt.
@@ -22,21 +24,21 @@ export class Big {
   /**
    * The value of the Big instance.
    */
-  public readonly value: bigint;
+  public value: bigint;
 
   /**
    * The scale of the Big instance, representing the number of decimal places.
    */
-  public readonly scale: number;
+  public scale: number;
 
   /**
    * Creates a new Big instance.
    *
-   * @param {Big} value - The value to create the Big instance from.
+   * @param {Big | BigObject} value - The value to create the Big instance from.
    * @throws {TypeError} - If the value is not a number, string, BigInt, or Big instance.
    * @return {Big} - A new Big instance.
    */
-  constructor(value: Big);
+  constructor(value: Big | BigObject);
   /**
    * Creates a new Big instance.
    *
@@ -63,32 +65,32 @@ export class Big {
    */
   constructor(value: BigValue, scale?: number | string | undefined) {
     // If the value is a Big instance, copy the value and scale.
-    if (value instanceof Big) {
+    if (value instanceof Big || isBigObject(value)) {
       this.value = value.value;
       this.scale = value.scale;
       // If the value is a number, string, or BigInt, convert it to a BigInt and set the scale.
     } else if (isNumericValue(value)) {
-      let [integerPart, fractionPart = ""] = value.toString().split(".");
-      // If the scale is provided, ignore the fraction part.
-      if (scale !== undefined) {
+      let scaleDefined = scale !== undefined;
+      if (scaleDefined) {
         // Convert the scale to a number
         if (typeof scale !== "number")
           scale = Number(scale);
 
         // Remove the fractional part
-        scale = Math.floor(scale);
-
-        // Ignore the fraction part
-        if (fractionPart)
-          fractionPart = "";
-
-        // If the integer part is shorter than the scale, pad it with zeros
-        if (integerPart.length < scale)
-          integerPart = integerPart.padEnd(scale, "0");
+        scaleDefined = !isNaN(scale);
+        scale = scaleDefined ? Math.floor(scale) : 0;
       }
 
-      this.value = BigInt(integerPart + fractionPart);
-      this.scale = fractionPart ? fractionPart.length : scale as number ?? 0;
+      // if the value is bigint, skip string parsing
+      if (typeof value === "bigint") {
+        this.value = value;
+        this.scale = scaleDefined ? scale as number : 0;
+      } else {
+        // Parse the value from a string or number
+        const { value: valueBigint, scale: parsedScale } = fromString(value, scaleDefined, false);
+        this.value = valueBigint;
+        this.scale = scaleDefined ? scale as number : parsedScale;
+      }
     } else {
       throw new TypeError("Invalid type provided to Big constructor.");
     }

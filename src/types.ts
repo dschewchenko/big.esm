@@ -1,6 +1,16 @@
 import type { Big } from "./big";
 
 /**
+ * The object type for the Big class.
+ *
+ * @category Types
+ */
+export type BigObject = {
+  value: bigint;
+  scale: number;
+}
+
+/**
  * Possible number types for processing.
  *
  * @category Types
@@ -12,7 +22,7 @@ export type PossibleNumber = number | string | bigint;
  *
  * @category Types
  */
-export type BigValue = PossibleNumber | Big;
+export type BigValue = PossibleNumber | Big | BigObject;
 
 /**
  * The rounding mode for division operations.

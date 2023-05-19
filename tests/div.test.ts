@@ -116,4 +116,12 @@ suite("Big div", () => {
     const result = divBig(dividend, divisor, 6);
     expect(result.toString()).toBe("-0.124999");
   });
+
+  test("mutates the dividend", () => {
+    const dividend = new Big("4");
+    const divisor = new Big("2");
+    const result = divBig(dividend, divisor, 0, "up", true);
+    expect(result.toString()).toBe("2");
+    expect(dividend.toString()).toBe("2");
+  });
 });

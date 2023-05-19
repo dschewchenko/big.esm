@@ -18,17 +18,5 @@
   "include": ["src"],
   "exclude": [
     "node_modules"
-  ],
-  "typedocOptions": {
-    "entryPoints": ["src/index.ts"],
-    "out": "docs",
-    "cacheBust": true,
-    "searchInComments": true,
-    "navigation": {
-      "includeCategories": true,
-      "includeGroups": true,
-
-    },
-    "categorizeByGroup": false
-  }
+  ]
 }

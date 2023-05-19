@@ -51,4 +51,13 @@ suite("Big multiply", () => {
     const result = mulBig(big1, big2);
     expect(result.toString()).toBe("-1219326311370217952261849656817710639370.52277861592745");
   });
+
+  test("mutate the first Big instance when the mutable parameter is true", () => {
+    const big1 = new Big(numbers[0]);
+    const big2 = new Big(numbers[1]);
+
+    const result = mulBig(big1, big2, true);
+    expect(result.toString()).toBe("838.10205");
+    expect(big1.toString()).toBe("838.10205");
+  });
 });

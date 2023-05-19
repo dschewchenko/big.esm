@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
 import { Big, powBig } from "../src";
-import { bigints, numbers, numbersNegative, zero } from "./test-data";
+import { bigints, numbers, numbersNegative, stringsDifferentScale, zero } from "./test-data";
 
 suite("Big pow", () => {
   test("raises a zero Big number to the power of a positive integer", () => {
@@ -78,5 +78,41 @@ suite("Big pow", () => {
     const exponent = -2;
 
     expect(() => powBig(base, exponent)).toThrow("The exponent must be a non-negative integer.");
+  });
+
+  test("mutates the base Big number", () => {
+    const base = new Big(numbers[0]);
+    const exponent = 3;
+    const result = powBig(base, exponent, true);
+
+    expect(result.toString()).toBe("1881365.963625");
+    expect(base.toString()).toBe(result.toString());
+  });
+
+  test("mutates the base BigInt value without fractions", () => {
+    const base = new Big(bigints[0]);
+    const exponent = 2;
+    const result = powBig(base, exponent, true);
+
+    expect(result.toString()).toBe("152415787532388367501905199875019052100");
+    expect(base.toString()).toBe(result.toString());
+  });
+
+  test("mutates tha base Big number when the exponent is 4", () => {
+    const base = new Big(numbers[0]);
+    const exponent = 4;
+    const result = powBig(base, exponent, true);
+
+    expect(result.toString()).toBe("232254628.20950625");
+    expect(base.toString()).toBe(result.toString());
+  });
+
+  test("mutates tha base Big number when the exponent is 4, bignumber", () => {
+    const base = new Big(stringsDifferentScale[0]);
+    const exponent = 2;
+    const result = powBig(base, exponent, true);
+
+    expect(result.toString()).toBe("152415787532388367504953347995733866912.0562399025");
+    expect(base.toString()).toBe(result.toString());
   });
 });

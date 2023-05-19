@@ -1,6 +1,14 @@
 import { expect, suite, test } from "vitest";
 import { Big } from "../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "./test-data";
+import {
+  bigints,
+  numbers,
+  numbersNegative,
+  stringsDifferentScale,
+  stringsDifferentScaleNegative,
+  stringsDifferentScaleNegativeExponent,
+  zero
+} from "./test-data";
 
 suite("Big", () => {
   test("construction from zero", () => {
@@ -39,6 +47,12 @@ suite("Big", () => {
     expect(big.scale).toBe(5);
   });
 
+  test("construction from string with exponent", () => {
+    const big = new Big(stringsDifferentScaleNegativeExponent[0]);
+    expect(big.valueOf()).toBe(BigInt("-1234567890123456789012345"));
+    expect(big.scale).toBe(8);
+  });
+
   test("construction from Big instance with number", () => {
     const big1 = new Big(numbers[0]);
     const big2 = new Big(big1);
@@ -48,7 +62,7 @@ suite("Big", () => {
 
   test("construction from Big instance from Big instance with different scale. Must ignore fractional part of value", () => {
     const big = new Big(numbers[0], 4);
-    expect(big.valueOf()).toBe(BigInt(1230));
+    expect(big.valueOf()).toBe(BigInt(123));
     expect(big.scale).toBe(4);
   });
 
@@ -82,6 +96,12 @@ suite("Big", () => {
     expect(big6.scale).toBe(2);
   });
 
+  test("construction from string with scale isNaN", () => {
+    const big6 = new Big("123.45", "abc");
+    expect(big6.valueOf()).toBe(BigInt(12345));
+    expect(big6.scale).toBe(2);
+  });
+
   test("construction from string with decimal places", () => {
     const big7 = new Big("123.45");
     expect(big7.valueOf()).toBe(BigInt(12345));
@@ -99,7 +119,7 @@ suite("Big", () => {
 
   test("toString with decimal places less than scale", () => {
     const big = new Big(123.456, 4);
-    expect(big.toString()).toBe("0.123");
+    expect(big.toString()).toBe("0.0123");
   });
 
   test("toString with decimal places greater than scale", () => {
