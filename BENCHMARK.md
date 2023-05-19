@@ -19,8 +19,8 @@ Code for benchmarking is in the `benchmark.js` file
 This version of the benchmark creates instance for each iteration. So time and memory are measured init+operation.
 
 Tested variants:
-- big.esm - immutable
-- big.esm - mutable
+- big.esm - immutable (creates new instance on each operation)
+- big.esm - mutable (mutates the instance of first argument on each operation)
 - big.js
 
 **Note:** powBig and sqrtBig are not optimized in memory usage, because they are reusing other operation functions.
