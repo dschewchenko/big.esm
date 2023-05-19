@@ -8,18 +8,13 @@ It provides advanced functionality for performing arithmetic operations with pre
 [Documentation](https://dschewchenko.github.io/big.esm/).
 
 - 100% test coverage.
-
 - No dependencies.
-
-- No limitations on the size of the numbers, except for the limitations of `BigInt`, so limited by system memory =).
-
+- No limitations on the size of the numbers, except for the limitations of `BigInt`, so limited by system memory =)
 - Fully written in TypeScript, so it provides type definitions out of the box.
+- Tree-shaking is supported.
 
-- Tree-shaking is supported. 
-
-Full bundle size(ESM) — 3.12 kB minified and 1.42 kB gzipped.
-`powBig` operation is half of this size, 1.5kB/0.7kB(minified/gzip),
-because it's big and reuses most of the operations from `big.esm`.
+Full bundle size(ESM) — 4.16 kB minified and 1.75 kB gzipped.
+`sqrtBig` operation is heavy(more than half of bundle), because it reuses most of the operations from `big.esm`.
 
 ## Installation
 
