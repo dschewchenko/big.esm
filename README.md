@@ -79,35 +79,37 @@ Checks if the value is a valid numeric value for creating a `Big` instance.
 
 ### Mathematical operations
 
-#### `addBig(a: Big, b: Big): Big`
+In math operations `mutable` option is used to specify whether to mutate the first argument or create a new instance. By default, a new instance is created.
+
+#### `addBig(a: Big, b: Big, mutable = false): Big`
 
 Adds two `Big` instances.
 
-#### `subBig(a: Big, b: Big): Big`
+#### `subBig(a: Big, b: Big, mutable = false): Big`
 
 Subtracts two `Big` instances.
 
-#### `mulBig(a: Big, b: Big): Big`
+#### `mulBig(a: Big, b: Big, mutable = false): Big`
 
 Multiplies two `Big` instances.
 
-#### `divBig(a: Big, b: Big, precision = 20, roundingMode = "half-up"): Big`
+#### `divBig(a: Big, b: Big, precision = 20, roundingMode = "half-up", mutable = false): Big`
 
 Divides two `Big` instances. The default precision is 20. The default rounding mode is "half-up".
 
-#### `modBig(a: Big, b: Big): Big`
+#### `modBig(a: Big, b: Big, mutable = false): Big`
 
 Calculates the remainder of dividing two `Big` instances.
 
-#### `powBig(a: Big, exp: number): Big`
+#### `powBig(a: Big, exp: number, mutable = false): Big`
 
 Raises `a` to the power of `b`.
 
-#### `sqrtBig(a: Big, root = 2, precision = 20): Big`
+#### `sqrtBig(a: Big, root = 2, precision = 20, mutable = false): Big`
 
 Calculates the root of `a`. The default root is 2, which means the square root. The default precision is 20.
 
-#### `absBig(a: Big): Big`
+#### `absBig(a: Big, mutable = false): Big`
 
 Returns the absolute value of `a`.
 
