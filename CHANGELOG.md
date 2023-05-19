@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/dschewchenko/big.esm/compare/v1.1.2...v1.2.0) (2023-05-19)
+
+
+### Features
+
+* add new utility functions: from-string, is-big-value ([3eb674e](https://github.com/dschewchenko/big.esm/commit/3eb674ed53345537db203136ebb5879f8235d37b))
+* make mutable option for math operations ([267aaef](https://github.com/dschewchenko/big.esm/commit/267aaef28af70c7c39e015e961c027bf8786569b))
+
+
+### Performance Improvements
+
+* optimize big instance init for some input types ([9e9ddd2](https://github.com/dschewchenko/big.esm/commit/9e9ddd21adb5590a19395da5fb0b9a5ee66378e4))
+
 ## [1.1.2](https://github.com/dschewchenko/big.esm/compare/v1.1.1...v1.1.2) (2023-05-14)
 
 
