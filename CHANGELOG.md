@@ -1,3 +1,15 @@
+## [1.2.1](https://github.com/dschewchenko/big.esm/compare/v1.2.0...v1.2.1) (2023-05-28)
+
+
+### Bug Fixes
+
+* types path ([03a2b9a](https://github.com/dschewchenko/big.esm/commit/03a2b9a6ccac8bea3b67163568f402fe8d6309bd))
+
+
+### Performance Improvements
+
+* optimize pow operation and big instance ([0988711](https://github.com/dschewchenko/big.esm/commit/09887110966eaaba3046d085c85a1167e47f6c2c))
+
 # [1.2.0](https://github.com/dschewchenko/big.esm/compare/v1.1.2...v1.2.0) (2023-05-19)
 
 
