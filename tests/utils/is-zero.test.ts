@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
-import { Big } from "../src";
-import { isZero } from "../src/utils/is-zero";
+import { Big } from "../../src";
+import { isZero } from "../../src/utils/is-zero";
 
 suite("Big utils isZero", () => {
   test("returns true for a Big instance with zero value", () => {

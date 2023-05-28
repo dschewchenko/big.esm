@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
-import { Big, subBig } from "../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "./test-data";
+import { Big, subBig } from "../../src";
+import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
 
 suite("Big subtracts", () => {
   test("subtracts two Big instances with zero values", () => {

@@ -20,7 +20,7 @@
   },
   "main": "dist/big.esm.umd.cjs",
   "module": "dist/big.esm.js",
-  "types": "dist/big.esm.ts",
+  "types": "dist/index.d.ts",
   "files": [
     "dist/*",
     "package.json",

@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
-import { Big, mulBig } from "../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "./test-data";
+import { Big, mulBig } from "../../src";
+import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
 
 suite("Big multiply", () => {
   test("multiplies two Big instances with zero values", () => {

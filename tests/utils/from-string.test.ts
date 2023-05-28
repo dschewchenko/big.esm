@@ -1,5 +1,5 @@
 import { expect, suite, test } from "vitest";
-import { Big, fromString } from "../src";
+import { Big, fromString } from "../../src";
 
 suite("Big utils fromString", () => {
   test("fromString converts small positive numbers", () => {

@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
-import { Big, createBig } from "../src";
-import { numbers, zero } from "./test-data";
+import { Big, createBig } from "../../src";
+import { numbers, zero } from "../test-data";
 
 suite("createBig", () => {
   test("returns the same Big instance if passed a Big instance", () => {

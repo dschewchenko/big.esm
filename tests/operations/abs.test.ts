@@ -1,5 +1,5 @@
 import { expect, suite, test } from "vitest";
-import { absBig, Big } from "../src";
+import { absBig, Big } from "../../src";
 
 suite("Big absBig", () => {
   test("returns the absolute value of a positive Big instance", () => {

@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
-import { Big, sqrtBig } from "../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, zero } from "./test-data";
+import { Big, sqrtBig } from "../../src";
+import { bigints, numbers, numbersNegative, stringsDifferentScale, zero } from "../test-data";
 
 suite("sqrtBig", () => {
   test("calculates the square root of zero", () => {
