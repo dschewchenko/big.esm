@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/dschewchenko/big.esm/compare/v1.2.1...v1.2.2) (2023-05-28)
+
+
+### Bug Fixes
+
+* import name for types generation ([e41cbf5](https://github.com/dschewchenko/big.esm/commit/e41cbf573d55f46e5baf8ee661483dbcf8dcf289))
+
 ## [1.2.1](https://github.com/dschewchenko/big.esm/compare/v1.2.0...v1.2.1) (2023-05-28)
 
 
