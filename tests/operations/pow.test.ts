@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
-import { Big, powBig } from "../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, zero } from "./test-data";
+import { Big, powBig } from "../../src";
+import { bigints, numbers, numbersNegative, stringsDifferentScale, zero } from "../test-data";
 
 suite("Big pow", () => {
   test("raises a zero Big number to the power of a positive integer", () => {

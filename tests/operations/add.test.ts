@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
-import { addBig, Big } from "../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "./test-data";
+import { addBig, Big } from "../../src";
+import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
 
 suite("Big add", () => {
   test("adds two Big instances with zero values", () => {

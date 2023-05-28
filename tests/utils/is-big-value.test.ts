@@ -1,5 +1,5 @@
 import { expect, suite, test } from "vitest";
-import { Big, isBigObject } from "../src";
+import { Big, isBigObject } from "../../src";
 
 suite("Big utils isBigObject", () => {
   test("isBigObject returns true for Big instances", () => {

@@ -1,7 +1,7 @@
 import { expect, suite, test } from "vitest";
 import { throws } from "assert";
-import { Big, modBig } from "../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "./test-data";
+import { Big, modBig } from "../../src";
+import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
 
 suite("Big mod", () => {
   test("modulo of two Big instances with zero values and throws exception", () => {

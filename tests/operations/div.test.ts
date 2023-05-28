@@ -1,7 +1,7 @@
 import { expect, suite, test } from "vitest";
 import { throws } from "assert";
-import { Big, divBig } from "../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "./test-data";
+import { Big, divBig } from "../../src";
+import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
 
 suite("Big div", () => {
   test("divides two Big instances with zero values and throws exception", () => {

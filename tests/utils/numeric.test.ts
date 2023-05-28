@@ -1,5 +1,5 @@
 import { expect, suite, test } from "vitest";
-import { isNumericValue } from "../src";
+import { isNumericValue } from "../../src";
 
 suite("Big utils isNumericValue", () => {
   test("returns true for a bigint value", () => {
