@@ -20,7 +20,7 @@ import type { Big } from "../big.ts";
  */
 export function isBigObject(value: Big | BigObject | unknown): value is BigObject {
   // check if value is an object and not null
-  if (value === null || typeof value !== "object")
+  if (typeof value !== "object" || value === null)
     return false;
 
   // check if value has value and scale properties

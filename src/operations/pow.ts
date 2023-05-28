@@ -1,5 +1,4 @@
 import { createBig } from "../utils/create.ts";
-import { mulBig } from "./mul";
 import type { Big } from "../big";
 
 /**
@@ -26,31 +25,18 @@ export function powBig(big: Big, exp = 2, mutable = false): Big {
     throw new Error("The exponent must be a non-negative integer.");
   }
 
-  // Initialize the result and power to 1 and the base to the provided Big instance
-  let result = createBig(1);
-  let power = createBig(big);
+  // Perform the exponentiation
+  const resultValue = big.value ** BigInt(exp);
+  // Calculate the scale of the result by multiplying the scale of the base Big instance by the exponent
+  const resultScale = big.scale * exp;
 
-  // Convert the exponent to its absolute value
-  exp = Math.abs(exp);
-
-  // Perform the exponentiation using the binary exponentiation algorithm
-  while (exp > 0) {
-    if (exp % 2 === 1) {
-      // If the current bit of the exponent is 1, multiply the result by the current power
-      result = mulBig(result, power, mutable);
-    }
-    // Square the power for the next bit of the exponent
-    power = mulBig(power, power, mutable);
-    // Divide the exponent by 2 (equivalent to shifting the bits to the right)
-    exp = Math.floor(exp / 2);
-  }
-
+  // Check if the first Big instance should be mutated
   if (mutable) {
-    big.value = result.value;
-    big.scale = result.scale;
+    big.value = resultValue;
+    big.scale = resultScale;
     return big;
   }
 
   // Return the result of the exponentiation
-  return result;
+  return createBig(resultValue, resultScale);
 }

@@ -4,7 +4,7 @@ export { Big } from "./big";
 // types
 export type { BigValue, PossibleNumber, RoundingMode, CompareResult } from "./types";
 
-// operations
+// math operations
 export { addBig } from "./operations/add";
 export { subBig } from "./operations/sub";
 export { mulBig } from "./operations/mul";

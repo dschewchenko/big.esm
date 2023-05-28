@@ -34,10 +34,10 @@ export function fromString(
   returnInstance = true
 ): Big | BigObject {
   // Convert number to string for processing
-  const strNum = typeof num === "number" ? num.toString() : num;
+  const strNum = num.toString();
 
   // Check if input is a valid number
-  if (!isFinite(Number(strNum))) throw new Error("Invalid number");
+  if (!Number.isFinite(Number(strNum))) throw new Error("Invalid number");
 
   // If the number is 0, return a new Big instance representing 0
   if (Number(strNum) === 0) return returnInstance ? createBig(ZERO_BIGINT) : { value: ZERO_BIGINT, scale: 0 };
@@ -47,15 +47,15 @@ export function fromString(
 
   // Store the sign of the number
   const sign = base.startsWith("-") ? "-" : "";
-  if (sign) base = base.slice(1);  // remove sign from base
+  base = sign ? base.slice(1) : base;  // remove sign from base
 
   // Split the base into integer and fractional parts
   let [integer, fraction = ""] = base.split(".");
 
-  if (ignoreFraction) fraction = "";
+  fraction = ignoreFraction ? "" : fraction;
 
   // Convert the exponent to an integer
-  const exponentInt = parseInt(exponent);
+  const exponentInt = Number.parseInt(exponent);
 
   if (exponentInt > 0) {
     const move = Math.min(exponentInt, fraction.length);
@@ -71,6 +71,7 @@ export function fromString(
 
   const value = BigInt(sign + integer + fraction);
   const scale = fraction.length;
+
   // return instance or object
   return returnInstance ? createBig(value, scale) : { value, scale };
 }

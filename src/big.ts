@@ -51,11 +51,11 @@ export class Big {
    * Creates a new Big instance.
    *
    * @param {PossibleNumber} value - The value to create the Big instance from. Can be a number, string, or BigInt.
-   * @param {number | string | undefined} [scale] - The scale for the value (optional), representing the number of decimal places. If scale provided and value has a fractional part, the fractional part will be removed.
+   * @param {number | string} [scale] - The scale for the value (optional), representing the number of decimal places. If scale provided and value has a fractional part, the fractional part will be removed.
    * @throws {TypeError} - If the value is not a number, string, BigInt, or Big instance.
    * @return {Big} - A new Big instance.
    */
-  constructor(value: PossibleNumber, scale: number | string | undefined);
+  constructor(value: PossibleNumber, scale: number | string);
   /**
    * Implements the overloaded constructors for the Big class.
    * @param {BigValue} value - The value to create the Big instance from. Can be a number, string, BigInt, or another Big instance.
@@ -63,9 +63,9 @@ export class Big {
    * @throws {TypeError} - If the value is not a number, string, BigInt, or Big instance.
    * @return {Big} - A new Big instance.
    */
-  constructor(value: BigValue, scale?: number | string | undefined) {
+  constructor(value: BigValue, scale?: number | string) {
     // If the value is a Big instance, copy the value and scale.
-    if (value instanceof Big || isBigObject(value)) {
+    if (isBigObject(value)) {
       this.value = value.value;
       this.scale = value.scale;
       // If the value is a number, string, or BigInt, convert it to a BigInt and set the scale.
