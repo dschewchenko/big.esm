@@ -1,5 +1,5 @@
-import type { BigObject } from "../types.ts";
-import type { Big } from "../big.ts";
+import type { BigObject } from "../types";
+import type { Big } from "../big";
 
 /**
  * Determines if the value is a BigObject. A BigObject is an object with a value property of type bigint and a scale property of type number. It usually represents a Big instance.

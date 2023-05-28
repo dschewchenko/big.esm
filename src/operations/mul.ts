@@ -1,4 +1,4 @@
-import { createBig } from "../utils/create.ts";
+import { createBig } from "../utils/create";
 import type { Big } from "../big";
 
 /**

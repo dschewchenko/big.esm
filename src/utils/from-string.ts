@@ -1,7 +1,7 @@
-import { ZERO_BIGINT } from "./constants.ts";
-import { Big } from "../big.ts";
-import { BigObject } from "../types.ts";
-import { createBig } from "./create.ts";
+import { ZERO_BIGINT } from "./constants";
+import { Big } from "../big";
+import { BigObject } from "../types";
+import { createBig } from "./create";
 
 /**
  * Convert a number or string to normal string number. Supports scientific notation.

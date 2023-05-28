@@ -1,6 +1,6 @@
 import { isNumericValue } from "./utils/numeric";
 import { trimZeros } from "./utils/trim-zeros";
-import { ZERO_BIGINT } from "./utils/constants.ts";
+import { ZERO_BIGINT } from "./utils/constants";
 import { fromString } from "./utils/from-string";
 import { isBigObject } from "./utils/is-big-object";
 import type { BigObject, BigValue, PossibleNumber } from "./types";
