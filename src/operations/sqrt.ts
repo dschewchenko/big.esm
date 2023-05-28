@@ -4,7 +4,7 @@ import { compareBig } from "./compare";
 import { addBig } from "./add";
 import { subBig } from "./sub";
 import { absBig } from "./abs";
-import { createBig } from "../utils/create.ts";
+import { createBig } from "../utils/create";
 import { powBig } from "./pow";
 import { mulBig } from "./mul";
 import { isZero } from "../utils/is-zero";

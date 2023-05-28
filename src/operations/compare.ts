@@ -1,6 +1,6 @@
 import { alignScale } from "../utils/align-scale";
 import type { Big } from "../big";
-import type { CompareResult } from "../types.ts";
+import type { CompareResult } from "../types";
 
 /**
  * Compares two Big numbers and returns a CompareResult indicating the relation between them.

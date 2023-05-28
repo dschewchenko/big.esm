@@ -1,4 +1,4 @@
-import { Big } from "../big.ts";
+import { Big } from "../big";
 
 /**
  * Clone a Big instance

@@ -1,4 +1,4 @@
-import { createBig } from "../utils/create.ts";
+import { createBig } from "../utils/create";
 import { isZero } from "../utils/is-zero";
 import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants";
 import type { RoundingMode } from "../types";

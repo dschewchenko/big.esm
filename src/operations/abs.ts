@@ -1,6 +1,6 @@
-import { createBig } from "../utils/create.ts";
+import { createBig } from "../utils/create";
 import type { Big } from "../big";
-import { ZERO_BIGINT } from "../utils/constants.ts";
+import { ZERO_BIGINT } from "../utils/constants";
 
 /**
  * Returns the absolute value of a Big instance.

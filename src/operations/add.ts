@@ -1,4 +1,4 @@
-import { createBig } from "../utils/create.ts";
+import { createBig } from "../utils/create";
 import { alignScale } from "../utils/align-scale";
 import type { Big } from "../big";
 

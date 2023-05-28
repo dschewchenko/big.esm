@@ -1,5 +1,5 @@
-import { Big } from "../big.ts";
-import type { BigObject, BigValue, PossibleNumber } from "../types.ts";
+import { Big } from "../big";
+import type { BigObject, BigValue, PossibleNumber } from "../types";
 
 /**
  * Creates a new Big instance from the given value.
