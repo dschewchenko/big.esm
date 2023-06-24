@@ -14,6 +14,8 @@ export { powBig } from "./operations/pow";
 export { sqrtBig } from "./operations/sqrt";
 export { absBig } from "./operations/abs";
 export { compareBig } from "./operations/compare";
+export { minBig } from "./operations/min";
+export { maxBig } from "./operations/max";
 
 // utils
 export { isBigObject } from "./utils/is-big-object";
