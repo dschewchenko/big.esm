@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/dschewchenko/big.esm/compare/v1.2.2...v1.3.0) (2023-06-24)
+
+
+### Features
+
+* add min max operations ([db274ef](https://github.com/dschewchenko/big.esm/commit/db274ef6c0531b8bd6a2e14839c976d51935db48))
+
 ## [1.2.2](https://github.com/dschewchenko/big.esm/compare/v1.2.1...v1.2.2) (2023-05-28)
 
 
