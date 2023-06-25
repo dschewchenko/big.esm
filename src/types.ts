@@ -8,7 +8,7 @@ import type { Big } from "./big";
 export type BigObject = {
   value: bigint;
   scale: number;
-}
+};
 
 /**
  * Possible number types for processing.

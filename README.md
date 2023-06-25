@@ -13,8 +13,8 @@ It provides advanced functionality for performing arithmetic operations with pre
 - Fully written in TypeScript, so it provides type definitions out of the box.
 - Tree-shaking is supported.
 
-Full bundle size(ESM) — 4.16 kB minified and 1.75 kB gzipped.
-`sqrtBig` operation is heavy(more than half of bundle), because it reuses most of the operations from `big.esm`.
+Full bundle size (ESM) — 4.2 kB minified and 1.8 kB gzipped.
+`sqrtBig` operation is heavy (more than half of bundle), because it reuses most of the operations from `big.esm`.
 
 ## Installation
 
@@ -22,6 +22,12 @@ Install `big.esm` using npm:
     
 ```bash
 npm install big.esm
+```
+
+or yarn:
+
+```bash
+yarn add big.esm
 ```
 
 ## Usage
@@ -37,12 +43,12 @@ console.log(result.toString()); // 22222222121.1111111101
 
 ## Compatibility
 
-`big.esm` is compatible with all modern browsers and Node.js 10+. It uses `BigInt` internally, so it is not compatible with older browsers and Node.js versions. On info from [caniuse.com](https://caniuse.com/#feat=bigint) `BigInt` is supported by 95.25% of all browsers(as of 2023-05-12).
+`big.esm` is compatible with all modern browsers and Node.js 10+. It uses `BigInt` internally, so it is not compatible with older browsers and Node.js versions. On info from [caniuse.com](https://caniuse.com/#feat=bigint) `BigInt` is supported by 96.47% of all browsers(as of 2023-06-25).
 
 ## Notes
 
 - `big.esm` is not a drop-in replacement for `big.js`. It does not support the same API and does not have the same functionality. It is a completely different library.
-- `powBig()` and `sqrtBig()` are heavy and slow operations. They are implemented using the Newton's method and exponentiation by squaring algorithms. Use them with caution, especially with large numbers. In most cases, there will be no problems.
+- `sqrtBig()` is heavy and slow operation. It's implemented using the Newton's method with nth root calculation. In most cases, there will be no problems.
 
 ## API
 
@@ -75,6 +81,8 @@ Checks if the value is a valid numeric value for creating a `Big` instance.
 ### Mathematical operations
 
 In math operations `mutable` option is used to specify whether to mutate the first argument or create a new instance. By default, a new instance is created.
+
+**Note:** In high-load applications, it is recommended to use the `mutable` option to reduce memory usage and improve performance.
 
 #### `addBig(a: Big, b: Big, mutable = false): Big`
 
@@ -112,9 +120,17 @@ Returns the absolute value of `a`.
 
 Compares two `Big` instances. Returns `-1` if `a < b`, `0` if `a == b` and `1` if `a > b`.
 
+#### `minBig(a: Big, b: Big, mutable = false): Big`
+
+Returns the minimum of two `Big` instances. If the numbers are equal, returns the first number.
+
+#### `maxBig(a: Big, b: Big, mutable = false): Big`
+
+Returns the maximum of two `Big` instances. If the numbers are equal, returns the first number.
+
 ## Benchmark
 
-Benchmark results are available [here](https://dschewchenko.github.io/big.esm/benchmark.html).
+Benchmark results are available [here](https://github.com/dschewchenko/big.esm/blob/master/BENCHMARK.md).
 
 ## Roadmap
 
