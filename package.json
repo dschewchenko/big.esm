@@ -50,8 +50,8 @@
     "node": ">=16"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.6.3",
-    "@commitlint/config-conventional": "^17.6.3",
+    "@commitlint/cli": "^17.6.6",
+    "@commitlint/config-conventional": "^17.6.6",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/jest": "^29.5.1",
@@ -68,12 +68,14 @@
     "is-ci": "^3.0.1",
     "prettier": "^2.8.8",
     "rollup-plugin-visualizer": "^5.9.0",
-    "semantic-release": "^21.0.2",
+    "semantic-release": "^21.0.5",
     "ts-jest": "^29.1.0",
-    "typedoc": "^0.24.7",
+    "typedoc": "^0.24.8",
     "typedoc-plugin-mdn-links": "^3.0.3",
+    "typedoc-plugin-merge-modules": "^5.0.1",
+    "typedoc-plugin-pages": "^1.1.0",
     "typescript": "^5.0.4",
-    "vite": "^4.3.5",
+    "vite": "^4.3.9",
     "vite-plugin-dts": "^2.3.0",
     "vitest": "^0.31.0"
   }
