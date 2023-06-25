@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/dschewchenko/big.esm/compare/v1.3.0...v1.3.1) (2023-06-25)
+
+
+### Bug Fixes
+
+* docs update ([cac1876](https://github.com/dschewchenko/big.esm/commit/cac1876a8455ff044dc9bab66524e4bba2359cf1))
+
 # [1.3.0](https://github.com/dschewchenko/big.esm/compare/v1.2.2...v1.3.0) (2023-06-24)
 
 
