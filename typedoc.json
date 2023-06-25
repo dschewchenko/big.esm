@@ -2,8 +2,11 @@
   "entryPoints": [
     "src/index.ts"
   ],
+  "githubPages": true,
+  "cacheBust": true,
+  "cleanOutputDir": true,
   "out": "docs",
   "searchInComments": true,
   "categorizeByGroup": false,
-  "plugin": ["typedoc-plugin-mdn-links"]
+  "plugin": ["typedoc-plugin-merge-modules", "typedoc-plugin-mdn-links"]
 }
