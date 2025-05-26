@@ -1,8 +1,9 @@
 import { Big, createBig, cloneBig } from "../big";
 import { addBig, subBig, mulBig, divBig, absBig, compareBig, sqrtBig, powBig } from "../index"; // Assuming all are exported from index
-import { E_BIG } from "../utils/constants"; // Import E_BIG directly
+import { E_STRING } from "../utils/constants"; // Import E_STRING
 
 const DEFAULT_LOG_PRECISION = 30;
+const CONSTANT_PRECISION = 50; // Precision for E constant
 
 // Natural logarithm ln(x)
 export function logBig(x: Big, precision: number = DEFAULT_LOG_PRECISION): Big {
@@ -24,15 +25,8 @@ export function logBig(x: Big, precision: number = DEFAULT_LOG_PRECISION): Big {
 
     let k = 0; // exponent for E scaling: x_original = currentX_scaled * E_BIG^k
 
-    // Use E_BIG from constants. Its default precision is 50.
-    // If internalPrecision is much higher, we might need a higher precision E_BIG.
-    // For now, assume E_BIG's precision is sufficient or arithmetic ops handle it.
-    // Let's ensure E_BIG used in calculations has at least internalPrecision.
-    let eReferenced = E_BIG;
-    if (E_BIG.scale < internalPrecision) {
-        eReferenced = cloneBig(E_BIG);
-        eReferenced.scale = internalPrecision;
-    }
+    // Use E_STRING from constants.
+    const eReferenced = createBig(E_STRING, Math.max(internalPrecision, CONSTANT_PRECISION));
 
 
     // Scale currentX to be in a range suitable for Taylor series, e.g., [1/E_BIG, E_BIG)

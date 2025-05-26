@@ -2,8 +2,8 @@ import { Big, createBig } from "../big";
 import { sinBig } from "./sin";
 import { cosBig } from "./cos";
 import { divBig } from "./div";
-import { compareBig } from "../operations/compare"; // Assuming this path is correct
-import { absBig } from "../utils/absBig"; // Assuming this path is correct for absBig
+import { compareBig } from "./compare"; // Corrected path (was already correct, but for consistency)
+import { absBig } from "./abs"; // Corrected path
 
 const DEFAULT_TAN_PRECISION = 30;
 

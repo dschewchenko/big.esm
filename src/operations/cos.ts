@@ -1,28 +1,34 @@
 import { Big, createBig, cloneBig } from "../big";
 import { addBig, subBig, mulBig, divBig } from "../index";
-import { PI_BIG, TWO_PI_BIG, PI_HALF_BIG } from "../utils/constants";
-import { absBig } from "../utils/absBig"; 
-import { compareBig } from "../utils/compareBig";
+import { PI_STRING, TWO_PI_STRING, PI_HALF_STRING } from "../utils/constants"; // Import string versions
+import { absBig } from "./abs"; // Corrected path
+import { compareBig } from "./compare"; // Corrected path
 import { powBig } from "./pow";
 import { factorialBig } from "../utils/factorial";
 
 const DEFAULT_COS_PRECISION = 30; // Default precision for cosBig
+const CONSTANT_PRECISION = 50; // Precision for PI constants when creating Big instances
 
 export function cosBig(angle: Big, precision: number = DEFAULT_COS_PRECISION): Big {
-    const internalPrecision = precision + 5;
+    const internalPrecision = Math.max(precision + 5, CONSTANT_PRECISION + 2);
+
+    // Create Big instances from string constants
+    const pi = createBig(PI_STRING, internalPrecision);
+    const twoPi = createBig(TWO_PI_STRING, internalPrecision);
+    const piHalf = createBig(PI_HALF_STRING, internalPrecision);
 
     // 1. Angle Reduction (similar to sinBig)
     let reducedAngle = cloneBig(angle);
 
     // Reduce to [0, 2*PI)
     while (compareBig(reducedAngle, createBig(0)) < 0) {
-        reducedAngle = addBig(reducedAngle, TWO_PI_BIG, internalPrecision);
+        reducedAngle = addBig(reducedAngle, twoPi, internalPrecision);
     }
-    if (compareBig(reducedAngle, TWO_PI_BIG) >= 0) {
-        const revolutions = divBig(reducedAngle, TWO_PI_BIG, 0);
+    if (compareBig(reducedAngle, twoPi) >= 0) {
+        const revolutions = divBig(reducedAngle, twoPi, 0);
         revolutions.scale = 0;
         revolutions.isNegative = false;
-        reducedAngle = subBig(reducedAngle, mulBig(revolutions, TWO_PI_BIG, internalPrecision), internalPrecision);
+        reducedAngle = subBig(reducedAngle, mulBig(revolutions, twoPi, internalPrecision), internalPrecision);
     }
 
     // Now reducedAngle is in [0, 2*PI)
@@ -36,18 +42,18 @@ export function cosBig(angle: Big, precision: number = DEFAULT_COS_PRECISION): B
     let sign = createBig(1);
     let angleForSeries = cloneBig(reducedAngle);
 
-    if (compareBig(angleForSeries, PI_HALF_BIG) > 0 && compareBig(angleForSeries, PI_BIG) <= 0) {
+    if (compareBig(angleForSeries, piHalf) > 0 && compareBig(angleForSeries, pi) <= 0) {
         // Quadrant 2: (PI/2, PI]
-        angleForSeries = subBig(PI_BIG, angleForSeries, internalPrecision);
+        angleForSeries = subBig(pi, angleForSeries, internalPrecision);
         sign = createBig(-1);
-    } else if (compareBig(angleForSeries, PI_BIG) > 0 && compareBig(angleForSeries, addBig(PI_BIG, PI_HALF_BIG, internalPrecision)) <=0) {
+    } else if (compareBig(angleForSeries, pi) > 0 && compareBig(angleForSeries, addBig(pi, piHalf, internalPrecision)) <=0) {
         // Quadrant 3: (PI, 3PI/2]
-        angleForSeries = subBig(angleForSeries, PI_BIG, internalPrecision);
+        angleForSeries = subBig(angleForSeries, pi, internalPrecision);
         sign = createBig(-1);
-    } else if (compareBig(angleForSeries, addBig(PI_BIG, PI_HALF_BIG, internalPrecision)) > 0 && compareBig(angleForSeries, TWO_PI_BIG) < 0) {
+    } else if (compareBig(angleForSeries, addBig(pi, piHalf, internalPrecision)) > 0 && compareBig(angleForSeries, twoPi) < 0) {
         // Quadrant 4: (3PI/2, 2PI)
         // cos(x) = cos(2PI - x) for x in (3PI/2, 2PI), so angle is (2PI-x) which is in (0, PI/2)
-        angleForSeries = subBig(TWO_PI_BIG, angleForSeries, internalPrecision);
+        angleForSeries = subBig(twoPi, angleForSeries, internalPrecision);
         // sign remains positive
     }
     // If in Quadrant 1 [0, PI/2], no change.

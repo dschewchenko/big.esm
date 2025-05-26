@@ -1,10 +1,18 @@
 import { logBig } from "../../src/operations/log";
 import { createBig, Big } from "../../src/big";
-import { E_BIG } from "../../src/utils/constants";
-import { mulBig, sqrtBig, divBig } from "../../src/index";
+import { E_STRING } from "../../src/utils/constants"; // Import E_STRING
+import { mulBig, sqrtBig, divBig, compareBig, absBig, subBig } from "../../src/index"; // Added compareBig, absBig, subBig
 
 describe("logBig (Natural Logarithm)", () => {
     const defaultTestPrecision = 15; // Precision for test comparisons. logBig default is 30.
+    const constantPrecision = 50; // Precision for creating Big instances from strings
+
+    // Define Big instance from string constant for use in tests
+    let E_BIG_TEST: Big;
+
+    beforeAll(() => {
+        E_BIG_TEST = createBig(E_STRING, constantPrecision);
+    });
 
     // Helper to compare Big numbers based on their string representation up to a certain precision
     const compareBigAsStrings = (
@@ -47,26 +55,26 @@ describe("logBig (Natural Logarithm)", () => {
     });
 
     it("should calculate logBig(E) correctly (should be 1)", () => {
-        // E_BIG has 50 places. logBig default is 30. Test with 28 for safety.
-        const result = logBig(E_BIG, 28); 
+        // E_BIG_TEST has high precision. logBig default is 30. Test with 28 for safety.
+        const result = logBig(E_BIG_TEST, 28); 
         expect(compareBigAsStrings(result, createBig(1), 27)).toBe(true);
     });
 
     it("should calculate logBig(E^2) correctly (should be 2)", () => {
-        const eSquared = mulBig(E_BIG, E_BIG, E_BIG.scale + 2); // Ensure E_BIG.scale is high
+        const eSquared = mulBig(E_BIG_TEST, E_BIG_TEST, E_BIG_TEST.scale + 2); // Ensure E_BIG_TEST.scale is high
         const result = logBig(eSquared, 28);
         expect(compareBigAsStrings(result, createBig(2), 27)).toBe(true);
     });
 
     it("should calculate logBig(sqrt(E)) correctly (should be 0.5)", () => {
-        const sqrtE = sqrtBig(E_BIG, E_BIG.scale); // sqrtBig(E_BIG, precision for sqrt)
+        const sqrtE = sqrtBig(E_BIG_TEST, E_BIG_TEST.scale); // sqrtBig(E_BIG_TEST, precision for sqrt)
         const result = logBig(sqrtE, 28); // logBig with its own precision
         expect(compareBigAsStrings(result, createBig("0.5"), 27)).toBe(true);
     });
 
     it("should calculate logBig(10) correctly", () => {
         // ln(10) is approx 2.30258509299404568401...
-        // This value is also LN10_BIG from constants.
+        // This value is also LN10_STRING from constants.
         const expected = createBig("2.3025850929940457"); // Approx from calculator for comparison
         const result = logBig(createBig(10), defaultTestPrecision);
         expect(compareBigAsStrings(result, expected, defaultTestPrecision - 2)).toBe(true);

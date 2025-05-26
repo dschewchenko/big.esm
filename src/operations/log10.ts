@@ -1,9 +1,10 @@
-import { Big, createBig, cloneBig } from "../big";
+import { Big, createBig, cloneBig } from "../big"; // createBig might be needed if not already from big
 import { divBig, compareBig } from "../index";
 import { logBig } from "./log"; // Natural log function
-import { LN10_BIG } from "../utils/constants"; // Natural log of 10
+import { LN10_STRING } from "../utils/constants"; // Natural log of 10 as string
 
 const DEFAULT_LOG10_PRECISION = 30;
+const CONSTANT_PRECISION = 50; // Precision for LN10 constant
 
 export function log10Big(x: Big, precision: number = DEFAULT_LOG10_PRECISION): Big {
     // Input validation: logBig will throw for non-positive x.
@@ -18,17 +19,10 @@ export function log10Big(x: Big, precision: number = DEFAULT_LOG10_PRECISION): B
     const naturalLogX = logBig(x, internalPrecision);
 
     // log10(x) = ln(x) / ln(10)
-    // Ensure LN10_BIG has enough precision for this division.
-    // LN10_BIG from constants has 50 decimal places.
-    // If internalPrecision for naturalLogX is very high, LN10_BIG might need adjustment if its scale is too low.
-    // However, divBig handles operands with different scales, and its precision argument controls output.
-    let ln10Referenced = LN10_BIG;
-    if (LN10_BIG.scale < internalPrecision) { // Should not typically happen if LN10_BIG has 50 places
-        ln10Referenced = cloneBig(LN10_BIG);
-        ln10Referenced.scale = internalPrecision;
-    }
+    // Ensure LN10_STRING is converted to a Big instance with enough precision.
+    const ln10 = createBig(LN10_STRING, Math.max(internalPrecision, CONSTANT_PRECISION));
 
-    const result = divBig(naturalLogX, ln10Referenced, precision);
+    const result = divBig(naturalLogX, ln10, precision);
 
     // Normalize -0 to 0
     if (compareBig(result, createBig(0)) === 0 && result.isNegative) {

@@ -21,6 +21,7 @@ export default defineConfig({
     }) as PluginOption
   ],
   test: {
+    globals: true, // Ensure Vitest globals are available
     coverage: {
       provider: "c8",
       reporter: ["text", "json-summary", "json"],

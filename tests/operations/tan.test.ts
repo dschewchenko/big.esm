@@ -2,11 +2,21 @@ import { tanBig } from "../../src/operations/tan";
 import { sinBig } from "../../src/operations/sin"; // For PI/2 edge case verification if needed
 import { cosBig } from "../../src/operations/cos"; // For PI/2 edge case verification if needed
 import { createBig, Big } from "../../src/big";
-import { PI_BIG, PI_HALF_BIG } from "../../src/utils/constants";
+import { PI_STRING, PI_HALF_STRING } from "../../src/utils/constants"; // Import string versions
 import { mulBig, divBig } from "../../src/index";
 
 describe("tanBig", () => {
     const defaultPrecision = 20; // Consistent with sin/cos tests
+    const constantPrecision = 50; // Precision for creating Big instances from strings
+
+    // Define Big instances from string constants for use in tests
+    let PI_BIG_TEST: Big;
+    let PI_HALF_BIG_TEST: Big;
+
+    beforeAll(() => {
+        PI_BIG_TEST = createBig(PI_STRING, constantPrecision);
+        PI_HALF_BIG_TEST = createBig(PI_HALF_STRING, constantPrecision);
+    });
 
     const compareBigStrings = (val: Big, expected: string, numDigits: number) => {
         const valStr = val.toString();
@@ -39,49 +49,49 @@ describe("tanBig", () => {
     });
 
     it("should calculate tan(PI/4) correctly (should be 1)", () => {
-        const piOverFour = divBig(PI_BIG, createBig(4), defaultPrecision + 5);
+        const piOverFour = divBig(PI_BIG_TEST, createBig(4), defaultPrecision + 5);
         checkTan(piOverFour, "1.0", defaultPrecision, 5);
     });
 
     it("should calculate tan(3*PI/4) correctly (should be -1)", () => {
-        const threePi = mulBig(PI_BIG, createBig(3), defaultPrecision + 5);
+        const threePi = mulBig(PI_BIG_TEST, createBig(3), defaultPrecision + 5);
         const threePiOverFour = divBig(threePi, createBig(4), defaultPrecision + 5);
         checkTan(threePiOverFour, "-1.0", defaultPrecision, 5);
     });
     
     it("should calculate tan(PI) correctly (should be 0)", () => {
-        checkTanNearZero(PI_BIG, defaultPrecision);
+        checkTanNearZero(PI_BIG_TEST, defaultPrecision);
     });
 
     it("should throw an error for tan(PI/2)", () => {
         // To verify, let's see what cos(PI/2) is first with high precision
-        // const cosPiHalf = cosBig(PI_HALF_BIG, defaultPrecision + 10);
+        // const cosPiHalf = cosBig(PI_HALF_BIG_TEST, defaultPrecision + 10);
         // console.log("cos(PI/2) for tan test:", cosPiHalf.toString()); // Expect this to be very near zero
-        expect(() => tanBig(PI_HALF_BIG, defaultPrecision)).toThrow("Division by zero in tanBig: cosine is effectively zero.");
+        expect(() => tanBig(PI_HALF_BIG_TEST, defaultPrecision)).toThrow("Division by zero in tanBig: cosine is effectively zero.");
     });
 
     it("should throw an error for tan(3*PI/2)", () => {
-        const threePiHalf = mulBig(createBig(3), PI_HALF_BIG, defaultPrecision + 5);
+        const threePiHalf = mulBig(createBig(3), PI_HALF_BIG_TEST, defaultPrecision + 5);
         // const cosThreePiHalf = cosBig(threePiHalf, defaultPrecision + 10);
         // console.log("cos(3*PI/2) for tan test:", cosThreePiHalf.toString()); // Expect this to be very near zero
         expect(() => tanBig(threePiHalf, defaultPrecision)).toThrow("Division by zero in tanBig: cosine is effectively zero.");
     });
 
     it("should calculate tan(-PI/4) correctly (should be -1)", () => {
-        const negPiOverFour = divBig(PI_BIG, createBig(-4), defaultPrecision + 5);
+        const negPiOverFour = divBig(PI_BIG_TEST, createBig(-4), defaultPrecision + 5);
         checkTan(negPiOverFour, "-1.0", defaultPrecision, 5);
     });
 
     it("should handle angles requiring reduction (e.g., 9*PI/4)", () => {
         // tan(9*PI/4) = tan(2*PI + PI/4) = tan(PI/4) = 1
-        const ninePi = mulBig(PI_BIG, createBig(9), defaultPrecision + 5);
+        const ninePi = mulBig(PI_BIG_TEST, createBig(9), defaultPrecision + 5);
         const ninePiOverFour = divBig(ninePi, createBig(4), defaultPrecision + 5);
         checkTan(ninePiOverFour, "1.0", defaultPrecision, 5);
     });
     
     it("should maintain precision for tan", () => {
         // tan(PI/3) = sqrt(3) ~ 1.73205081
-        const piOverThree = divBig(PI_BIG, createBig(3), 35);
+        const piOverThree = divBig(PI_BIG_TEST, createBig(3), 35);
         const expected = "1.73205080756887729352"; // High precision sqrt(3)
         const customPrecision = 20;
         const result = tanBig(piOverThree, customPrecision);
