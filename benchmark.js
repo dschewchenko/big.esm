@@ -1,7 +1,21 @@
 import { performance } from "node:perf_hooks";
 
 import { Big as BigJS } from "big.js";
-import { addBig, Big as BigESM, cloneBig, divBig, mulBig, powBig, sqrtBig, subBig } from "./dist/big.esm.js";
+import {
+  addBig,
+  Big as BigESM,
+  cloneBig,
+  divBig,
+  mulBig,
+  powBig,
+  sqrtBig,
+  subBig,
+  sinBig, // Added
+  cosBig, // Added
+  tanBig, // Added
+  logBig, // Added
+  log10Big // Added
+} from "./dist/big.esm.js";
 
 const smallNumberA = 12345.67809;
 const smallNumberB = 78901.23456;
@@ -280,16 +294,76 @@ const operations = process.argv.includes("--without-init") ? [
       const bigA = new BigJS(a);
       return () => new BigJS(bigA).sqrt(2);
     }
+  },
+  // ESM-only benchmarks for new functions
+  {
+    operationName: "sin",
+    funcESM: (a) => {
+      const bigA = new BigESM(a);
+      return () => sinBig(bigA, 20); // Fixed precision for benchmark
+    },
+    funcESMMutable: undefined,
+    funcJS: undefined // No sin in big.js
+  },
+  {
+    operationName: "cos",
+    funcESM: (a) => {
+      const bigA = new BigESM(a);
+      return () => cosBig(bigA, 20);
+    },
+    funcESMMutable: undefined,
+    funcJS: undefined // No cos in big.js
+  },
+  {
+    operationName: "tan",
+    funcESM: (a) => {
+      const bigA = new BigESM(a);
+      return () => tanBig(bigA, 20);
+    },
+    funcESMMutable: undefined,
+    funcJS: undefined // No tan in big.js
+  },
+  {
+    operationName: "ln (logBig)",
+    // For log, ensure 'a' is positive. Test cases like smallNumberA and bigNumberA are suitable.
+    funcESM: (a) => {
+      if (a <= 0) return () => {}; // Skip for non-positive test case args if any
+      const bigA = new BigESM(a);
+      return () => logBig(bigA, 20);
+    },
+    funcESMMutable: undefined,
+    funcJS: undefined // No ln in big.js
+  },
+  {
+    operationName: "log10 (log10Big)",
+    funcESM: (a) => {
+      if (a <= 0) return () => {}; // Skip for non-positive
+      const bigA = new BigESM(a);
+      return () => log10Big(bigA, 20);
+    },
+    funcESMMutable: undefined,
+    funcJS: undefined // No log10 in big.js
   }
 ];
 
 runBenchmark(testCases, operations);
 
 // Markdown table generation
-let markdownTable = "| Operation | big.esm | big.esm(mutable) | big.js | Difference(immutable/mutable) |\n";
+let markdownTable = "| Operation | big.esm | big.esm(mutable) | big.js | Difference(immutable vs js / mutable vs js) |\n"; // Updated header
 markdownTable += "| --- | --- | --- | --- | --- | \n";
 for (const result of results) {
-  markdownTable += `| ${result.Operation} | ${result["big.esm"]} | ${result["big.esm(mutable)"]} | ${result["big.js"]} | ${result.Difference}/${result["Difference with mutable"]} |\n`;
+  const diffStr = result["big.js"].startsWith("0.000ms") || result["big.js"] === "—" // Check if big.js time is effectively zero or N/A
+    ? "N/A" 
+    : `${result.Difference} / ${result["Difference with mutable"] === "0.00% slower" || result["Difference with mutable"] === "0.00% faster" ? "N/A" : result["Difference with mutable"] }`;
+  
+  markdownTable += `| ${result.Operation} | ${result["big.esm"]} | ${result["big.esm(mutable)"]} | ${result["big.js"]} | ${diffStr} |\n`;
 }
 
 console.log(markdownTable);
+
+// Additional check for log functions to only run with positive numbers from testCases
+// The current runBenchmark structure iterates all operations for all test cases.
+// The log functions already have an internal check (a > 0), which will result in them returning an empty function,
+// effectively skipping the benchmark for invalid inputs. This is acceptable.
+// For specific test cases for log/trig, one could define separate testCase arrays if needed.
+// The existing testCases use positive numbers for 'a' (args[0]), so log should work for them.

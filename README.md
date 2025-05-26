@@ -128,6 +128,174 @@ Returns the minimum of two `Big` instances. If the numbers are equal, returns th
 
 Returns the maximum of two `Big` instances. If the numbers are equal, returns the first number.
 
+#### `sinBig(angle: Big, precision: number = 30): Big`
+
+Calculates the sine of an angle. The `angle` must be provided in radians as a `Big` instance.
+The `precision` argument specifies the number of decimal places in the result. It defaults to 30.
+
+```js
+import { createBig, sinBig, PI_BIG } from 'big.esm'; // Assuming PI_BIG is exported or use a string value
+
+// Example: sin(PI/2)
+// Note: For precise PI/2, you might need to calculate it or use a high-precision constant
+const piHalf = divBig(PI_BIG, createBig(2), 35); // Calculate PI/2 with high precision
+const result = sinBig(piHalf, 20); 
+console.log(result.toString()); // Expected: close to "1.00000000000000000000"
+```
+
+#### `cosBig(angle: Big, precision: number = 30): Big`
+
+Calculates the cosine of an angle. The `angle` must be provided in radians as a `Big` instance.
+The `precision` argument specifies the number of decimal places in the result. It defaults to 30.
+
+```js
+import { createBig, cosBig, PI_BIG } from 'big.esm';
+
+// Example: cos(PI)
+const result = cosBig(PI_BIG, 20);
+console.log(result.toString()); // Expected: close to "-1.00000000000000000000"
+```
+
+#### `tanBig(angle: Big, precision: number = 30): Big`
+
+Calculates the tangent of an angle. The `angle` must be provided in radians as a `Big` instance.
+The `precision` argument specifies the number of decimal places in the result. It defaults to 30.
+Throws an error if the cosine of the angle is effectively zero (e.g., for angles like PI/2, 3PI/2).
+
+```js
+import { createBig, tanBig, PI_BIG } from 'big.esm';
+
+// Example: tan(PI/4)
+const piFourth = divBig(PI_BIG, createBig(4), 35); // Calculate PI/4 with high precision
+const result = tanBig(piFourth, 20);
+console.log(result.toString()); // Expected: close to "1.00000000000000000000"
+
+// Example: tan(PI/2) - this will throw an error
+try {
+  const piHalf = divBig(PI_BIG, createBig(2), 35);
+  tanBig(piHalf, 20);
+} catch (e) {
+  console.error(e.message); // "Division by zero in tanBig: cosine is effectively zero."
+}
+```
+
+#### `logBig(x: Big, precision?: number): Big`
+
+Calculates the natural logarithm (base e) of `x`. The input `x` must be a positive `Big` number.
+The optional `precision` argument specifies the number of decimal places in the result (defaults to 30).
+Throws an error if `x` is not positive.
+
+```js
+import { createBig, logBig, E_BIG } from 'big.esm'; // Assuming E_BIG is exported
+
+const val = createBig("10");
+const result = logBig(val, 30); 
+// console.log(result.toString()); // Expected: "2.302585092994045684017991454684" (approx)
+
+// Using E_BIG from constants (assuming it's available and has sufficient precision)
+const log_e = logBig(E_BIG, 30);
+// console.log(log_e.toString()); // Expected: "1.000000000000000000000000000000" (approx)
+```
+
+#### `log10Big(x: Big, precision?: number): Big`
+
+Calculates the base-10 logarithm of `x`. The input `x` must be a positive `Big` number.
+The optional `precision` argument specifies the number of decimal places in the result (defaults to 30).
+Throws an error if `x` is not positive.
+
+```js
+import { createBig, log10Big } from 'big.esm';
+
+const val = createBig("100");
+const result = log10Big(val, 10);
+// console.log(result.toString()); // Expected: "2.0000000000"
+
+const anotherVal = createBig("1000");
+const result2 = log10Big(anotherVal); // Uses default precision 30
+// console.log(result2.toString()); // Expected: "3.000000000000000000000000000000"
+```
+
+### Formatting Output
+
+The `Big` class provides a `toFormat()` method for flexible formatting of its string representation. This method is available on instances of `Big`.
+
+#### `bigInstance.toFormat(options?: FormattingOptions): string`
+
+Returns a string representation of the `Big` number formatted according to the provided options.
+
+**Options (`FormattingOptions` interface):**
+
+This interface defines the options available for formatting:
+
+*   `decimalPlaces?: number`: Specifies the number of digits to display after the decimal point. 
+    If undefined, the full scale of the number is used (similar to `toString()`).
+    *Example*: `2` for two decimal places.
+
+*   `roundingMode?: 'half-up' | 'truncate' | 'ceil' | 'floor'`: Determines how rounding is performed if `decimalPlaces` requires the number to be truncated or rounded. Defaults to `'half-up'`.
+    *   `'half-up'`: Rounds to the nearest neighbor. If equidistant, rounds up (away from zero for positive numbers, towards zero for negative numbers if the implementation rounds magnitude up). More precisely, it rounds to the value with the smallest absolute difference, and if both are equally near, rounds away from zero.
+    *   `'truncate'`: Discards digits beyond `decimalPlaces` (truncates towards zero).
+    *   `'ceil'`: Rounds towards positive infinity. For positive numbers, this means rounding up if there's a fractional part to remove. For negative numbers, this means rounding towards zero if there's a fractional part.
+    *   `'floor'`: Rounds towards negative infinity. For positive numbers, this means truncating. For negative numbers, this means rounding away from zero if there's a fractional part.
+
+*   `thousandsSeparator?: string`: The character used to separate groups of thousands in the integer part of the number. 
+    Defaults to an empty string (no separator).
+    *Example*: `','` for comma separation.
+
+*   `decimalSeparator?: string`: The character used for the decimal point. Defaults to `'.'`.
+    *Example*: `','` for a comma as the decimal separator.
+
+**Examples:**
+
+```javascript
+import { createBig } from 'big.esm'; // Or new Big()
+
+const num = createBig("-1234567.8916");
+
+// Example 1: Rounding with 'half-up'
+console.log(num.toFormat({ decimalPlaces: 2, roundingMode: 'half-up' })); 
+// Output: "-1234567.89" (since .8916, the '1' after '89' is less than 5)
+
+const num2 = createBig("-1234567.8956");
+console.log(num2.toFormat({ decimalPlaces: 2, roundingMode: 'half-up' })); 
+// Output: "-1234567.90" (since .8956, the '5' after '89' rounds up the magnitude)
+
+// Example 2: Truncating
+console.log(num.toFormat({ decimalPlaces: 2, roundingMode: 'truncate' })); 
+// Output: "-1234567.89"
+
+// Example 3: Ceiling and Floor
+console.log(createBig("12345.67").toFormat({ decimalPlaces: 0, roundingMode: 'ceil' })); 
+// Output: "12346"
+console.log(createBig("-123.456").toFormat({ decimalPlaces: 1, roundingMode: 'ceil' })); 
+// Output: "-123.4" (towards positive infinity)
+console.log(createBig("-123.456").toFormat({ decimalPlaces: 1, roundingMode: 'floor' })); 
+// Output: "-123.5" (towards negative infinity)
+
+
+// Example 4: Thousands separator
+console.log(num.toFormat({ 
+  decimalPlaces: 3, 
+  thousandsSeparator: ',', 
+  roundingMode: 'truncate' // .8916 truncates to .891
+})); 
+// Output: "-1,234,567.891"
+
+// Example 5: Custom decimal separator
+console.log(createBig("54321").toFormat({ thousandsSeparator: ' ' })); 
+// Output: "54 321" (no decimal part, no decimal separator shown)
+
+console.log(createBig("1234.567").toFormat({ 
+  decimalPlaces: 2, 
+  decimalSeparator: ',', 
+  roundingMode: 'half-up' 
+})); 
+// Output: "1234,57"
+
+// Example 6: Integer formatting with decimal places
+console.log(createBig("789").toFormat({ decimalPlaces: 2, thousandsSeparator: ',' }));
+// Output: "789.00"
+```
+
 ## Benchmark
 
 Benchmark results are available [here](https://github.com/dschewchenko/big.esm/blob/master/BENCHMARK.md).

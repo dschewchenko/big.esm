@@ -138,3 +138,136 @@ suite("Big", () => {
     expect(big.toJSON()).toBe("100");
   });
 });
+
+suite("Big.toFormat()", () => {
+  test("default formatting (no options)", () => {
+    expect(new Big("12345.6789").toFormat()).toBe("12345.6789");
+    expect(new Big("-123.45").toFormat()).toBe("-123.45");
+    expect(new Big("1000").toFormat()).toBe("1000");
+  });
+
+  test("default formatting (empty options object)", () => {
+    expect(new Big("12345.6789").toFormat({})).toBe("12345.6789");
+  });
+
+  test("decimalPlaces with roundingMode: 'half-up'", () => {
+    expect(new Big("1.23456").toFormat({ decimalPlaces: 2 })).toBe("1.23"); // 4 rounds down
+    expect(new Big("1.23789").toFormat({ decimalPlaces: 2 })).toBe("1.24"); // 7 rounds up
+    expect(new Big("1.235").toFormat({ decimalPlaces: 2 })).toBe("1.24");   // 5 rounds up
+    expect(new Big("-1.235").toFormat({ decimalPlaces: 2 })).toBe("-1.24"); // -5 rounds away from zero
+    expect(new Big("1.999").toFormat({ decimalPlaces: 2 })).toBe("2.00");
+    expect(new Big("1.999").toFormat({ decimalPlaces: 0 })).toBe("2");
+    expect(new Big("0.123").toFormat({ decimalPlaces: 0 })).toBe("0");
+    expect(new Big("0.789").toFormat({ decimalPlaces: 0 })).toBe("1");
+  });
+
+  test("decimalPlaces with roundingMode: 'truncate'", () => {
+    expect(new Big("1.23789").toFormat({ decimalPlaces: 2, roundingMode: 'truncate' })).toBe("1.23");
+    expect(new Big("1.23456").toFormat({ decimalPlaces: 2, roundingMode: 'truncate' })).toBe("1.23");
+    expect(new Big("-1.23789").toFormat({ decimalPlaces: 2, roundingMode: 'truncate' })).toBe("-1.23");
+    expect(new Big("1.999").toFormat({ decimalPlaces: 0, roundingMode: 'truncate' })).toBe("1");
+  });
+
+  test("decimalPlaces with roundingMode: 'ceil'", () => {
+    expect(new Big("1.234").toFormat({ decimalPlaces: 2, roundingMode: 'ceil' })).toBe("1.24");
+    expect(new Big("1.230").toFormat({ decimalPlaces: 2, roundingMode: 'ceil' })).toBe("1.23"); // No change if exact
+    expect(new Big("-1.234").toFormat({ decimalPlaces: 2, roundingMode: 'ceil' })).toBe("-1.23"); // Towards +inf
+    expect(new Big("-1.230").toFormat({ decimalPlaces: 2, roundingMode: 'ceil' })).toBe("-1.23");
+    expect(new Big("1.00001").toFormat({ decimalPlaces: 0, roundingMode: 'ceil' })).toBe("2");
+    expect(new Big("-1.999").toFormat({ decimalPlaces: 0, roundingMode: 'ceil' })).toBe("-1");
+  });
+
+  test("decimalPlaces with roundingMode: 'floor'", () => {
+    expect(new Big("1.237").toFormat({ decimalPlaces: 2, roundingMode: 'floor' })).toBe("1.23");
+    expect(new Big("1.230").toFormat({ decimalPlaces: 2, roundingMode: 'floor' })).toBe("1.23");
+    expect(new Big("-1.237").toFormat({ decimalPlaces: 2, roundingMode: 'floor' })).toBe("-1.24"); // Towards -inf
+    expect(new Big("-1.230").toFormat({ decimalPlaces: 2, roundingMode: 'floor' })).toBe("-1.23");
+    expect(new Big("1.999").toFormat({ decimalPlaces: 0, roundingMode: 'floor' })).toBe("1");
+    expect(new Big("-1.001").toFormat({ decimalPlaces: 0, roundingMode: 'floor' })).toBe("-2");
+  });
+
+
+  test("decimalPlaces causing padding with zeros", () => {
+    expect(new Big("1.23").toFormat({ decimalPlaces: 5 })).toBe("1.23000");
+    expect(new Big("100").toFormat({ decimalPlaces: 3 })).toBe("100.000");
+    expect(new Big("0").toFormat({ decimalPlaces: 2 })).toBe("0.00");
+  });
+
+  test("thousandsSeparator: ','", () => {
+    expect(new Big("1234567.89").toFormat({ thousandsSeparator: ',' })).toBe("1,234,567.89");
+    expect(new Big("-1234567.89").toFormat({ thousandsSeparator: ',' })).toBe("-1,234,567.89");
+    expect(new Big("123.45").toFormat({ thousandsSeparator: ',' })).toBe("123.45"); // No separator for small numbers
+    expect(new Big("1234567890").toFormat({ thousandsSeparator: ',' })).toBe("1,234,567,890");
+  });
+
+  test("decimalSeparator: ','", () => {
+    expect(new Big("123.45").toFormat({ decimalSeparator: ',' })).toBe("123,45");
+    expect(new Big("100").toFormat({ decimalSeparator: ',', decimalPlaces: 2 })).toBe("100,00");
+  });
+  
+  test("decimalSeparator: '' (no decimal point if fractional part is zero)", () => {
+    expect(new Big("123.000").toFormat({ decimalPlaces: 2, decimalSeparator: '' })).toBe("12300"); //This is tricky, default toString trims.
+    // If decimalPlaces is set, we expect that many digits.
+    // A number like 123.00 with decimalPlaces: 2 and decimalSeparator: '' might be "12300" or "123.00" if separator must exist.
+    // The current toFormat logic implies it would become "123<empty_sep>00".
+    // Let's test a case where fractional part exists.
+    expect(new Big("123.45").toFormat({ decimalPlaces: 2, decimalSeparator: '_' })).toBe("123_45");
+  });
+
+
+  test("combination: decimalPlaces, thousandsSeparator, decimalSeparator, roundingMode", () => {
+    expect(
+      new Big("-1234567.8912").toFormat({
+        decimalPlaces: 1,
+        thousandsSeparator: ',',
+        decimalSeparator: '.', // This is default, but explicit for test
+        roundingMode: 'half-up',
+      })
+    ).toBe("-1,234,567.9"); // .89 rounds to .9
+
+    expect(
+      new Big("9876543.21987").toFormat({
+        decimalPlaces: 3,
+        thousandsSeparator: ' ',
+        decimalSeparator: ',',
+        roundingMode: 'truncate',
+      })
+    ).toBe("9 876 543,219");
+    
+    expect(
+      new Big("12345").toFormat({
+        decimalPlaces: 2, // Should pad with zeros
+        thousandsSeparator: ',',
+        decimalSeparator: '.',
+      })
+    ).toBe("12,345.00");
+  });
+
+  test("integer numbers", () => {
+    expect(new Big("12345").toFormat({ thousandsSeparator: ',' })).toBe("12,345");
+    expect(new Big("-12345").toFormat({ thousandsSeparator: '*' })).toBe("-12*345");
+  });
+
+  test("numbers with no integer part (e.g., 0.xxxx)", () => {
+    expect(new Big("0.12345").toFormat({ decimalPlaces: 2 })).toBe("0.12"); // half-up default
+    expect(new Big("0.12789").toFormat({ decimalPlaces: 2, roundingMode: 'half-up' })).toBe("0.13");
+    expect(new Big("-0.12789").toFormat({ decimalPlaces: 2, roundingMode: 'truncate' })).toBe("-0.12");
+    expect(new Big("0.0000123").toFormat({ decimalPlaces: 5, roundingMode: 'ceil' })).toBe("0.00002");
+  });
+  
+  test("zero value formatting", () => {
+    expect(new Big("0").toFormat({ decimalPlaces: 2 })).toBe("0.00");
+    expect(new Big("0.000").toFormat({ decimalPlaces: 4, thousandsSeparator: ',' })).toBe("0.0000");
+    expect(new Big("-0").toFormat({ decimalPlaces: 2 })).toBe("0.00"); // Assuming -0 is normalized to 0
+  });
+
+  test("edge case: decimalPlaces is current scale", () => {
+    expect(new Big("12.345").toFormat({ decimalPlaces: 3 })).toBe("12.345");
+  });
+
+  test("edge case: decimalPlaces is 0", () => {
+    expect(new Big("12.345").toFormat({ decimalPlaces: 0, roundingMode: 'half-up' })).toBe("12");
+    expect(new Big("12.789").toFormat({ decimalPlaces: 0, roundingMode: 'half-up' })).toBe("13");
+    expect(new Big("0.345").toFormat({ decimalPlaces: 0, roundingMode: 'truncate' })).toBe("0");
+  });
+});

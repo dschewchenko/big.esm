@@ -16,6 +16,11 @@ export { absBig } from "./operations/abs";
 export { compareBig } from "./operations/compare";
 export { minBig } from "./operations/min";
 export { maxBig } from "./operations/max";
+export { sinBig } from "./operations/sin";
+export { cosBig } from "./operations/cos";
+export { tanBig } from "./operations/tan";
+export { logBig } from "./operations/log";
+export { log10Big } from "./operations/log10";
 
 // utils
 export { isBigObject } from "./utils/is-big-object";
