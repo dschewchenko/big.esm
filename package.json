@@ -75,8 +75,8 @@
     "typedoc-plugin-merge-modules": "^5.0.1",
     "typedoc-plugin-pages": "^1.1.0",
     "typescript": "^5.0.4",
-    "vite": "^4.3.9",
+    "vite": "^7.1.5",
     "vite-plugin-dts": "^2.3.0",
-    "vitest": "^0.31.0"
+    "vitest": "^3.2.4"
   }
 }
