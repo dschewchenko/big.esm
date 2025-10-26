@@ -1,8 +1,8 @@
+import type { Big } from "../big";
+import type { RoundingMode } from "../types";
+import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants";
 import { createBig } from "../utils/create";
 import { isZero } from "../utils/is-zero";
-import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants";
-import type { RoundingMode } from "../types";
-import type { Big } from "../big";
 
 /**
  * Divides two Big instances and returns the result as a new Big instance.
@@ -27,7 +27,12 @@ import type { Big } from "../big";
  * console.log(divBig(big1, big2, 2, "up").toString()); // "3.34"
  */
 export function divBig(
-  dividend: Big, divisor: Big, precision = DEFAULT_PRECISION, roundingMode: RoundingMode = "half-up", mutable = false): Big {
+  dividend: Big,
+  divisor: Big,
+  precision = DEFAULT_PRECISION,
+  roundingMode: RoundingMode = "half-up",
+  mutable = false
+): Big {
   // Check if the divisor is zero, throw an error as division by zero is not allowed
   if (isZero(divisor)) {
     throw new Error("Division by zero is not allowed.");
@@ -47,17 +52,15 @@ export function divBig(
   const quotient = adjustedDividend / adjustedDivisor;
   const remainder = adjustedDividend % adjustedDivisor;
 
-  let finalQuotient;
+  let finalQuotient = quotient;
 
   // Apply the specified rounding mode to determine the final quotient
   switch (roundingMode) {
     case "down":
-      finalQuotient = quotient;
       break;
     case "up":
       finalQuotient = remainder !== ZERO_BIGINT ? quotient + ONE_BIGINT : quotient + ZERO_BIGINT;
       break;
-    case "half-up":
     default:
       // Round the quotient using the "half-up" rounding mode
       finalQuotient = remainder * BigInt(2) >= adjustedDivisor ? quotient + ONE_BIGINT : quotient;

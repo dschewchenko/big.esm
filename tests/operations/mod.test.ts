@@ -1,7 +1,13 @@
 import { expect, suite, test } from "vitest";
-import { throws } from "assert";
 import { Big, modBig } from "../../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
+import {
+  bigints,
+  numbers,
+  numbersNegative,
+  stringsDifferentScale,
+  stringsDifferentScaleNegative,
+  zero
+} from "../test-data";
 
 suite("Big mod", () => {
   test("modulo of two Big instances with zero values and throws exception", () => {
@@ -9,7 +15,7 @@ suite("Big mod", () => {
     const big1 = new Big(a);
     const big2 = new Big(b);
 
-    throws(() => modBig(big1, big2));
+    expect(() => modBig(big1, big2)).toThrow();
   });
 
   test("modulo of numbers with different scales", () => {

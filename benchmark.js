@@ -12,6 +12,18 @@ const bigNumberB = "67890123456789012345.67890123456789012345";
 const numberWithExponentA = "12345678901234567890e-10";
 const numberWithExponentB = "67890123456789012345e-10";
 
+function runGC() {
+  if (typeof globalThis.gc === "function") {
+    globalThis.gc();
+    return;
+  }
+
+  const bun = globalThis.Bun;
+  if (bun && typeof bun.gc === "function") {
+    bun.gc(true);
+  }
+}
+
 // simple benchmark function
 function benchmark(name, func, times = 100_000) {
   const start = performance.now();
@@ -41,8 +53,7 @@ function runBenchmark(testCases, operations) {
       const timeESM = benchmark(`big.esm — ${testCase.name} — ${operationName}`, preparedESM);
       let finalMemory = process.memoryUsage().heapUsed;
       const memoryUsedESM = finalMemory - initialMemory;
-      // eslint-disable-next-line no-undef
-      gc();
+      runGC();
 
       const preparedESMMutable = funcESMMutable && funcESMMutable(...testCase.args);
       initialMemory = process.memoryUsage().heapUsed;
@@ -50,16 +61,14 @@ function runBenchmark(testCases, operations) {
         benchmark(`big.esm(mutable) — ${testCase.name} — ${operationName}`, preparedESMMutable);
       finalMemory = process.memoryUsage().heapUsed;
       const memoryUsedESMMutable = finalMemory - initialMemory;
-      // eslint-disable-next-line no-undef
-      gc();
+      runGC();
 
       const preparedJS = funcJS && funcJS(...testCase.args);
       initialMemory = process.memoryUsage().heapUsed;
       const timeJS = benchmark(`big.js — ${testCase.name} — ${operationName}`, preparedJS);
       finalMemory = process.memoryUsage().heapUsed;
       const memoryUsedJS = finalMemory - initialMemory;
-      // eslint-disable-next-line no-undef
-      gc();
+      runGC();
 
       const diff = (timeJS - timeESM) / timeJS * 100;
       const diffMutable = timeESMMutable ? (timeJS - timeESMMutable) / timeJS * 100 : 0;

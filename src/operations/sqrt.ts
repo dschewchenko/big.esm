@@ -1,14 +1,14 @@
-import { DEFAULT_PRECISION, ZERO_BIGINT } from "../utils/constants";
-import { divBig } from "./div";
-import { compareBig } from "./compare";
-import { addBig } from "./add";
-import { subBig } from "./sub";
-import { absBig } from "./abs";
-import { createBig } from "../utils/create";
-import { powBig } from "./pow";
-import { mulBig } from "./mul";
-import { isZero } from "../utils/is-zero";
 import type { Big } from "../big";
+import { DEFAULT_PRECISION, ZERO_BIGINT } from "../utils/constants";
+import { createBig } from "../utils/create";
+import { isZero } from "../utils/is-zero";
+import { absBig } from "./abs";
+import { addBig } from "./add";
+import { compareBig } from "./compare";
+import { divBig } from "./div";
+import { mulBig } from "./mul";
+import { powBig } from "./pow";
+import { subBig } from "./sub";
 
 /**
  * Calculates the nth root of a Big instance with custom precision and rounding mode.
@@ -49,15 +49,13 @@ export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION, mutab
     throw new Error("The root must be an odd integer when the number is negative.");
 
   // Check if the root is not an integer or less than 2, throw an error
-  if (!Number.isInteger(root) || root < 2)
-    throw new Error("The root must be an integer and greater than 1");
+  if (!Number.isInteger(root) || root < 2) throw new Error("The root must be an integer and greater than 1");
 
   // Check if the precision is a non-negative integer
-  if (precision < 0)
-    throw new Error("The precision must be a non-negative integer.");
+  if (precision < 0) throw new Error("The precision must be a non-negative integer.");
 
   // Calculate the precision string based on the provided precision
-  const precisionBig = createBig(precision === 0 ? "1" : "0." + "0".repeat(precision - 1) + "1");
+  const precisionBig = createBig(precision === 0 ? "1" : `0.${"0".repeat(precision - 1)}1`);
 
   // Create Big instances for the root, root - 1, and 2
   const rootBig = createBig(root);
@@ -68,16 +66,18 @@ export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION, mutab
   let approximation = divBig(addBig(big, divBig(big, twoBig, precision)), twoBig, precision);
 
   // Iterate until the difference between the previous and current approximations is within the desired precision
-  let prevApproximation;
+  let prevApproximation: Big;
   do {
     prevApproximation = approximation;
 
     // Calculate the numerator for the next approximation
-    const numerator = addBig(mulBig(rootMinus1Big, approximation), divBig(big, powBig(approximation, root - 1), precision));
+    const numerator = addBig(
+      mulBig(rootMinus1Big, approximation),
+      divBig(big, powBig(approximation, root - 1), precision)
+    );
 
     // Calculate the next approximation
     approximation = divBig(numerator, rootBig, precision);
-
   } while (compareBig(absBig(subBig(prevApproximation, approximation)), precisionBig) === 1);
 
   // Get the string representation of the result
@@ -91,7 +91,6 @@ export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION, mutab
   // Truncate the decimal part of the result based on the desired precision
   const dotIndex = resultString.indexOf(".");
   const truncatedString = dotIndex !== -1 ? resultString.slice(0, dotIndex + precision + 1) : resultString;
-
 
   return createBig(truncatedString);
 }

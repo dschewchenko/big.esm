@@ -12,6 +12,7 @@ dist
 coverage
 docs
 *.local
+stats.*
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +24,4 @@ docs
 *.njsproj
 *.sln
 *.sw?
+.tmp

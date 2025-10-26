@@ -1,9 +1,9 @@
-import { isNumericValue } from "./utils/numeric";
-import { trimZeros } from "./utils/trim-zeros";
+import type { BigObject, BigValue, PossibleNumber } from "./types";
 import { ZERO_BIGINT } from "./utils/constants";
 import { fromString } from "./utils/from-string";
 import { isBigObject } from "./utils/is-big-object";
-import type { BigObject, BigValue, PossibleNumber } from "./types";
+import { isNumericValue } from "./utils/numeric";
+import { trimZeros } from "./utils/trim-zeros";
 
 /**
  * The Big class for working with large numbers and fractions using BigInt.
@@ -73,23 +73,22 @@ export class Big {
       let scaleDefined = scale !== undefined;
       if (scaleDefined) {
         // Convert the scale to a number
-        if (typeof scale !== "number")
-          scale = Number(scale);
+        if (typeof scale !== "number") scale = Number(scale);
 
         // Remove the fractional part
-        scaleDefined = !isNaN(scale);
+        scaleDefined = !Number.isNaN(scale);
         scale = scaleDefined ? Math.floor(scale) : 0;
       }
 
       // if the value is bigint, skip string parsing
       if (typeof value === "bigint") {
         this.value = value;
-        this.scale = scaleDefined ? scale as number : 0;
+        this.scale = scaleDefined ? (scale as number) : 0;
       } else {
         // Parse the value from a string or number
         const { value: valueBigint, scale: parsedScale } = fromString(value, scaleDefined, false);
         this.value = valueBigint;
-        this.scale = scaleDefined ? scale as number : parsedScale;
+        this.scale = scaleDefined ? (scale as number) : parsedScale;
       }
     } else {
       throw new TypeError("Invalid type provided to Big constructor.");
@@ -114,8 +113,7 @@ export class Big {
   toString(shouldTrimZeros = true): string {
     let integerPart = this.value.toString();
     const sign = integerPart.startsWith("-") ? "-" : "";
-    if (sign)
-      integerPart = integerPart.substring(1);
+    if (sign) integerPart = integerPart.substring(1);
     let fractionPart = "";
 
     if (this.scale > ZERO_BIGINT) {

@@ -28,7 +28,9 @@ suite("Big utils fromString", () => {
 
   test("fromString converts string big number with fractions", () => {
     expect(fromString("1234567890.12345e-3")).toStrictEqual(new Big(BigInt("123456789012345"), 8));
-    expect(fromString("-12345678901234567890.12345e-3")).toStrictEqual(new Big(BigInt("-1234567890123456789012345"), 8));
+    expect(fromString("-12345678901234567890.12345e-3")).toStrictEqual(
+      new Big(BigInt("-1234567890123456789012345"), 8)
+    );
     expect(fromString("12345678901234567890.12345e3")).toStrictEqual(new Big(BigInt("1234567890123456789012345"), 2));
   });
 

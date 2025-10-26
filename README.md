@@ -18,8 +18,14 @@ Full bundle size (ESM) — 4.2 kB minified and 1.8 kB gzipped.
 
 ## Installation
 
-Install `big.esm` using npm:
-    
+Install `big.esm` using Bun:
+
+```bash
+bun add big.esm
+```
+
+or npm:
+
 ```bash
 npm install big.esm
 ```
@@ -43,7 +49,7 @@ console.log(result.toString()); // 22222222121.1111111101
 
 ## Compatibility
 
-`big.esm` is compatible with all modern browsers and Node.js 10+. It uses `BigInt` internally, so it is not compatible with older browsers and Node.js versions. On info from [caniuse.com](https://caniuse.com/#feat=bigint) `BigInt` is supported by 96.47% of all browsers(as of 2023-06-25).
+`big.esm` is compatible with all modern browsers, Bun 1.0+, and Node.js 16+. It uses `BigInt` internally, so it is not compatible with older runtimes. On info from [caniuse.com](https://caniuse.com/#feat=bigint) `BigInt` is supported by 96.47% of all browsers(as of 2023-06-25).
 
 ## Notes
 

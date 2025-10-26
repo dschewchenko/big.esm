@@ -1,6 +1,6 @@
-import { compareBig } from "./compare";
-import { cloneBig } from "../utils/clone";
 import type { Big } from "../big";
+import { cloneBig } from "../utils/clone";
+import { compareBig } from "./compare";
 
 /**
  * Returns the maximum of two Big numbers.
@@ -19,4 +19,5 @@ import type { Big } from "../big";
  * maxBig(new Big(1), new Big(1)); // new Big instance with value 1 (first Big number)
  * maxBig(new Big(1), new Big(1), true); // first Big number with value 1 and same instance
  */
-export const maxBig = (a: Big, b: Big, mutable = false) => compareBig(a, b) >= 0 ? mutable ? a : cloneBig(a) : mutable ? b : cloneBig(b);
+export const maxBig = (a: Big, b: Big, mutable = false) =>
+  compareBig(a, b) >= 0 ? (mutable ? a : cloneBig(a)) : mutable ? b : cloneBig(b);

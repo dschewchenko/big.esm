@@ -1,7 +1,13 @@
 import { expect, suite, test } from "vitest";
-import { throws } from "assert";
 import { Big, divBig } from "../../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
+import {
+  bigints,
+  numbers,
+  numbersNegative,
+  stringsDifferentScale,
+  stringsDifferentScaleNegative,
+  zero
+} from "../test-data";
 
 suite("Big div", () => {
   test("divides two Big instances with zero values and throws exception", () => {
@@ -9,7 +15,7 @@ suite("Big div", () => {
     const big1 = new Big(a);
     const big2 = new Big(b);
 
-    throws(() => divBig(big1, big2));
+    expect(() => divBig(big1, big2)).toThrow();
   });
 
   test("divides numbers with different scales", () => {

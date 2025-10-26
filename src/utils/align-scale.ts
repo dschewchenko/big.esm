@@ -1,6 +1,6 @@
-import { createBig } from "./create";
 import type { Big } from "../big";
 import { TEN_BIGINT } from "./constants";
+import { createBig } from "./create";
 
 /**
  * Aligns the scale(decimal places) of two Big instances before performing arithmetic operations.

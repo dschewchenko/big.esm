@@ -1,6 +1,13 @@
 import { expect, suite, test } from "vitest";
 import { Big, compareBig } from "../../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
+import {
+  bigints,
+  numbers,
+  numbersNegative,
+  stringsDifferentScale,
+  stringsDifferentScaleNegative,
+  zero
+} from "../test-data";
 
 suite("Big compare", () => {
   test("compares two equal Big instances with zero values", () => {

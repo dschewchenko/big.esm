@@ -1,5 +1,5 @@
-import { createBig } from "../utils/create";
 import type { Big } from "../big";
+import { createBig } from "../utils/create";
 
 /**
  * Multiplies two Big instances and returns the result as a new Big instance.

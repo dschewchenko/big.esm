@@ -1,8 +1,8 @@
-import { divBig } from "./div";
-import { subBig } from "./sub";
-import { mulBig } from "./mul";
 import type { Big } from "../big";
 import { isZero } from "../utils/is-zero";
+import { divBig } from "./div";
+import { mulBig } from "./mul";
+import { subBig } from "./sub";
 
 /**
  * Performs the modulo operation (remainder of division) for two Big instances.
@@ -33,7 +33,7 @@ export function modBig(dividend: Big, divisor: Big, mutable = false): Big {
 
   if (mutable) {
     mulBig(quotient, divisor, true);
-    return subBig(dividend, quotient, true)
+    return subBig(dividend, quotient, true);
   }
 
   // Calculate the product of the quotient and divisor

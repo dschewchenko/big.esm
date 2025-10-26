@@ -32,7 +32,7 @@ suite("sqrtBig", () => {
 
   test("throws an error when calculating the square root of number with negative precision", () => {
     const big = new Big(numbers[0]);
-    expect(() => sqrtBig(big, 2,-1)).toThrow("The precision must be a non-negative integer.");
+    expect(() => sqrtBig(big, 2, -1)).toThrow("The precision must be a non-negative integer.");
   });
 
   test("throws an error when calculating the square root of a negative number with precision and rounding mode", () => {
@@ -115,7 +115,5 @@ suite("sqrtBig", () => {
     expect(big.toString()).toBe("11.1108055513540511245");
   });
 
-  test("mutates the original Big instance with root 3", () => {
-
-  });
+  test("mutates the original Big instance with root 3", () => {});
 });

@@ -1,6 +1,13 @@
 import { expect, suite, test } from "vitest";
 import { alignScale, Big } from "../../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
+import {
+  bigints,
+  numbers,
+  numbersNegative,
+  stringsDifferentScale,
+  stringsDifferentScaleNegative,
+  zero
+} from "../test-data";
 
 suite("Big utils alignScale", () => {
   test("aligns scales of two zero Big instances", () => {
