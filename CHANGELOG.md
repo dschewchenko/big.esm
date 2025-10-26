@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/dschewchenko/big.esm/compare/v1.3.1...v1.3.2) (2025-10-26)
+
+
+### Bug Fixes
+
+* migrate to bun and fix dependencies ([302f12b](https://github.com/dschewchenko/big.esm/commit/302f12bcf300a0f14f2af970c34b0251e1bbda81))
+
 ## [1.3.1](https://github.com/dschewchenko/big.esm/compare/v1.3.0...v1.3.1) (2023-06-25)
 
 
