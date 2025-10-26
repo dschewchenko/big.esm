@@ -1,6 +1,6 @@
 import { expect, suite, test } from "vitest";
-import { cloneBig, Big } from "../../src";
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
+import { Big, cloneBig } from "../../src";
+import { numbers, numbersNegative, stringsDifferentScale } from "../test-data";
 
 suite("Big clone", () => {
   test("clones a Big instance", () => {

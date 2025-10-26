@@ -1,26 +1,24 @@
 // main
 export { Big } from "./big";
-
-// types
-export type { BigValue, PossibleNumber, RoundingMode, CompareResult } from "./types";
+export { absBig } from "./operations/abs";
 
 // math operations
 export { addBig } from "./operations/add";
-export { subBig } from "./operations/sub";
-export { mulBig } from "./operations/mul";
+export { compareBig } from "./operations/compare";
 export { divBig } from "./operations/div";
+export { maxBig } from "./operations/max";
+export { minBig } from "./operations/min";
 export { modBig } from "./operations/mod";
+export { mulBig } from "./operations/mul";
 export { powBig } from "./operations/pow";
 export { sqrtBig } from "./operations/sqrt";
-export { absBig } from "./operations/abs";
-export { compareBig } from "./operations/compare";
-export { minBig } from "./operations/min";
-export { maxBig } from "./operations/max";
-
+export { subBig } from "./operations/sub";
+// types
+export type { BigValue, CompareResult, PossibleNumber, RoundingMode } from "./types";
+export { alignScale } from "./utils/align-scale";
+export { cloneBig } from "./utils/clone";
+export { createBig } from "./utils/create";
+export { fromString } from "./utils/from-string";
 // utils
 export { isBigObject } from "./utils/is-big-object";
 export { isNumericValue } from "./utils/numeric";
-export { alignScale } from "./utils/align-scale";
-export { createBig } from "./utils/create";
-export { cloneBig } from "./utils/clone";
-export { fromString } from "./utils/from-string";

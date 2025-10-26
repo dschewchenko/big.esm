@@ -1,7 +1,14 @@
 import { expect, suite, test } from "vitest";
 import { Big, maxBig } from "../../src";
 
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
+import {
+  bigints,
+  numbers,
+  numbersNegative,
+  stringsDifferentScale,
+  stringsDifferentScaleNegative,
+  zero
+} from "../test-data";
 
 suite("Big max", () => {
   test("returns the maximum of two Big instances with zero values", () => {
@@ -68,7 +75,7 @@ suite("Big max", () => {
 
     // check if the first Big instance is returned and was mutated
     expect(max).toStrictEqual(big1);
-    big1.value = BigInt(1)
+    big1.value = BigInt(1);
     expect(max).toStrictEqual(big1);
   });
 
@@ -92,7 +99,7 @@ suite("Big max", () => {
 
     // check if the second Big instance is returned and was not mutated
     expect(max).toStrictEqual(big1);
-    big1.value = BigInt(1)
+    big1.value = BigInt(1);
     expect(max).not.toStrictEqual(big1);
   });
 });

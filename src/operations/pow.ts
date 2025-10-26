@@ -1,5 +1,5 @@
-import { createBig } from "../utils/create";
 import type { Big } from "../big";
+import { createBig } from "../utils/create";
 
 /**
  * Raises a Big number to the power of another Big number.

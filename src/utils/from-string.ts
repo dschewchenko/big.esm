@@ -1,6 +1,6 @@
+import type { Big } from "../big";
+import type { BigObject } from "../types";
 import { ZERO_BIGINT } from "./constants";
-import { Big } from "../big";
-import { BigObject } from "../types";
 import { createBig } from "./create";
 
 /**
@@ -26,13 +26,9 @@ import { createBig } from "./create";
 export function fromString<Type extends boolean>(
   num: string | number,
   ignoreFraction?: boolean,
-  returnInstance?: Type)
-  : Type extends true ? Big : BigObject;
-export function fromString(
-  num: string | number,
-  ignoreFraction = false,
-  returnInstance = true
-): Big | BigObject {
+  returnInstance?: Type
+): Type extends true ? Big : BigObject;
+export function fromString(num: string | number, ignoreFraction = false, returnInstance = true): Big | BigObject {
   // Convert number to string for processing
   const strNum = num.toString();
 
@@ -44,10 +40,11 @@ export function fromString(
 
   // Split the number into its base and exponent
   let [base, exponent] = strNum.split("e");
+  const exponentPart = exponent ?? "0";
 
   // Store the sign of the number
   const sign = base.startsWith("-") ? "-" : "";
-  base = sign ? base.slice(1) : base;  // remove sign from base
+  base = sign ? base.slice(1) : base; // remove sign from base
 
   // Split the base into integer and fractional parts
   let [integer, fraction = ""] = base.split(".");
@@ -55,7 +52,7 @@ export function fromString(
   fraction = ignoreFraction ? "" : fraction;
 
   // Convert the exponent to an integer
-  const exponentInt = Number.parseInt(exponent);
+  const exponentInt = Number.parseInt(exponentPart, 10);
 
   if (exponentInt > 0) {
     const move = Math.min(exponentInt, fraction.length);

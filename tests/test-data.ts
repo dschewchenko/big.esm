@@ -21,4 +21,7 @@ export const stringsDifferentScale = ["12345678901234567890.12345", "98765432109
 export const stringsDifferentScaleNegative = ["-12345678901234567890.12345", "98765432109876543210.9876543210"];
 
 // String with different fraction length and negative exponent
-export const stringsDifferentScaleNegativeExponent = ["-12345678901234567890.12345e-3", "98765432109876543210.9876543210e-3"];
+export const stringsDifferentScaleNegativeExponent = [
+  "-12345678901234567890.12345e-3",
+  "98765432109876543210.9876543210e-3"
+];

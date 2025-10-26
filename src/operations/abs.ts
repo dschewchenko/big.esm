@@ -1,6 +1,6 @@
-import { createBig } from "../utils/create";
 import type { Big } from "../big";
 import { ZERO_BIGINT } from "../utils/constants";
+import { createBig } from "../utils/create";
 
 /**
  * Returns the absolute value of a Big instance.

@@ -1,10 +1,17 @@
 import { expect, suite, test } from "vitest";
 import { Big, minBig } from "../../src";
 
-import { bigints, numbers, numbersNegative, stringsDifferentScale, stringsDifferentScaleNegative, zero } from "../test-data";
+import {
+  bigints,
+  numbers,
+  numbersNegative,
+  stringsDifferentScale,
+  stringsDifferentScaleNegative,
+  zero
+} from "../test-data";
 
 suite("Big min", () => {
-test("returns the minimum of two Big instances with zero values", () => {
+  test("returns the minimum of two Big instances with zero values", () => {
     const [a, b] = zero;
     const big1 = new Big(a);
     const big2 = new Big(b);

@@ -1,6 +1,6 @@
-import { createBig } from "../utils/create";
-import { alignScale } from "../utils/align-scale";
 import type { Big } from "../big";
+import { alignScale } from "../utils/align-scale";
+import { createBig } from "../utils/create";
 
 /**
  * Adds two big values.

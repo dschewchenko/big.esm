@@ -1,6 +1,6 @@
-import { compareBig } from "./compare";
-import { cloneBig } from "../utils/clone";
 import type { Big } from "../big";
+import { cloneBig } from "../utils/clone";
+import { compareBig } from "./compare";
 
 /**
  * Returns the minimum of two Big numbers.
@@ -19,4 +19,5 @@ import type { Big } from "../big";
  * minBig(new Big(1), new Big(1)); // new Big instance with value 1 (first Big number)
  * minBig(new Big(1), new Big(1), true); // first Big number with value 1 and same instance
  */
-export const minBig = (a: Big, b: Big, mutable = false) => compareBig(a, b) > 0 ? mutable ? b : cloneBig(b) : mutable ? a : cloneBig(a);
+export const minBig = (a: Big, b: Big, mutable = false) =>
+  compareBig(a, b) > 0 ? (mutable ? b : cloneBig(b)) : mutable ? a : cloneBig(a);

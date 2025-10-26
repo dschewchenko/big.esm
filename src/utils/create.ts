@@ -49,6 +49,6 @@ export function createBig(value: PossibleNumber, scale: number | string | undefi
 export function createBig(value: BigValue, scale?: number | string | undefined): Big {
   // issue with the type definition for the Big constructor
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-expect-error
   return value instanceof Big ? value : new Big(value, scale);
 }
