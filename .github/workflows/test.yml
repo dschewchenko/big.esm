@@ -46,7 +46,7 @@ jobs:
       - name: Download base coverage summary
         if: github.event_name == 'pull_request'
         id: download_base
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: test.yml
           branch: ${{ github.event.repository.default_branch }}
