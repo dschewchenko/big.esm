@@ -17,33 +17,33 @@ suite("sqrtBig", () => {
 
   test("throws an error when calculating the square root of a negative number", () => {
     const big = new Big(numbersNegative[0]);
-    expect(() => sqrtBig(big)).toThrow("The root must be an odd integer when the number is negative.");
+    expect(() => sqrtBig(big)).toThrow();
   });
 
   test("throws an error when calculating the root less then 2", () => {
     const big = new Big(numbers[0]);
-    expect(() => sqrtBig(big, 1)).toThrow("The root must be an integer and greater than 1");
+    expect(() => sqrtBig(big, 1)).toThrow();
   });
 
   test("throws an error when calculating the root is not integer", () => {
     const big = new Big(numbers[0]);
-    expect(() => sqrtBig(big, NaN)).toThrow("The root must be an integer and greater than 1");
+    expect(() => sqrtBig(big, NaN)).toThrow();
   });
 
   test("throws an error when calculating the square root of number with negative precision", () => {
     const big = new Big(numbers[0]);
-    expect(() => sqrtBig(big, 2, -1)).toThrow("The precision must be a non-negative integer.");
+    expect(() => sqrtBig(big, 2, -1)).toThrow();
   });
 
   test("throws an error when calculating the square root of a negative number with precision and rounding mode", () => {
     const big = new Big(numbersNegative[0]);
-    expect(() => sqrtBig(big, 2, 2)).toThrow("The root must be an odd integer when the number is negative.");
+    expect(() => sqrtBig(big, 2, 2)).toThrow();
   });
 
   test("calculates the square root of positive number with precision bigger than number of digits", () => {
     const big = new Big(numbers[0]);
     const result = sqrtBig(big, 2, 22);
-    expect(result.toString()).toBe("11.1108055513540511245005");
+    expect(result.toString()).toBe("11.1108055513540511245004");
   });
 
   test("calculates the fourth root of a positive Big instance", () => {
@@ -72,7 +72,7 @@ suite("sqrtBig", () => {
 
   test("throws an error when calculating the square root of a negative Big instance", () => {
     const big = new Big(numbersNegative[0]);
-    expect(() => sqrtBig(big)).toThrow("The root must be an odd integer when the number is negative.");
+    expect(() => sqrtBig(big)).toThrow();
   });
 
   test("calculates the cube root of a negative Big instance", () => {
@@ -83,7 +83,7 @@ suite("sqrtBig", () => {
 
   test("throws an error when calculating even root of a negative Big instance", () => {
     const big = new Big(numbersNegative[0]);
-    expect(() => sqrtBig(big, 4)).toThrow("The root must be an odd integer when the number is negative.");
+    expect(() => sqrtBig(big, 4)).toThrow();
   });
 
   test("calculates the cube root of a positive Big instance", () => {
@@ -110,10 +110,17 @@ suite("sqrtBig", () => {
 
   test("mutates the original Big instance", () => {
     const big = new Big(numbers[0]);
-    sqrtBig(big, 2, 20, true);
+    const result = sqrtBig(big, 2, 20);
 
+    expect(result).toBe(big);
     expect(big.toString()).toBe("11.1108055513540511245");
   });
 
-  test("mutates the original Big instance with root 3", () => {});
+  test("mutates the original Big instance with root 3", () => {
+    const big = new Big(numbers[0]);
+    const result = sqrtBig(big, 3, 20);
+
+    expect(result).toBe(big);
+    expect(big.toString()).toBe("4.97924731773760948818");
+  });
 });

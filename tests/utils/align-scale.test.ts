@@ -68,20 +68,20 @@ suite("Big utils alignScale", () => {
     expect(b.value.toString()).toBe(BigInt("987654321098765432109876543210").toString());
   });
 
-  test("mutate scale of a Big instances", () => {
+  test("mutates scale of Big instances", () => {
     const a = new Big(numbers[0]);
     const b = new Big(numbers[1]);
-    alignScale(a, b, true);
+    alignScale(a, b);
     expect(a.scale).toBe(3);
     expect(b.scale).toBe(3);
     expect(a.value.toString()).toBe(BigInt(numbers[0] * 1000).toString());
     expect(b.value.toString()).toBe(BigInt(numbers[1] * 1000).toString());
   });
 
-  test("mutate scale of a Big instances (scaleDifference > 0)", () => {
+  test("mutates scale of Big instances (scaleDifference > 0)", () => {
     const a = new Big(numbers[1]);
     const b = new Big(numbers[0]);
-    alignScale(a, b, true);
+    alignScale(a, b);
     expect(a.scale).toBe(3);
     expect(b.scale).toBe(3);
     expect(a.value.toString()).toBe(BigInt(numbers[1] * 1000).toString());

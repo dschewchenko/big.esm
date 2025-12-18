@@ -1,5 +1,6 @@
 import { Big } from "../big";
 import type { BigObject, BigValue, PossibleNumber } from "../types";
+import { isBigObject } from "./is-big-object";
 
 /**
  * Creates a new Big instance from the given value.
@@ -40,6 +41,11 @@ export function createBig(value: PossibleNumber): Big;
 export function createBig(value: PossibleNumber, scale: number | string | undefined): Big;
 
 /**
+ * Overload accepting the full BigValue union. Useful for helpers that accept any supported input.
+ */
+export function createBig(value: BigValue, scale?: number | string | undefined): Big;
+
+/**
  * Implements the overloaded function for creating a Big instance.
  * @param {BigValue} value - The value to create the Big instance from. Can be a number, string, BigInt, or another Big instance.
  * @param {number | string | undefined} [scale] - The scale for the value (optional), representing the number of decimal places. If scale provided and value has a fractional part, the fractional part will be removed.
@@ -47,8 +53,11 @@ export function createBig(value: PossibleNumber, scale: number | string | undefi
  * @category Utilities
  */
 export function createBig(value: BigValue, scale?: number | string | undefined): Big {
-  // issue with the type definition for the Big constructor
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  return value instanceof Big ? value : new Big(value, scale);
+  if (value instanceof Big) return value;
+
+  if (isBigObject(value)) {
+    return new Big((value as BigObject).value, (value as BigObject).scale);
+  }
+
+  return scale === undefined ? new Big(value as PossibleNumber) : new Big(value as PossibleNumber, scale);
 }

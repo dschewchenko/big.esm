@@ -1,5 +1,4 @@
 import type { Big } from "../big";
-import { cloneBig } from "../utils/clone";
 import { compareBig } from "./compare";
 
 /**
@@ -7,17 +6,16 @@ import { compareBig } from "./compare";
  *
  * @param {Big} a - The first Big number.
  * @param {Big} b - The second Big number.
- * @param {boolean} [mutable=false] - Whether to return same Big instance. Defaults to false.
  *
- * @returns {Big} - The maximum of the two Big numbers. If the two Big numbers are equal, the first Big number is returned.
+ * @returns {Big} - Returns either `a` or `b`. If the two numbers are equal, `a` is returned.
  *
  * @category Operations
  *
  * @example
- * maxBig(new Big(1), new Big(2)); // new Big instance with value 2 (second Big number)
- * maxBig(new Big(2), new Big(1)); // new Big instance with value 2 (first Big number)
- * maxBig(new Big(1), new Big(1)); // new Big instance with value 1 (first Big number)
- * maxBig(new Big(1), new Big(1), true); // first Big number with value 1 and same instance
+ * maxBig(new Big(1), new Big(2)); // returns the second Big number
+ * maxBig(new Big(2), new Big(1)); // returns the first Big number
+ * maxBig(new Big(1), new Big(1)); // returns the first Big number
  */
-export const maxBig = (a: Big, b: Big, mutable = false) =>
-  compareBig(a, b) >= 0 ? (mutable ? a : cloneBig(a)) : mutable ? b : cloneBig(b);
+export function maxBig(a: Big, b: Big): Big {
+  return compareBig(a, b) >= 0 ? a : b;
+}

@@ -56,7 +56,8 @@ suite("Big mod", () => {
   test("mutable dividend", () => {
     const dividend = new Big(numbers[0]);
     const divisor = new Big(numbers[1]);
-    const result = modBig(dividend, divisor, true);
+    const result = modBig(dividend, divisor);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("1.248");
     expect(dividend.toString()).toBe("1.248");
   });

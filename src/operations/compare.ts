@@ -1,6 +1,6 @@
 import type { Big } from "../big";
 import type { CompareResult } from "../types";
-import { alignScale } from "../utils/align-scale";
+import { pow10 } from "../utils/pow10";
 
 /**
  * Compares two Big numbers and returns a CompareResult indicating the relation between them.
@@ -17,12 +17,21 @@ import { alignScale } from "../utils/align-scale";
  * compareBig(new Big(1), new Big(1)); // 0
  */
 export const compareBig = (a: Big, b: Big): CompareResult => {
-  // Align the scales of the two Big numbers using the `alignScale` utility function
-  const [alignA, alignB] = alignScale(a, b);
+  const scaleDifference = a.scale - b.scale;
+
+  if (scaleDifference === 0) {
+    if (a.value > b.value) return 1;
+    if (a.value < b.value) return -1;
+    return 0;
+  }
+
+  const multiplier = pow10(Math.abs(scaleDifference));
+  const alignAValue = scaleDifference > 0 ? a.value : a.value * multiplier;
+  const alignBValue = scaleDifference < 0 ? b.value : b.value * multiplier;
 
   // Compare the values of the aligned Big numbers
-  if (alignA.value > alignB.value) return 1;
-  if (alignA.value < alignB.value) return -1;
+  if (alignAValue > alignBValue) return 1;
+  if (alignAValue < alignBValue) return -1;
 
   // If the values are equal, return 0
   return 0;

@@ -1,8 +1,6 @@
 import type { BigObject, BigValue, PossibleNumber } from "./types";
-import { ZERO_BIGINT } from "./utils/constants";
 import { fromString } from "./utils/from-string";
 import { isBigObject } from "./utils/is-big-object";
-import { isNumericValue } from "./utils/numeric";
 import { trimZeros } from "./utils/trim-zeros";
 
 /**
@@ -64,35 +62,44 @@ export class Big {
    * @return {Big} - A new Big instance.
    */
   constructor(value: BigValue, scale?: number | string) {
-    // If the value is a Big instance, copy the value and scale.
+    if (value instanceof Big) {
+      this.value = value.value;
+      this.scale = value.scale;
+      return;
+    }
+
     if (isBigObject(value)) {
       this.value = value.value;
       this.scale = value.scale;
-      // If the value is a number, string, or BigInt, convert it to a BigInt and set the scale.
-    } else if (isNumericValue(value)) {
-      let scaleDefined = scale !== undefined;
-      if (scaleDefined) {
-        // Convert the scale to a number
-        if (typeof scale !== "number") scale = Number(scale);
-
-        // Remove the fractional part
-        scaleDefined = !Number.isNaN(scale);
-        scale = scaleDefined ? Math.floor(scale) : 0;
-      }
-
-      // if the value is bigint, skip string parsing
-      if (typeof value === "bigint") {
-        this.value = value;
-        this.scale = scaleDefined ? (scale as number) : 0;
-      } else {
-        // Parse the value from a string or number
-        const { value: valueBigint, scale: parsedScale } = fromString(value, scaleDefined, false);
-        this.value = valueBigint;
-        this.scale = scaleDefined ? (scale as number) : parsedScale;
-      }
-    } else {
-      throw new TypeError("Invalid type provided to Big constructor.");
+      return;
     }
+
+    if (typeof value === "object" && value !== null) {
+      throw new TypeError("Big");
+    }
+
+    let scaleDefined = scale !== undefined;
+    let scaleNumber = 0;
+    if (scaleDefined) {
+      scaleNumber = typeof scale === "number" ? scale : Number(scale);
+      scaleDefined = !Number.isNaN(scaleNumber);
+      if (scaleDefined) scaleNumber = Math.floor(scaleNumber);
+    }
+
+    if (typeof value === "bigint") {
+      this.value = value;
+      this.scale = scaleDefined ? scaleNumber : 0;
+      return;
+    }
+
+    if (typeof value === "number" || typeof value === "string") {
+      const { value: valueBigint, scale: parsedScale } = fromString(value, scaleDefined, false);
+      this.value = valueBigint;
+      this.scale = scaleDefined ? scaleNumber : parsedScale;
+      return;
+    }
+
+    throw new TypeError("Big");
   }
 
   /**
@@ -110,15 +117,16 @@ export class Big {
    * @param {boolean} [shouldTrimZeros=true] - Whether to trim trailing zeros from the fractional part. Defaults to true.
    * @return {string} - A string representation of the Big instance.
    */
-  toString(shouldTrimZeros = true): string {
+  toString(shouldTrimZeros: boolean = true): string {
     let integerPart = this.value.toString();
     const sign = integerPart.startsWith("-") ? "-" : "";
     if (sign) integerPart = integerPart.substring(1);
     let fractionPart = "";
 
-    if (this.scale > ZERO_BIGINT) {
-      const digits = integerPart.length > this.scale ? integerPart.length - Number(this.scale) : 0;
-      fractionPart = integerPart.slice(digits).padStart(Number(this.scale), "0");
+    const scale = this.scale;
+    if (scale > 0) {
+      const digits = integerPart.length > scale ? integerPart.length - scale : 0;
+      fractionPart = integerPart.slice(digits).padStart(scale, "0");
 
       if (shouldTrimZeros) {
         fractionPart = trimZeros(fractionPart);

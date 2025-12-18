@@ -14,7 +14,8 @@
     "docs": "bunx typedoc --out docs",
     "lint": "bunx biome check",
     "lint:fix": "bun run lint -- --write",
-    "benchmark": "bun benchmark.js",
+    "benchmark": "bun benchmarks/benchmark.js",
+    "benchmark:weight": "bun benchmarks/size-compare.js",
     "semantic-release": "bunx semantic-release",
     "prepare": "bunx is-ci || bunx husky"
   },
