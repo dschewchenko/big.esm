@@ -16,6 +16,7 @@ suite("Big subtracts", () => {
     const big2 = new Big(b);
 
     const result = subBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("0");
   });
 
@@ -25,6 +26,7 @@ suite("Big subtracts", () => {
     const big2 = new Big(b);
 
     const result = subBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("116.661");
   });
 
@@ -34,6 +36,7 @@ suite("Big subtracts", () => {
     const big2 = new Big(b);
 
     const result = subBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("-130.239");
   });
 
@@ -43,6 +46,7 @@ suite("Big subtracts", () => {
     const big2 = new Big(b);
 
     const result = subBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("-87654321098765432109");
   });
 
@@ -52,6 +56,7 @@ suite("Big subtracts", () => {
     const big2 = new Big(b);
 
     const result = subBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("-86419753208641975320.864204321");
   });
 
@@ -61,16 +66,7 @@ suite("Big subtracts", () => {
     const big2 = new Big(b);
 
     const result = subBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("-111111111011111111101.111104321");
-  });
-
-  test("mutates the first Big instance when the mutable parameter is true", () => {
-    const [a, b] = numbers;
-    const big1 = new Big(a);
-    const big2 = new Big(b);
-
-    const result = subBig(big1, big2, true);
-    expect(result.toString()).toBe("116.661");
-    expect(big1.toString()).toBe("116.661");
   });
 });

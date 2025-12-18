@@ -66,40 +66,14 @@ suite("Big max", () => {
     expect(max).toStrictEqual(big2);
   });
 
-  test("returns the maximum of two Big instances with zero values and mutable flag and mutates first Big instance", () => {
-    const [a, b] = zero;
-    const big1 = new Big(a);
-    const big2 = new Big(b);
-
-    const max = maxBig(big1, big2, true);
-
-    // check if the first Big instance is returned and was mutated
-    expect(max).toStrictEqual(big1);
-    big1.value = BigInt(1);
-    expect(max).toStrictEqual(big1);
-  });
-
-  test("returns the maximum of two Big instances with number values and mutable flag and mutates second Big instance", () => {
-    const [a, b] = bigints;
-    const big1 = new Big(a);
-    const big2 = new Big(b);
-
-    const max = maxBig(big1, big2, true);
-    // check if the first Big instance is returned and was not mutated
-    expect(max).toStrictEqual(big2);
-    big2.value = BigInt(1);
-    expect(max).toStrictEqual(big2);
-  });
-
-  test("returns the maximum of two numbers with different scales and after mutating the first Big instance will not return the mutated value", () => {
+  test("returns the same instance (no cloning)", () => {
     const big1 = new Big(numbers[0]);
     const big2 = new Big(numbers[1]);
 
     const max = maxBig(big1, big2);
 
-    // check if the second Big instance is returned and was not mutated
     expect(max).toStrictEqual(big1);
     big1.value = BigInt(1);
-    expect(max).not.toStrictEqual(big1);
+    expect(max).toStrictEqual(big1);
   });
 });

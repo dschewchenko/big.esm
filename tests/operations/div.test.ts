@@ -22,6 +22,7 @@ suite("Big div", () => {
     const dividend = new Big(numbers[0]);
     const divisor = new Big(numbers[1]);
     const result = divBig(dividend, divisor);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("18.18382677861246133451");
   });
 
@@ -29,6 +30,7 @@ suite("Big div", () => {
     const dividend = new Big(numbersNegative[0]);
     const divisor = new Big(numbersNegative[1]);
     const result = divBig(dividend, divisor);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("-18.18382677861246133451");
   });
 
@@ -36,6 +38,7 @@ suite("Big div", () => {
     const dividend = new Big(numbers[0]);
     const divisor = new Big(numbers[1]);
     const result = divBig(dividend, divisor, 2, "down");
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("18.18");
   });
 
@@ -43,6 +46,7 @@ suite("Big div", () => {
     const dividend = new Big(numbers[0]);
     const divisor = new Big(numbers[1]);
     const result = divBig(dividend, divisor, 2, "up");
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("18.19");
   });
 
@@ -50,6 +54,7 @@ suite("Big div", () => {
     const dividend = new Big(numbers[0]);
     const divisor = new Big(numbers[1]);
     const result = divBig(dividend, divisor, 0, "up");
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("19");
   });
 
@@ -57,6 +62,7 @@ suite("Big div", () => {
     const dividend = new Big("4");
     const divisor = new Big("2");
     const result = divBig(dividend, divisor, 0, "up");
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("2");
   });
 
@@ -64,6 +70,7 @@ suite("Big div", () => {
     const dividend = new Big(bigints[0]);
     const divisor = new Big(bigints[1]);
     const result = divBig(dividend, divisor);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("0.1234567890123456789");
   });
 
@@ -71,6 +78,7 @@ suite("Big div", () => {
     const dividend = new Big(bigints[0]);
     const divisor = new Big(bigints[1]);
     const result = divBig(dividend, divisor, 2);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("0.12");
   });
 
@@ -78,6 +86,7 @@ suite("Big div", () => {
     const dividend = new Big(stringsDifferentScale[0]);
     const divisor = new Big(stringsDifferentScale[1]);
     const result = divBig(dividend, divisor);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("0.12499999886093750001");
   });
 
@@ -85,6 +94,7 @@ suite("Big div", () => {
     const dividend = new Big(stringsDifferentScaleNegative[0]);
     const divisor = new Big(stringsDifferentScaleNegative[1]);
     const result = divBig(dividend, divisor);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("-0.12499999886093750001");
   });
 
@@ -92,6 +102,7 @@ suite("Big div", () => {
     const dividend = new Big(numbers[0]);
     const divisor = new Big(numbers[1]);
     const result = divBig(dividend, divisor, 4);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("18.1838");
   });
 
@@ -99,6 +110,7 @@ suite("Big div", () => {
     const dividend = new Big(numbersNegative[0]);
     const divisor = new Big(numbersNegative[1]);
     const result = divBig(dividend, divisor, 3);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("-18.183");
   });
 
@@ -106,6 +118,7 @@ suite("Big div", () => {
     const dividend = new Big(bigints[0]);
     const divisor = new Big(bigints[1]);
     const result = divBig(dividend, divisor, 5);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("0.12346");
   });
 
@@ -113,6 +126,7 @@ suite("Big div", () => {
     const dividend = new Big(stringsDifferentScale[0]);
     const divisor = new Big(stringsDifferentScale[1]);
     const result = divBig(dividend, divisor, 7);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("0.125");
   });
 
@@ -120,13 +134,14 @@ suite("Big div", () => {
     const dividend = new Big(stringsDifferentScaleNegative[0]);
     const divisor = new Big(stringsDifferentScaleNegative[1]);
     const result = divBig(dividend, divisor, 6);
+    expect(result).toBe(dividend);
     expect(result.toString()).toBe("-0.124999");
   });
 
   test("mutates the dividend", () => {
     const dividend = new Big("4");
     const divisor = new Big("2");
-    const result = divBig(dividend, divisor, 0, "up", true);
+    const result = divBig(dividend, divisor, 0, "up");
     expect(result.toString()).toBe("2");
     expect(dividend.toString()).toBe("2");
   });

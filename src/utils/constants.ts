@@ -10,14 +10,14 @@ export const DEFAULT_PRECISION = 20;
  *
  * @category Constants
  */
-export const ZERO_BIGINT = BigInt(0);
+export const ZERO_BIGINT = 0n;
 
 /**
  * One as a BigInt.
  *
  * @category Constants
  */
-export const ONE_BIGINT = BigInt(1);
+export const ONE_BIGINT = 1n;
 
 /**
  * Ten as a BigInt.
@@ -25,4 +25,4 @@ export const ONE_BIGINT = BigInt(1);
  *
  * @category Constants
  */
-export const TEN_BIGINT = BigInt(10);
+export const TEN_BIGINT = 10n;

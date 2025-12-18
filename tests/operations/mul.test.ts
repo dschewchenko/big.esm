@@ -16,6 +16,7 @@ suite("Big multiply", () => {
     const big2 = new Big(b);
 
     const result = mulBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("0");
   });
 
@@ -24,6 +25,7 @@ suite("Big multiply", () => {
     const big2 = new Big(numbers[1]);
 
     const result = mulBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("838.10205");
   });
 
@@ -32,6 +34,7 @@ suite("Big multiply", () => {
     const big2 = new Big(numbersNegative[1]);
 
     const result = mulBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("-838.10205");
   });
 
@@ -40,6 +43,7 @@ suite("Big multiply", () => {
     const big2 = new Big(bigints[1]);
 
     const result = mulBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("1234567890123456788987654321098765432110");
   });
 
@@ -48,6 +52,7 @@ suite("Big multiply", () => {
     const big2 = new Big(stringsDifferentScale[1]);
 
     const result = mulBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("1219326311370217952261849656817710639370.52277861592745");
   });
 
@@ -56,15 +61,7 @@ suite("Big multiply", () => {
     const big2 = new Big(stringsDifferentScaleNegative[1]);
 
     const result = mulBig(big1, big2);
+    expect(result).toBe(big1);
     expect(result.toString()).toBe("-1219326311370217952261849656817710639370.52277861592745");
-  });
-
-  test("mutate the first Big instance when the mutable parameter is true", () => {
-    const big1 = new Big(numbers[0]);
-    const big2 = new Big(numbers[1]);
-
-    const result = mulBig(big1, big2, true);
-    expect(result.toString()).toBe("838.10205");
-    expect(big1.toString()).toBe("838.10205");
   });
 });

@@ -1,4 +1,5 @@
 import type { Big } from "../big";
+import { cloneBig } from "../utils/clone";
 import { isZero } from "../utils/is-zero";
 import { divBig } from "./div";
 import { mulBig } from "./mul";
@@ -9,8 +10,7 @@ import { subBig } from "./sub";
  *
  * @param dividend The Big instance representing the dividend.
  * @param divisor The Big instance representing the divisor.
- * @param {boolean} [mutable=false] - Whether to mutate the first Big instance. Defaults to false.
- * @returns A new Big instance representing the remainder of the division.
+ * @returns The mutated dividend instance representing the remainder of the division.
  * @throws {Error} Division by zero is not allowed.
  *
  * @category Operations
@@ -22,23 +22,13 @@ import { subBig } from "./sub";
  * console.log(modBig(big2, big1).toString()); // "3"
  * console.log(modBig(big1, big1).toString()); // "0"
  */
-export function modBig(dividend: Big, divisor: Big, mutable = false): Big {
-  // Check if the divisor is zero, throw an error
+export function modBig(dividend: Big, divisor: Big): Big {
   if (isZero(divisor)) {
-    throw new Error("Division by zero is not allowed.");
+    throw new Error("Div0");
   }
 
-  // Calculate the quotient using the divBig function with precision 0 and rounding mode "down"
-  const quotient = divBig(dividend, divisor, 0, "down");
-
-  if (mutable) {
-    mulBig(quotient, divisor, true);
-    return subBig(dividend, quotient, true);
-  }
-
-  // Calculate the product of the quotient and divisor
-  const product = mulBig(quotient, divisor);
-
-  // Subtract the product from the dividend to get the remainder
-  return subBig(dividend, product);
+  const quotient = cloneBig(dividend);
+  divBig(quotient, divisor, 0, "down");
+  mulBig(quotient, divisor);
+  return subBig(dividend, quotient);
 }
