@@ -1,3 +1,13 @@
+# [2.0.0](https://github.com/dschewchenko/big.esm/compare/v1.3.2...v2.0.0) (2025-12-18)
+
+
+* feat!: big.esm v2 rewrite core ([#31](https://github.com/dschewchenko/big.esm/issues/31)) ([5d05e63](https://github.com/dschewchenko/big.esm/commit/5d05e63b425eaf07722859bd1ff354ec97aaad13))
+
+
+### BREAKING CHANGES
+
+* operations + alignScale now mutate inputs. Сlone with cloneBig for immutability.
+
 ## [1.3.2](https://github.com/dschewchenko/big.esm/compare/v1.3.1...v1.3.2) (2025-10-26)
 
 
