@@ -1,7 +1,7 @@
-import type { BigObject, BigValue, PossibleNumber } from "./types";
-import { fromString } from "./utils/from-string";
-import { isBigObject } from "./utils/is-big-object";
-import { trimZeros } from "./utils/trim-zeros";
+import type { BigObject, BigValue, PossibleNumber } from "./types.js";
+import { fromString } from "./utils/from-string.js";
+import { isBigObject } from "./utils/is-big-object.js";
+import { trimZeros } from "./utils/trim-zeros.js";
 
 /**
  * The Big class for working with large numbers and fractions using BigInt.

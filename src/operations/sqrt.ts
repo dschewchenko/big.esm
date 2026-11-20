@@ -1,7 +1,7 @@
-import type { Big } from "../big";
-import { boundedRoot } from "../utils/bounded-root";
-import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants";
-import { pow10 } from "../utils/pow10";
+import type { Big } from "../big.js";
+import { boundedRoot } from "../utils/bounded-root.js";
+import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants.js";
+import { pow10 } from "../utils/pow10.js";
 
 /**
  * Calculates the real nth root of a Big instance and mutates it with the result.

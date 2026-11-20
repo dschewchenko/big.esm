@@ -1,7 +1,7 @@
-import type { Big } from "../big";
-import { compareAbsoluteScaled } from "../utils/decimal-magnitude";
-import { isZero } from "../utils/is-zero";
-import { pow10 } from "../utils/pow10";
+import type { Big } from "../big.js";
+import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
+import { isZero } from "../utils/is-zero.js";
+import { pow10 } from "../utils/pow10.js";
 
 /**
  * Performs the modulo operation (remainder of division) for two Big instances.

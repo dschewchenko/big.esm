@@ -1,4 +1,4 @@
-import type { Big } from "../big";
+import type { Big } from "../big.js";
 
 /**
  * Raises a Big number to the power and mutates the base instance.

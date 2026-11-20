@@ -1,4 +1,4 @@
-import type { Big } from "./big";
+import type { Big } from "./big.js";
 
 /**
  * The object type for the Big class.

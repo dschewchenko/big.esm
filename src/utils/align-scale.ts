@@ -1,6 +1,6 @@
-import type { Big } from "../big";
-import { ZERO_BIGINT } from "./constants";
-import { pow10 } from "./pow10";
+import type { Big } from "../big.js";
+import { ZERO_BIGINT } from "./constants.js";
+import { pow10 } from "./pow10.js";
 
 /**
  * Aligns the scale(decimal places) of two Big instances before performing arithmetic operations.
