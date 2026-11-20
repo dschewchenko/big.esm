@@ -1,3 +1,14 @@
+# [3.0.0](https://github.com/dschewchenko/big.esm/compare/v2.0.1...v3.0.0) (2026-11-20)
+
+
+* feat!: ship only ESM ([0c0309a](https://github.com/dschewchenko/big.esm/commit/0c0309a9c129c353f35284f7b699d03a582fade4))
+
+
+### BREAKING CHANGES
+
+* CommonJS entry points were removed. Use a static
+or dynamic ESM import to load big.esm.
+
 ## [2.0.1](https://github.com/dschewchenko/big.esm/compare/v2.0.0...v2.0.1) (2026-11-20)
 
 
