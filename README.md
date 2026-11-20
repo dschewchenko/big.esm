@@ -7,9 +7,9 @@ Library for working with large numbers and fractions using `BigInt`.
 It provides advanced functionality for performing arithmetic operations with precision and decimal handling.
 [Documentation](https://dschewchenko.github.io/big.esm/).
 
-- 100% test coverage.
+- Tests cover arithmetic, parsing, and package exports.
 - No dependencies.
-- No limitations on the size of the numbers, except for the limitations of `BigInt`, so limited by system memory =)
+- Arbitrary precision within the runtime's limits for integer arithmetic and string output.
 - Fully written in TypeScript, so it provides type definitions out of the box.
 - Tree-shaking is supported.
 
@@ -63,6 +63,17 @@ console.log(
 
 More info - [BENCHMARK.md](https://github.com/dschewchenko/big.esm/blob/main/BENCHMARK.md)
 
+To compare two separately built ESM artifacts using isolated processes and alternating execution order:
+
+```bash
+bun run benchmark:compare --baseline /path/to/baseline/big.esm.js --current /path/to/current/big.esm.js --repeats 5
+node --expose-gc benchmarks/benchmark.js --baseline /path/to/baseline/big.esm.js --current /path/to/current/big.esm.js --repeats 5
+```
+
+The JSON output includes timings, result validation against big.js, retained heap deltas after garbage collection, and peak process RSS. RSS includes the runtime and is not a direct measurement of library allocations. Each run prints JSON to standard output without modifying the documentation or deleting previous benchmark results.
+
+The figures below are historical measurements from 2025 using the previous benchmark methodology.
+
 - **Speed (ops)**: `big.esm v2` vs `big.js` — `26.26x faster` (median; min `2.17x`, max `154.43x`) → `2.26x faster` than `big.esm v1` (mutable mode; median `11.63x` vs `big.js`).
 - **Speed (pipeBig)**: `pipeBig` vs `big.js` — `29.8x faster` (median; min `2.84x`, max `148.27x`).
 - **Size (full)**: `big.esm v2` — `5.25 KB` minified / `1.87 KB` brotli (≈`1.30x` / `1.46x` smaller than `big.js`).
@@ -98,7 +109,7 @@ More information in the [documentation](https://dschewchenko.github.io/big.esm/)
 
 Creates a `Big` instance from a `string`, `number`, `bigint`, `Big`, or `BigObject`. Preferred constructor helper. 
 
-The scale is the number of digits to the right of the decimal point. If the scale is not specified, it will be calculated automatically, otherwise the number will be rounded to integer.
+The scale controls the position of the decimal point. If omitted, it is calculated automatically. If specified, the input is truncated toward zero to obtain the integer coefficient before the scale is applied. For example, `createBig("1.5e3", 2)` represents `15`, and `createBig(1n, -2)` represents `100`.
 
 ### Utilities
 
@@ -132,7 +143,7 @@ Multiplies `a` by `b` (mutates `a`).
 
 #### `divBig(a: Big, b: Big, precision = 20, roundingMode = "half-up"): Big`
 
-Divides `a` by `b` (mutates `a`).
+Divides `a` by `b` (mutates `a`). Precision is a non-negative integer number of decimal places. `half-up` rounds ties away from zero, `down` rounds toward zero, and `up` rounds away from zero.
 
 #### `modBig(a: Big, b: Big): Big`
 
@@ -144,7 +155,7 @@ Raises `a` to `exp` (mutates `a`).
 
 #### `sqrtBig(a: Big, root = 2, precision = 20): Big`
 
-Calculates the root of `a` (mutates `a`).
+Calculates the real integer-degree root of `a` (mutates `a`). The degree must be an integer of at least 2. Odd roots accept negative inputs. Results are rounded to the requested number of decimal places, with ties away from zero.
 
 #### `absBig(a: Big): Big`
 
