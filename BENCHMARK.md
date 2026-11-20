@@ -1,8 +1,10 @@
 # Benchmark
 
-Benchmarks compare `big.esm` (current build) vs `big.js`.
+> The results below are historical measurements from 2025 using the previous benchmark methodology. The current `benchmarks/benchmark.js` validates results and runs samples in isolated processes; its output is not directly comparable to the figures below.
 
-Speed benchmarks use `50_000` iterations per operation (median of 3 runs).
+The speed benchmark compares built `big.esm` artifacts with `big.js`, validating results before timing.
+
+The historical speed measurements used `50_000` iterations per operation (median of 3 runs).
 Size benchmarks use `bun build --minify` + Brotli quality `11` (minified + brotli sizes).
 
 ## Run
@@ -10,8 +12,11 @@ Size benchmarks use `bun build --minify` + Brotli quality `11` (minified + brotl
 ```bash
 bun run build
 
-# speed (writes benchmarks/results/<timestamp>_speed.md)
+# speed: isolated processes; prints JSON without changing files
 bun run benchmark
+
+# compare two separately built versions
+bun run benchmark:compare --baseline /path/to/before.js --current /path/to/after.js
 
 # size (writes benchmarks/results/<timestamp>_weight.md)
 bun run benchmark:weight
