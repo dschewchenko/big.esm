@@ -1,0 +1,14 @@
+{
+  "name": "big-esm-docs",
+  "private": true,
+  "scripts": {
+    "generate": "bun run --bun typedoc --options ../../typedoc.json"
+  },
+  "devDependencies": {
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-mdn-links": "^5.1.1",
+    "typedoc-plugin-merge-modules": "^7.0.0",
+    "typedoc-plugin-pages": "^1.1.0",
+    "typescript": "6.0.3"
+  }
+}
