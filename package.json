@@ -1,6 +1,6 @@
 {
   "name": "big.esm",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A small, fast JavaScript library for arbitrary-precision decimal arithmetic.",
   "type": "module",
   "scripts": {
