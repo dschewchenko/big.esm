@@ -1,3 +1,11 @@
+## [2.0.1](https://github.com/dschewchenko/big.esm/compare/v2.0.0...v2.0.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* correct decimal arithmetic and rounding ([c2c9836](https://github.com/dschewchenko/big.esm/commit/c2c9836a62992eccfe0459de52508c51683845ff))
+* support named imports in Node.js ([65518c3](https://github.com/dschewchenko/big.esm/commit/65518c361fad17ba2a67247962965ca2bebfc32b))
+
 # [2.0.0](https://github.com/dschewchenko/big.esm/compare/v1.3.2...v2.0.0) (2025-12-18)
 
 
