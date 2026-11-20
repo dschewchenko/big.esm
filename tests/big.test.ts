@@ -96,10 +96,10 @@ suite("Big", () => {
     expect(big6.scale).toBe(2);
   });
 
-  test("construction from string with scale isNaN", () => {
-    const big6 = new Big("123.45", "abc");
-    expect(big6.valueOf()).toBe(BigInt(12345));
-    expect(big6.scale).toBe(2);
+  test("calculates scale when a string scale is not numeric", () => {
+    const big = new Big("123.45", "abc");
+    expect(big.value).toBe(12345n);
+    expect(big.scale).toBe(2);
   });
 
   test("construction from string with decimal places", () => {

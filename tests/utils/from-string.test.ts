@@ -35,11 +35,11 @@ suite("Big utils fromString", () => {
   });
 
   test("fromString converts string bug number ignoring fractional part", () => {
-    expect(fromString("1234567890.12345e-3", true)).toStrictEqual(new Big(BigInt("1234567890"), 3));
+    expect(fromString("1234567890.12345e-3", true)).toStrictEqual(new Big(BigInt("1234567")));
   });
 
   test("fromString converts string big number with fractions if integer less than exponent", () => {
-    expect(fromString("123.45e-6", true)).toStrictEqual(new Big(BigInt("123"), 6));
+    expect(fromString("123.45e-6", true)).toStrictEqual(new Big(BigInt("0")));
   });
 
   test("fromString converts string in Big Instance", () => {

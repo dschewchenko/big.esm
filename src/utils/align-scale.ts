@@ -1,4 +1,5 @@
 import type { Big } from "../big";
+import { ZERO_BIGINT } from "./constants";
 import { pow10 } from "./pow10";
 
 /**
@@ -17,28 +18,19 @@ import { pow10 } from "./pow10";
  * const a = new Big(123.456);
  * const b = new Big(123.456789);
  * const [x, y] = alignScale(a, b);
- * console.log(x.toString()); // "123.456000"
+ * console.log(x.toString(false)); // "123.456000"
  * console.log(y.toString()); // "123.456789"
  */
 export function alignScale(a: Big, b: Big): [Big, Big] {
-  // Calculate the difference in scales
   const scaleDifference = a.scale - b.scale;
-
-  // If the scales are already equal, return the original instances
-  if (scaleDifference === 0) {
-    return [a, b];
-  }
-
-  // Scale the smaller one in-place
-  const multiplier = pow10(Math.abs(scaleDifference));
+  if (scaleDifference === 0) return [a, b];
 
   if (scaleDifference > 0) {
-    b.value *= multiplier;
+    if (b.value !== ZERO_BIGINT) b.value *= pow10(scaleDifference);
     b.scale = a.scale;
-    return [a, b];
+  } else {
+    if (a.value !== ZERO_BIGINT) a.value *= pow10(-scaleDifference);
+    a.scale = b.scale;
   }
-
-  a.value *= multiplier;
-  a.scale = b.scale;
   return [a, b];
 }

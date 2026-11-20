@@ -1,6 +1,7 @@
 import type { Big } from "../big";
 import type { RoundingMode } from "../types";
 import { DEFAULT_PRECISION, ONE_BIGINT, ZERO_BIGINT } from "../utils/constants";
+import { compareAbsoluteScaled } from "../utils/decimal-magnitude";
 import { isZero } from "../utils/is-zero";
 import { pow10 } from "../utils/pow10";
 
@@ -9,21 +10,20 @@ import { pow10 } from "../utils/pow10";
  *
  * @param {Big} dividend - The dividend Big instance.
  * @param {Big} divisor - The divisor Big instance.
- * @param {number} [precision] - The number of decimal places to keep in the result (optional). Defaults to the maximum scale of both Big instances. If the precision is lower than the scale of the result, the result will be rounded. If input numbers are without scale, the precision will be 0, so the result will be rounded to an integer.
- * @param {string} [roundingMode="half-up"] - The rounding mode to apply ("half-up", "down" or "up"). Defaults to "half-up".
+ * @param {number} [precision] - The number of decimal places to keep in the result (optional). Defaults to 20.
+ * @param {string} [roundingMode="half-up"] - The rounding mode to apply: "half-up" rounds ties away from zero, "down" toward zero, and "up" away from zero.
  * @returns {Big} - The mutated dividend instance.
  * @throws {Error} Division by zero is not allowed.
  *
  * @category Operations
  *
  * @example
- * const big1 = new Big(10);
- * const big2 = new Big(3);
- * console.log(divBig(big1, big2).toString()); // "3.33333333333333333333"
- * console.log(divBig(big1, big2, 0).toString()); // "3"
- * console.log(divBig(big1, big2, 2).toString()); // "3.33"
- * console.log(divBig(big1, big2, 2, "down").toString()); // "3.33"
- * console.log(divBig(big1, big2, 2, "up").toString()); // "3.34"
+ * divBig(new Big(10), new Big(3)).toString(); // "3.33333333333333333333"
+ * divBig(new Big(10), new Big(3), 0).toString(); // "3"
+ * divBig(new Big(10), new Big(3), 2).toString(); // "3.33"
+ * divBig(new Big(10), new Big(3), 2, "down").toString(); // "3.33"
+ * divBig(new Big(10), new Big(3), 2, "up").toString(); // "3.34"
+ * divBig(new Big(-10), new Big(3), 2, "up").toString(); // "-3.34"
  */
 export function divBig(
   dividend: Big,
@@ -35,25 +35,67 @@ export function divBig(
     throw new Error("Div0");
   }
 
-  const commonScale = Math.max(dividend.scale, divisor.scale);
   const resultScale = Math.max(0, precision);
-  const adjustedDividend = dividend.value * pow10(commonScale + resultScale - dividend.scale);
-  const adjustedDivisor = divisor.value * pow10(commonScale - divisor.scale);
+  if (!Number.isSafeInteger(resultScale)) throw new Error("Prec");
+  if (dividend.value === ZERO_BIGINT) {
+    dividend.scale = resultScale;
+    return dividend;
+  }
+
+  const scaleDifference = divisor.scale - dividend.scale;
+  let exponent = scaleDifference + resultScale;
+  let safeExponent = Number.isSafeInteger(scaleDifference) && Number.isSafeInteger(exponent);
+  let exponentBig: bigint | undefined;
+  if (!safeExponent) {
+    if (!Number.isSafeInteger(dividend.scale) || !Number.isSafeInteger(divisor.scale)) throw new Error("Prec");
+    exponentBig = BigInt(divisor.scale) - BigInt(dividend.scale) + BigInt(resultScale);
+    safeExponent = exponentBig >= BigInt(Number.MIN_SAFE_INTEGER) && exponentBig <= BigInt(Number.MAX_SAFE_INTEGER);
+    if (safeExponent) exponent = Number(exponentBig);
+  }
+
+  if (!safeExponent || exponent < -255) {
+    if (exponentBig === undefined) exponentBig = BigInt(exponent);
+    const dividendMagnitude = dividend.value < ZERO_BIGINT ? -dividend.value : dividend.value;
+    const divisorMagnitude = divisor.value < ZERO_BIGINT ? -divisor.value : divisor.value;
+    if (compareAbsoluteScaled(dividendMagnitude, exponentBig, divisorMagnitude, 0n) < 0) {
+      const shouldRoundUp =
+        roundingMode === "up" ||
+        (roundingMode !== "down" &&
+          compareAbsoluteScaled(dividendMagnitude * 2n, exponentBig, divisorMagnitude, 0n) >= 0);
+      dividend.value = shouldRoundUp
+        ? dividend.value < ZERO_BIGINT !== divisor.value < ZERO_BIGINT
+          ? -ONE_BIGINT
+          : ONE_BIGINT
+        : ZERO_BIGINT;
+      dividend.scale = resultScale;
+      return dividend;
+    }
+  }
+
+  if (!safeExponent) throw new Error("Prec");
+  const adjustedDividend = exponent > 0 ? dividend.value * pow10(exponent) : dividend.value;
+  const adjustedDivisor = exponent < 0 ? divisor.value * pow10(-exponent) : divisor.value;
 
   const quotient = adjustedDividend / adjustedDivisor;
+  if (roundingMode === "down") {
+    dividend.value = quotient;
+    dividend.scale = resultScale;
+    return dividend;
+  }
+
   const remainder = adjustedDividend % adjustedDivisor;
 
   let finalQuotient = quotient;
-
-  switch (roundingMode) {
-    case "down":
-      break;
-    case "up":
-      finalQuotient = remainder !== ZERO_BIGINT ? quotient + ONE_BIGINT : quotient;
-      break;
-    default:
-      finalQuotient = remainder * 2n >= adjustedDivisor ? quotient + ONE_BIGINT : quotient;
-      break;
+  if (remainder !== ZERO_BIGINT) {
+    let roundAway = roundingMode === "up";
+    if (!roundAway) {
+      const absRemainder = remainder < ZERO_BIGINT ? -remainder : remainder;
+      const absDivisor = adjustedDivisor < ZERO_BIGINT ? -adjustedDivisor : adjustedDivisor;
+      roundAway = absRemainder >= absDivisor - absRemainder;
+    }
+    if (roundAway) {
+      finalQuotient += adjustedDividend < ZERO_BIGINT !== adjustedDivisor < ZERO_BIGINT ? -ONE_BIGINT : ONE_BIGINT;
+    }
   }
 
   dividend.value = finalQuotient;

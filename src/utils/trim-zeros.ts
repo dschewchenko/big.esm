@@ -1,3 +1,5 @@
-const TRIM_ZEROS_REGEX = /0+$/;
-
-export const trimZeros = (value: string): string => value.replace(TRIM_ZEROS_REGEX, "");
+export function trimZeros(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 48) end--;
+  return end === value.length ? value : value.slice(0, end);
+}
