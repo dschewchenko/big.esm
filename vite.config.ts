@@ -1,12 +1,21 @@
 /// <reference types="vitest/config" />
 
-import { resolve } from "path";
+import { extname, resolve } from "node:path";
 import { defineConfig, PluginOption } from "vite";
 import dtsPlugin from "vite-plugin-dts";
 import { visualizer } from "rollup-plugin-visualizer";
 
+// Node's TypeScript resolvers need explicit extensions in emitted ESM declarations.
+const relativeImport = /^(\s*(?:import|export)\b[^\r\n]*?\bfrom\s*)(["'])(\.{1,2}\/[^"']+)\2/gm;
+
 export default defineConfig({
   build: {
+    target: ["chrome107", "edge107", "firefox104", "safari16.0"],
+    rolldownOptions: {
+      output: {
+        minify: { compress: true, mangle: true, codegen: true }
+      }
+    },
     lib: {
       entry: resolve(__dirname, "src/index.ts"),
       name: "big.esm",
@@ -14,7 +23,14 @@ export default defineConfig({
     }
   },
   plugins: [
-    dtsPlugin(),
+    dtsPlugin({
+      beforeWriteFile: (_path, content) => ({
+        content: content.replace(relativeImport, (_, prefix, quote, specifier) => {
+          const target = extname(specifier) ? specifier : `${specifier}.js`;
+          return `${prefix}${quote}${target}${quote}`;
+        })
+      })
+    }),
     visualizer({
       template: "list",
       gzipSize: true
