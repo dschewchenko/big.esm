@@ -64,7 +64,7 @@ jobs:
 
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.CI_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: node node_modules/semantic-release/bin/semantic-release.js
 
   docs-build:
