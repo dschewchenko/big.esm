@@ -1,6 +1,6 @@
-import type { Big } from "../big";
-import { ZERO_BIGINT } from "../utils/constants";
-import { pow10 } from "../utils/pow10";
+import type { Big } from "../big.js";
+import { ZERO_BIGINT } from "../utils/constants.js";
+import { pow10 } from "../utils/pow10.js";
 
 /**
  * Subtracts two Big instances and mutates the first one.

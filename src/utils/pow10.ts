@@ -1,4 +1,4 @@
-import { ONE_BIGINT, TEN_BIGINT } from "./constants";
+import { ONE_BIGINT, TEN_BIGINT } from "./constants.js";
 
 /** Returns ten raised to a non-negative safe integer exponent without a growing cache. */
 export function pow10(exp: number): bigint {

@@ -1,5 +1,5 @@
-import type { Big } from "../big";
-import { ZERO_BIGINT } from "../utils/constants";
+import type { Big } from "../big.js";
+import { ZERO_BIGINT } from "../utils/constants.js";
 
 /**
  * Returns the absolute value and mutates the given Big instance.

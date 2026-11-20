@@ -1,4 +1,4 @@
-import type { BigObject } from "../types";
+import type { BigObject } from "../types.js";
 
 /**
  * Determines if the value is a BigObject. A BigObject is an object with a value property of type bigint and a scale property of type number. It usually represents a Big instance.

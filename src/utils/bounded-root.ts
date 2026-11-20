@@ -1,5 +1,5 @@
-import { compareAbsoluteScaled } from "./decimal-magnitude";
-import { pow10 } from "./pow10";
+import { compareAbsoluteScaled } from "./decimal-magnitude.js";
+import { pow10 } from "./pow10.js";
 
 type DecimalBounds = [lower: bigint, upper: bigint, shift: bigint];
 

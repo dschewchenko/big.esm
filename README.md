@@ -7,6 +7,9 @@ Library for working with large numbers and fractions using `BigInt`.
 It provides advanced functionality for performing arithmetic operations with precision and decimal handling.
 [Documentation](https://dschewchenko.github.io/big.esm/).
 
+**ESM only.** Starting with v3, this package ships ESM exclusively. Future releases will use ESM.
+If you are upgrading from v2, replace `require("big.esm")` with a static or dynamic `import`.
+
 - Tests cover arithmetic, parsing, and package exports.
 - No dependencies.
 - Arbitrary precision within the runtime's limits for integer arithmetic and string output.

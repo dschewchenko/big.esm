@@ -1,5 +1,5 @@
-import type { Big } from "../big";
-import { ZERO_BIGINT } from "./constants";
+import type { Big } from "../big.js";
+import { ZERO_BIGINT } from "./constants.js";
 
 /**
  * Checks if a Big instance is zero.

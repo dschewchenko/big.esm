@@ -1,7 +1,7 @@
-import type { Big } from "../big";
-import type { BigObject } from "../types";
-import { ZERO_BIGINT } from "./constants";
-import { createBig } from "./create";
+import type { Big } from "../big.js";
+import type { BigObject } from "../types.js";
+import { ZERO_BIGINT } from "./constants.js";
+import { createBig } from "./create.js";
 
 const NUMERIC_PATTERN = /^(-)?(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/;
 

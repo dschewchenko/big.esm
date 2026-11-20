@@ -1,13 +1,13 @@
-import type { Big } from "./big";
-import { addBig } from "./operations/add";
-import { divBig } from "./operations/div";
-import { modBig } from "./operations/mod";
-import { mulBig } from "./operations/mul";
-import { powBig } from "./operations/pow";
-import { sqrtBig } from "./operations/sqrt";
-import { subBig } from "./operations/sub";
-import type { BigValue, RoundingMode } from "./types";
-import { createBig } from "./utils/create";
+import type { Big } from "./big.js";
+import { addBig } from "./operations/add.js";
+import { divBig } from "./operations/div.js";
+import { modBig } from "./operations/mod.js";
+import { mulBig } from "./operations/mul.js";
+import { powBig } from "./operations/pow.js";
+import { sqrtBig } from "./operations/sqrt.js";
+import { subBig } from "./operations/sub.js";
+import type { BigValue, RoundingMode } from "./types.js";
+import { createBig } from "./utils/create.js";
 
 export type BigPipeline = {
   /**

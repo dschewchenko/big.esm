@@ -1,6 +1,6 @@
-import { Big } from "../big";
-import type { BigObject, BigValue, PossibleNumber } from "../types";
-import { isBigObject } from "./is-big-object";
+import { Big } from "../big.js";
+import type { BigObject, BigValue, PossibleNumber } from "../types.js";
+import { isBigObject } from "./is-big-object.js";
 
 /**
  * Creates a new Big instance from the given value.

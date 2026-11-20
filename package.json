@@ -4,10 +4,8 @@
   "description": "A small, fast JavaScript library for arbitrary-precision decimal arithmetic.",
   "type": "module",
   "scripts": {
-    "dev": "bunx --bun vite",
-    "build": "bun run typecheck && bunx --bun vite build",
-    "typecheck": "bun --bun tsrs --checkers 2 --noEmit",
-    "preview": "bunx --bun vite preview",
+    "build": "bun scripts/build.mjs",
+    "typecheck": "bun node_modules/typescript/bin/tsc --noEmit",
     "test": "bunx --bun vitest",
     "test:ui": "bunx --bun vitest --ui",
     "test:run": "bunx --bun vitest run",
@@ -24,52 +22,34 @@
   },
   "exports": {
     ".": {
-      "bun": {
-        "import": {
-          "types": "./index.d.mts",
-          "default": "./bun.mjs"
-        },
-        "require": {
-          "types": "./index.d.cts",
-          "default": "./dist/big.esm.js"
-        }
-      },
-      "node": {
-        "import": {
-          "types": "./index.d.mts",
-          "default": "./node.mjs"
-        },
-        "require": {
-          "types": "./index.d.cts",
-          "default": "./dist/big.esm.umd.cjs"
-        }
-      },
       "import": {
-        "types": "./dist/index.d.ts",
+        "types": "./dist/package-entry.d.ts",
         "default": "./dist/big.esm.js"
-      },
-      "require": {
-        "types": "./index.d.cts",
-        "default": "./dist/big.esm.umd.cjs"
       }
     },
     "./package": "./package.json",
-    "./dist/big.esm": "./dist/big.esm.js",
+    "./dist/big.esm": {
+      "import": {
+        "types": "./dist/package-entry.d.ts",
+        "default": "./dist/big.esm.js"
+      }
+    },
+    "./dist/big.esm.js": {
+      "import": {
+        "types": "./dist/package-entry.d.ts",
+        "default": "./dist/big.esm.js"
+      }
+    },
     "./dist/*": {
       "types": "./dist/*.d.ts",
-      "default": "./dist/*"
+      "import": "./dist/*"
     },
     "./*": "./*"
   },
-  "main": "dist/big.esm.umd.cjs",
   "module": "dist/big.esm.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/package-entry.d.ts",
   "files": [
     "dist/*",
-    "node.mjs",
-    "index.d.cts",
-    "index.d.mts",
-    "bun.mjs",
     "package.json",
     "README.md",
     "LICENSE",
@@ -99,8 +79,12 @@
     "node": ">=16"
   },
   "workspaces": {
-    "packages": ["tools/typedoc"],
-    "selfContained": ["tools/typedoc"]
+    "packages": [
+      "tools/typedoc"
+    ],
+    "selfContained": [
+      "tools/typedoc"
+    ]
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.2",
@@ -108,18 +92,14 @@
     "@commitlint/config-conventional": "^20.5.3",
     "@semantic-release/changelog": "^6.0.3",
     "@types/node": "^24.19.2",
-    "@typescript/typescript6": "6.0.2",
     "@vitest/coverage-v8": "^4.1.12",
     "@vitest/ui": "^4.1.12",
     "big.js": "^7.0.1",
     "husky": "^9.1.7",
     "is-ci": "^4.1.0",
-    "rollup-plugin-visualizer": "^6.0.11",
     "semantic-release": "^25.0.9",
-    "tsrs": "0.18.0-ts7.1.0-dev.20260929",
     "typescript": "7.0.2",
     "vite": "^8.3.5",
-    "vite-plugin-dts": "^5.1.2",
     "vitest": "^4.1.12"
   }
 }

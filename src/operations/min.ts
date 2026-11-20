@@ -1,5 +1,5 @@
-import type { Big } from "../big";
-import { compareBig } from "./compare";
+import type { Big } from "../big.js";
+import { compareBig } from "./compare.js";
 
 /**
  * Returns the minimum of two Big numbers.

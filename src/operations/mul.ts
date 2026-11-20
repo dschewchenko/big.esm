@@ -1,4 +1,4 @@
-import type { Big } from "../big";
+import type { Big } from "../big.js";
 
 /**
  * Multiplies two Big instances and mutates the first one.

@@ -1,7 +1,7 @@
-import type { Big } from "../big";
-import type { CompareResult } from "../types";
-import { compareAbsoluteScaled } from "../utils/decimal-magnitude";
-import { pow10 } from "../utils/pow10";
+import type { Big } from "../big.js";
+import type { CompareResult } from "../types.js";
+import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
+import { pow10 } from "../utils/pow10.js";
 
 /**
  * Compares two Big numbers and returns a CompareResult indicating the relation between them.
