@@ -8,7 +8,9 @@ export function powBig(big: Big, exp = 2): Big {
     throw new Error("Exp");
   }
 
+  const scale = big.scale * exp;
+  if (!Number.isSafeInteger(scale)) throw new Error("Scale");
   big.value = big.value ** BigInt(exp);
-  big.scale = big.scale * exp;
+  big.scale = scale;
   return big;
 }

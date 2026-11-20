@@ -25,7 +25,7 @@ export class Big {
   public value: bigint;
 
   /**
-   * The scale of the Big instance, representing the number of decimal places.
+   * The position of the decimal point. A negative scale adds zeros to the right of the coefficient.
    */
   public scale: number;
 
@@ -118,28 +118,26 @@ export class Big {
    * @return {string} - A string representation of the Big instance.
    */
   toString(shouldTrimZeros: boolean = true): string {
-    let integerPart = this.value.toString();
-    const sign = integerPart.startsWith("-") ? "-" : "";
-    if (sign) integerPart = integerPart.substring(1);
-    let fractionPart = "";
-
     const scale = this.scale;
-    if (scale > 0) {
-      const digits = integerPart.length > scale ? integerPart.length - scale : 0;
-      fractionPart = integerPart.slice(digits).padStart(scale, "0");
+    const value = this.value.toString();
+    if (scale < 0) return value === "0" ? value : value + "0".repeat(-scale);
+    if (!(scale > 0) || (shouldTrimZeros && value === "0")) return value;
 
-      if (shouldTrimZeros) {
-        fractionPart = trimZeros(fractionPart);
-      }
+    const sign = value.startsWith("-") ? "-" : "";
+    const digits = sign ? value.slice(1) : value;
+    const point = Math.max(0, digits.length - scale);
+    const integer = digits.slice(0, point) || "0";
+    const fraction = digits.slice(point);
+    if (!shouldTrimZeros) return `${sign}${integer}.${fraction.padStart(scale, "0")}`;
 
-      if (fractionPart.length > 0) {
-        fractionPart = `.${fractionPart}`;
-      }
-
-      integerPart = integerPart.slice(0, digits);
+    const trimmed = trimZeros(fraction);
+    if (trimmed.length === 0) {
+      return `${sign}${integer}`;
     }
 
-    return `${sign}${integerPart || "0"}${fractionPart}`;
+    // Trim the coefficient first so we never scan the leading scale padding.
+    const width = scale - (fraction.length - trimmed.length);
+    return `${sign}${integer}.${trimmed.padStart(width, "0")}`;
   }
 
   /**
