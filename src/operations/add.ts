@@ -4,6 +4,7 @@ import { assertScale } from "../utils/assert-scale.js";
 import { ZERO_BIGINT } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
+import { addShortDecimals } from "../utils/short-decimal.js";
 
 /**
  * Adds two values and returns a new Big instance.
@@ -18,7 +19,11 @@ import { readBigOperand } from "../utils/read-big-operand.js";
  * add("1.1", "2.2").toString(); // "3.3"
  */
 export function add(a: BigValue, b: BigValue): Big {
-  return addInPlace(new Big(a), b);
+  if (typeof a === "string" && typeof b === "string") {
+    const sum = addShortDecimals(a, b);
+    if (sum !== undefined) return new Big(BigInt(sum.value), sum.scale);
+  }
+  return addTo(new Big(a), b);
 }
 
 /**
@@ -37,6 +42,10 @@ export function add(a: BigValue, b: BigValue): Big {
  */
 export function addInPlace(a: Big, b: BigValue): Big {
   assertScale(a.scale);
+  return addTo(a, b);
+}
+
+function addTo(a: Big, b: BigValue): Big {
   const right = readBigOperand(b);
   assertScale(right.scale);
   const scaleDifference = a.scale - right.scale;

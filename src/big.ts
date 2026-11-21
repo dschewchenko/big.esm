@@ -1,7 +1,6 @@
 import type { BigValue, PossibleNumber } from "./types.js";
 import { assertScale } from "./utils/assert-scale.js";
-import { fromString } from "./utils/from-string.js";
-import { isBigObject } from "./utils/is-big-object.js";
+import { parseDecimal } from "./utils/parse-decimal.js";
 import { trimZeros } from "./utils/trim-zeros.js";
 
 function parseScale(scale: number | string): number {
@@ -76,21 +75,18 @@ export class Big {
    * @return {Big} - A new Big instance.
    */
   constructor(value: BigValue, scale?: number | string) {
-    if (value instanceof Big) {
-      assertScale(value.scale);
-      this.value = value.value;
-      this.scale = value.scale;
-      return;
-    }
-
-    if (isBigObject(value)) {
-      this.value = value.value;
-      this.scale = value.scale;
-      return;
-    }
-
     if (typeof value === "object" && value !== null) {
-      throw new TypeError("Big");
+      const coefficient = value.value;
+      const objectScale = value.scale;
+      if (value instanceof Big) {
+        assertScale(objectScale);
+      } else if (typeof coefficient !== "bigint" || !Number.isSafeInteger(objectScale)) {
+        throw new TypeError("Big");
+      }
+
+      this.value = coefficient;
+      this.scale = objectScale;
+      return;
     }
 
     const scaleDefined = scale !== undefined;
@@ -103,7 +99,7 @@ export class Big {
     }
 
     if (typeof value === "number" || typeof value === "string") {
-      const { value: valueBigint, scale: parsedScale } = fromString(value, scaleDefined, false);
+      const { value: valueBigint, scale: parsedScale } = parseDecimal(value, scaleDefined);
       this.value = valueBigint;
       this.scale = scaleDefined ? scaleNumber : parsedScale;
       return;

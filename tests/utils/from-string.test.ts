@@ -50,6 +50,25 @@ suite("Big utils fromString", () => {
     expect(fromString("0")).toStrictEqual(new Big(BigInt(0)));
   });
 
+  test.each([
+    ["-.5", -5n, 1],
+    ["1.", 1n, 0],
+    ["00012.3400", 123400n, 4],
+    ["-0.00", 0n, 0],
+    ["999999999999999", 999999999999999n, 0],
+    ["9007199254740993", 9007199254740993n, 0]
+  ])("reads plain decimal %s exactly", (text, value, scale) => {
+    expect(fromString(text, false, false)).toEqual({ value, scale });
+    expect(new Big(text)).toMatchObject({ value, scale });
+  });
+
+  test.each(["", "-", ".", "-.", "+1", "1.2.3", "1 2", "1e", "1\n", "０.1"])(
+    "rejects invalid decimal syntax %j",
+    (text) => {
+      expect(() => fromString(text)).toThrow("Num");
+    }
+  );
+
   test("fromString throws errors for invalid inputs", () => {
     expect(() => fromString("not a number")).toThrow();
     expect(() => fromString(Infinity)).toThrow();

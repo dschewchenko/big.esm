@@ -4,7 +4,9 @@ import { tmpdir } from "node:os";
 import { delimiter, join, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 
-const maxNamedGzipBytes = 1600;
+// Keep room for short-decimal parsing and the literal powers used for scale alignment.
+const maxLegacyNamedGzipBytes = 1700;
+const maxPureNamedGzipBytes = 1750;
 
 function listFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -77,11 +79,11 @@ try {
     const namedGzipBytes = gzipSync(namedBundle, { level: 9 }).byteLength;
     const pureNamedGzipBytes = gzipSync(pureNamedBundle, { level: 9 }).byteLength;
     const fullGzipBytes = gzipSync(fullBundle, { level: 9 }).byteLength;
-    if (namedGzipBytes >= maxNamedGzipBytes) {
-      throw new Error(`${target} named consumer is ${namedGzipBytes} gzip bytes, expected below ${maxNamedGzipBytes}`);
+    if (namedGzipBytes >= maxLegacyNamedGzipBytes) {
+      throw new Error(`${target} named consumer is ${namedGzipBytes} gzip bytes, expected below ${maxLegacyNamedGzipBytes}`);
     }
-    if (pureNamedGzipBytes >= maxNamedGzipBytes) {
-      throw new Error(`${target} pure named consumer is ${pureNamedGzipBytes} gzip bytes, expected below ${maxNamedGzipBytes}`);
+    if (pureNamedGzipBytes >= maxPureNamedGzipBytes) {
+      throw new Error(`${target} pure named consumer is ${pureNamedGzipBytes} gzip bytes, expected below ${maxPureNamedGzipBytes}`);
     }
     if (namedGzipBytes >= fullGzipBytes * 0.5) {
       throw new Error(`${target} tree shaking is weak: named=${namedGzipBytes}, full=${fullGzipBytes} gzip bytes`);

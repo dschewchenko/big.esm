@@ -112,6 +112,27 @@ suite("BigValue operands", () => {
     expect(frozenRight).toEqual({ value: 25n, scale: 1 });
   });
 
+  test("preserves the coefficient and scale of short decimal string results", () => {
+    expect(add("1.20", "-.25")).toMatchObject({ value: 95n, scale: 2 });
+    expect(sub("-.25", "1.20")).toMatchObject({ value: -145n, scale: 2 });
+    expect(mul("1.20", "-.25")).toMatchObject({ value: -3000n, scale: 4 });
+    expect(add("-0.00", ".200")).toMatchObject({ value: 200n, scale: 3 });
+    expect(sub("1.20", "1.20")).toMatchObject({ value: 0n, scale: 2 });
+  });
+
+  test("keeps wide alignment, cancellation, and multiplication exact", () => {
+    expect(add("999999999999999", "0.0001")).toMatchObject({ value: 9999999999999990001n, scale: 4 });
+    expect(sub("9007199254741", ".009")).toMatchObject({ value: 9007199254740991n, scale: 3 });
+    expect(mul("999999999999999", "99999.99")).toMatchObject({
+      value: 999999999999999n * 9999999n,
+      scale: 2
+    });
+
+    expect(add("1.2e3", "-.1")).toMatchObject({ value: 11999n, scale: 1 });
+    expect(() => add("1.2.3", "4")).toThrow("Num");
+    expect(() => mul("42", "1e9007199254740992")).toThrow("Exp");
+  });
+
   test("keeps the legacy names as direct mutable aliases", () => {
     expect(addBig).toBe(addInPlace);
     expect(subBig).toBe(subInPlace);

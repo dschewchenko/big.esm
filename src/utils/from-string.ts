@@ -1,49 +1,6 @@
-import type { Big } from "../big.js";
+import { Big } from "../big.js";
 import type { BigObject, PossibleNumber } from "../types.js";
-import { ZERO_BIGINT } from "./constants.js";
-import { createBig } from "./create.js";
-
-const NUMERIC_PATTERN = /^(-)?(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/;
-
-function decimalScale(fractionLength: number, exponentText: string | undefined): number {
-  if (exponentText === undefined) return fractionLength;
-  const exponent = Number(exponentText);
-  return Number.isSafeInteger(exponent) ? fractionLength - exponent : NaN;
-}
-
-function parseDecimal(
-  num: string | number,
-  ignoreFraction: boolean,
-  returnInstance: boolean,
-  compactPositiveExponent: boolean
-): Big | BigObject {
-  const strNum = typeof num === "number" ? String(num) : num;
-
-  const match = NUMERIC_PATTERN.exec(strNum);
-  if (!match) throw new Error("Num");
-
-  const sign = match[1] ? "-" : "";
-  const integer = match[2] || "";
-  const fraction = match[3] || "";
-
-  if (integer.length === 0 && fraction.length === 0) throw new Error("Num");
-
-  let scale = decimalScale(fraction.length, match[4]);
-  if (!Number.isSafeInteger(scale)) throw new Error("Exp");
-  let digits = integer + fraction;
-
-  if (scale < 0 && !compactPositiveExponent) {
-    if (/[1-9]/.test(digits)) digits += "0".repeat(-scale);
-    scale = 0;
-  } else if (ignoreFraction && scale > 0) {
-    digits = scale >= digits.length ? "0" : digits.slice(0, -scale);
-    scale = 0;
-  }
-
-  const value = BigInt(sign + digits);
-  if (value === ZERO_BIGINT) return returnInstance ? createBig(ZERO_BIGINT) : { value, scale: 0 };
-  return returnInstance ? createBig(value, scale) : { value, scale };
-}
+import { decimalScale, NUMERIC_PATTERN, parseDecimal } from "./parse-decimal.js";
 
 /**
  * Checks decimal input syntax and whether its exponent and scale can be represented safely.
@@ -99,7 +56,8 @@ export function fromString(
   returnInstance: boolean
 ): Big | BigObject;
 export function fromString(num: string | number, ignoreFraction = false, returnInstance = true): Big | BigObject {
-  return parseDecimal(num, ignoreFraction, returnInstance, false);
+  const parsed = parseDecimal(num, ignoreFraction);
+  return returnInstance ? new Big(parsed.value, parsed.scale) : parsed;
 }
 
 /**
@@ -115,6 +73,7 @@ export function fromString(num: string | number, ignoreFraction = false, returnI
  * createCompactBig("1e10000000000"); // Big { value: 1n, scale: -10000000000 }
  */
 export function createCompactBig(value: PossibleNumber): Big {
-  if (typeof value === "bigint") return createBig(value);
-  return parseDecimal(value, false, true, true) as Big;
+  if (typeof value === "bigint") return new Big(value);
+  const parsed = parseDecimal(value, false, true);
+  return new Big(parsed.value, parsed.scale);
 }
