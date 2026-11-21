@@ -1,2 +1,2 @@
-export { BigPipe, pipeBig } from "../../src/pipeline";
+export { BigPipe, pipeBig } from "../../dist/big.esm.js";
 

@@ -4,6 +4,11 @@
 
 The speed benchmark compares built `big.esm` artifacts with `big.js`, validating results before timing.
 
+- `operation-only` prepares fresh operands before timing on both sides. For a pipeline it still measures pipeline construction and calls. Peak RSS includes the prepared inputs and the runtime.
+- `end-to-end` also times operand construction. It reports the change in retained heap after forced garbage collection. That figure measures surviving data at the end of the sample.
+
+The JSON includes the runtime, host CPU, entry file hashes, sample range and median absolute deviation. Point `--current` at `dist/core.js` to record a hash of the actual bundled implementation when the package entry is a re-export.
+
 The historical speed measurements used `50_000` iterations per operation (median of 3 runs).
 Size benchmarks use `bun build --minify` + Brotli quality `11` (minified + brotli sizes).
 
@@ -12,17 +17,20 @@ Size benchmarks use `bun build --minify` + Brotli quality `11` (minified + brotl
 ```bash
 bun run build
 
-# speed: isolated processes; prints JSON without changing files
+# Speed in isolated processes. Prints JSON.
 bun run benchmark
 
-# compare two separately built versions
-bun run benchmark:compare --baseline /path/to/before.js --current /path/to/after.js
+# Compare two built versions, including operand construction.
+bun run benchmark:compare --baseline /path/to/before.js --current /path/to/after.js --mode end-to-end
 
-# size (writes benchmarks/results/<timestamp>_weight.md)
+# Focus on remainder at a 30-place scale difference.
+bun run benchmark --operation remainder --input moderateScaleGap --repeats 7
+
+# Bundle size from the built package entry. Saves a timestamped result.
 bun run benchmark:weight
 ```
 
-## Latest results
+## Historical results
 
 ### Speed (big.esm v2 vs big.js)
 
@@ -40,6 +48,7 @@ _Last updated: 2025-12-18_002203_
 Ops (28 rows):
 
 - big.esm vs big.js: median 26.26x faster (min 2.17x faster, max 154.43x faster)
+- The historical v1 median was 11.63x relative to big.js in mutable mode. The v2 median was 2.26x the v1 figure.
 
 Pipeline (28 rows):
 

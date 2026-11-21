@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Lint
+        run: bun run lint
+
       - name: Download base coverage summary
         if: github.event_name == 'pull_request'
         id: download_base
@@ -114,6 +117,10 @@ jobs:
 
       - name: Validate packed package
         run: bun run test:package
+
+      - name: Test arithmetic on V8
+        if: matrix.node == '26'
+        run: node node_modules/vitest/vitest.mjs run
 
       - name: Build docs
         if: matrix.node == '26'

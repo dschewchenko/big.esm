@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
@@ -41,36 +41,18 @@ function getBunVersion() {
   return (result.stdout ?? "").trim() || "unknown";
 }
 
-function cleanupResults(keepSuffix) {
-  const resultsDir = resolve(process.cwd(), "benchmarks", "results");
-  try {
-    const files = readdirSync(resultsDir);
-    for (const file of files) {
-      if (!file.endsWith(".md")) continue;
-      if (keepSuffix && file.endsWith(`_${keepSuffix}.md`)) continue;
-      rmSync(resolve(resultsDir, file));
-    }
-  } catch {
-    // ignore if missing
+function buildPackage() {
+  const result = spawnSync("bun", ["run", "build"], { stdio: "inherit" });
+  if (result.status !== 0) {
+    throw new Error("Package build failed");
   }
-}
-
-function updateBenchmarkDoc(kind, content) {
-  const docPath = resolve(process.cwd(), "BENCHMARK.md");
-  const start = `<!-- BENCHMARK_${kind}_START -->`;
-  const end = `<!-- BENCHMARK_${kind}_END -->`;
-
-  const doc = readFileSync(docPath, "utf8");
-  const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, "m");
-  if (!pattern.test(doc)) return;
-
-  const block = `${start}\n\n${content.trim()}\n\n${end}`;
-  writeFileSync(docPath, doc.replace(pattern, block));
 }
 
 const stamp = timestamp();
 const artifactsDir = resolve(process.cwd(), "benchmarks", "artifacts", "bundle-size-compare", stamp);
 mkdirSync(artifactsDir, { recursive: true });
+
+buildPackage();
 
 const bigJsEntry = resolve(process.cwd(), "node_modules", "big.js", "big.mjs");
 const bigJsOut = resolve(artifactsDir, "bigjs.min.js");
@@ -78,16 +60,17 @@ const bigJsOut = resolve(artifactsDir, "bigjs.min.js");
 const bigPipeEntry = resolve(process.cwd(), "benchmarks", "size", "entry-big-pipe.ts");
 const bigPipeOut = resolve(artifactsDir, "bigpipe.min.js");
 
-const bigEsmV2Entry = resolve(process.cwd(), "src", "index.ts");
-const bigEsmV2Out = resolve(artifactsDir, "bigesm-v2.min.js");
+const bigEsmV3Entry = resolve(process.cwd(), "dist", "big.esm.js");
+const bigEsmV3Out = resolve(artifactsDir, "bigesm-v3.min.js");
 
 bunBuild({ entry: bigJsEntry, outfile: bigJsOut });
 bunBuild({ entry: bigPipeEntry, outfile: bigPipeOut });
-bunBuild({ entry: bigEsmV2Entry, outfile: bigEsmV2Out });
+// Measure the package's default export through its built ESM entry point.
+bunBuild({ entry: bigEsmV3Entry, outfile: bigEsmV3Out });
 
 const bigJsMin = readFileSync(bigJsOut);
 const bigPipeMin = readFileSync(bigPipeOut);
-const bigEsmV2Min = readFileSync(bigEsmV2Out);
+const bigEsmV3Min = readFileSync(bigEsmV3Out);
 
 const rows = [
   {
@@ -97,16 +80,16 @@ const rows = [
     file: `benchmarks/artifacts/bundle-size-compare/${stamp}/bigjs.min.js`,
   },
   {
-    name: "bigPipe (v2)",
+    name: "big.esm (v3, pipeline)",
     minBytes: bigPipeMin.byteLength,
     brotliBytes: brotliSize(bigPipeMin),
     file: `benchmarks/artifacts/bundle-size-compare/${stamp}/bigpipe.min.js`,
   },
   {
-    name: "big.esm (v2, full)",
-    minBytes: bigEsmV2Min.byteLength,
-    brotliBytes: brotliSize(bigEsmV2Min),
-    file: `benchmarks/artifacts/bundle-size-compare/${stamp}/bigesm-v2.min.js`,
+    name: "big.esm (v3, full)",
+    minBytes: bigEsmV3Min.byteLength,
+    brotliBytes: brotliSize(bigEsmV3Min),
+    file: `benchmarks/artifacts/bundle-size-compare/${stamp}/bigesm-v3.min.js`,
   },
 ];
 
@@ -123,20 +106,6 @@ for (const row of rows) {
 
 const resultsDir = resolve(process.cwd(), "benchmarks", "results");
 mkdirSync(resultsDir, { recursive: true });
-cleanupResults("speed");
 const outPath = resolve(resultsDir, `${stamp}_weight.md`);
 writeFileSync(outPath, md);
 console.log(`Wrote benchmarks/results/${stamp}_weight.md`);
-
-let docSection = "";
-docSection += `_Last updated: ${stamp}_\n\n`;
-docSection += `- Node: ${process.version}\n`;
-docSection += `- Bun: ${getBunVersion()}\n`;
-docSection += `- Brotli quality: 11\n\n`;
-docSection += "| Artifact | Minified | Brotli |\n";
-docSection += "| --- | --- | --- |\n";
-for (const row of rows) {
-  docSection += `| ${row.name} | ${formatBytes(row.minBytes)} | ${formatBytes(row.brotliBytes)} |\n`;
-}
-
-updateBenchmarkDoc("WEIGHT", docSection);

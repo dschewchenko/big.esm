@@ -3,11 +3,18 @@
  *
  * bun run benchmark
  * bun run benchmark -- --baseline /path/to/before.js --current /path/to/after.js
+ * bun run benchmark -- --operation remainder --input mixedScale --iterations 5000
+ * bun run benchmark -- --mode end-to-end
  * node --expose-gc benchmarks/benchmark.js --baseline before.js --current after.js
  *
+ * Operation-only mode prepares fresh operands before timing. End-to-end mode
+ * includes construction. Post-GC retained heap is not total allocation volume.
  * stdout is JSON; progress goes to stderr. No files are modified by the benchmark.
  */
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { cpus, release } from "node:os";
 import { resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import BigJS from "big.js";
@@ -22,6 +29,7 @@ const inputs = {
   bigNumber: ["12345678901234567890.12345678901234567890", "67890123456789012345.67890123456789012345"],
   numberWithExponent: ["12345678901234567890e-10", "67890123456789012345e-10"],
   mixedScale: ["12345.6", "78901.23456789"],
+  moderateScaleGap: ["123456789012345678901234567890", "98765432109876543210987654321e-30"],
   negativeDivisor: ["12345.67809", "-78901.23456"]
 };
 const operations = ["add", "subtract", "multiply", "divide", "remainder", "power", "square_root", "chain"];
@@ -46,21 +54,23 @@ function runReference(operation, a, b) {
   }
 }
 
-function createOperation(library, api, operation, args) {
-  const [a, b] = args;
-  if (api === "big.js") {
-    const left = new BigJS(a);
-    const right = new BigJS(b);
-    return () => runReference(operation, left, right);
-  }
-  const left = library.createBig(a);
-  const right = library.createBig(b);
-  const initialValue = left.value;
-  const initialScale = left.scale;
-  const leftCopy = library.createBig(a);
+function createOperation(library, api, operation, args, count, mode) {
+  const unary = operation === "power" || operation === "square_root";
+  const createOperands = () => {
+    const [a, b] = args;
+    if (api === "big.js") return unary ? [new BigJS(a)] : [new BigJS(a), new BigJS(b)];
+    const left = library.createBig(a);
+    if (unary) return [left];
+    const right = library.createBig(b);
+    return operation === "chain" ? [left, right, library.createBig(a)] : [left, right];
+  };
+  const prepared = mode === "operation-only" ? Array.from({ length: count }, createOperands) : null;
+  let index = 0;
+
   return () => {
-    left.value = initialValue;
-    left.scale = initialScale;
+    const operands = prepared ? prepared[index++] : createOperands();
+    const [left, right, leftCopy] = operands;
+    if (api === "big.js") return runReference(operation, left, right);
     if (api === "pipeline") {
       const pipe = library.pipeBig(left);
       switch (operation) {
@@ -100,36 +110,42 @@ function median(values) {
 function summary(samples, iterations) {
   const values = (key) => samples.map((item) => item[key]);
   const elapsed = values("elapsedMs");
+  const elapsedMedian = median(elapsed);
   return {
-    nsPerOperation: median(elapsed) * 1e6 / iterations,
+    nsPerOperation: elapsedMedian * 1e6 / iterations,
     elapsedRangeMs: [Math.min(...elapsed), Math.max(...elapsed)],
+    elapsedMedianAbsoluteDeviationMs: median(elapsed.map((sample) => Math.abs(sample - elapsedMedian))),
     peakRssKiB: median(values("peakRssKiB")),
-    retainedHeapDeltaBytes: median(values("retainedHeapDeltaBytes")),
+    postGcRetainedHeapDeltaBytes: samples[0].postGcRetainedHeapDeltaBytes === null
+      ? null
+      : median(values("postGcRetainedHeapDeltaBytes")),
     correct: samples.every((item) => item.correct),
     samples
   };
 }
 
-async function worker(artifact, api, operation, inputName, iterations) {
+async function worker(artifact, api, operation, inputName, iterations, mode) {
   const library = api === "big.js" ? null : await import(pathToFileURL(resolve(artifact)).href);
   const args = inputs[inputName];
-  const fn = createOperation(library, api, operation, args);
+  const warmupIterations = Math.min(2000, iterations);
+  const fn = createOperation(library, api, operation, args, iterations + warmupIterations + 1, mode);
   const reference = runReference(operation, new BigJS(args[0]), new BigJS(args[1]));
   const initial = fn().toString();
-  const correct = new BigJS(initial).eq(reference);
-  for (let i = 0; i < Math.min(2000, iterations); i++) fn();
+  if (!new BigJS(initial).eq(reference)) throw new Error(`Expected ${reference}, received ${initial}`);
+  for (let i = 0; i < warmupIterations; i++) fn();
   gc();
-  const heapBefore = process.memoryUsage().heapUsed;
+  // Prebuilt mutable operands end up holding their results, so retained heap is only comparable end to end.
+  const heapBefore = mode === "end-to-end" ? process.memoryUsage().heapUsed : null;
   let sink;
   const start = performance.now();
   for (let i = 0; i < iterations; i++) sink = fn();
   const elapsedMs = performance.now() - start;
   if (!new BigJS(sink.toString()).eq(new BigJS(initial))) throw new Error("Output changed during measurement");
-  gc();
+  if (heapBefore !== null) gc();
   return {
     elapsedMs,
-    correct,
-    retainedHeapDeltaBytes: process.memoryUsage().heapUsed - heapBefore,
+    correct: true,
+    postGcRetainedHeapDeltaBytes: heapBefore === null ? null : process.memoryUsage().heapUsed - heapBefore,
     peakRssKiB: process.resourceUsage().maxRSS
   };
 }
@@ -226,12 +242,13 @@ async function specialWorker(artifact, name, iterations) {
   }
   result = null;
   gc();
-  return { elapsedMs, correct, retainedHeapDeltaBytes: process.memoryUsage().heapUsed - heapBefore,
+  return { elapsedMs, correct, postGcRetainedHeapDeltaBytes: process.memoryUsage().heapUsed - heapBefore,
     peakRssKiB: process.resourceUsage().maxRSS };
 }
 
 function parseOptions(args) {
-  const options = { current: "dist/big.esm.js", baseline: null, iterations: 10000, repeats: 5 };
+  const options = { current: "dist/big.esm.js", baseline: null, iterations: 10000, repeats: 5,
+    mode: "operation-only", input: null, operation: null };
   for (let i = 0; i < args.length; i += 2) {
     const flag = args[i];
     const value = args[i + 1];
@@ -240,11 +257,21 @@ function parseOptions(args) {
     else if (flag === "--baseline") options.baseline = value;
     else if (flag === "--iterations") options.iterations = Number(value);
     else if (flag === "--repeats") options.repeats = Number(value);
+    else if (flag === "--mode") options.mode = value;
+    else if (flag === "--input") options.input = value;
+    else if (flag === "--operation") options.operation = value;
     else throw new Error(`Unknown option ${flag}`);
   }
   if (!Number.isSafeInteger(options.iterations) || options.iterations < 1 ||
       !Number.isSafeInteger(options.repeats) || options.repeats < 3 || options.repeats % 2 === 0) {
     throw new Error("Iterations must be positive and repeats must be an odd number >= 3");
+  }
+  if (options.mode !== "operation-only" && options.mode !== "end-to-end") {
+    throw new Error("Mode must be operation-only or end-to-end");
+  }
+  if (options.input !== null && !Object.hasOwn(inputs, options.input)) throw new Error(`Unknown input ${options.input}`);
+  if (options.operation !== null && !operations.includes(options.operation)) {
+    throw new Error(`Unknown operation ${options.operation}`);
   }
   return options;
 }
@@ -253,14 +280,16 @@ if (process.argv[2] === "--worker-special") {
   const [, , , artifact, name, count] = process.argv;
   console.log(JSON.stringify(await specialWorker(artifact, name, Number(count))));
 } else if (process.argv[2] === "--worker") {
-  const [, , , artifact, api, operation, inputName, count] = process.argv;
-  console.log(JSON.stringify(await worker(artifact, api, operation, inputName, Number(count))));
+  const [, , , artifact, api, operation, inputName, count, mode] = process.argv;
+  console.log(JSON.stringify(await worker(artifact, api, operation, inputName, Number(count), mode)));
 } else {
   const options = parseOptions(process.argv.slice(2));
   const bun = Boolean(globalThis.Bun);
   const cases = [];
-  for (const inputName of Object.keys(inputs)) {
-    for (const operation of operations) {
+  const selectedInputs = options.input ? [options.input] : Object.keys(inputs);
+  const selectedOperations = options.operation ? [options.operation] : operations;
+  for (const inputName of selectedInputs) {
+    for (const operation of selectedOperations) {
       const iterations = operation === "square_root" ? Math.max(1, Math.floor(options.iterations / 4)) : options.iterations;
       const variants = [
         ...(options.baseline ? [{ name: "baseline", artifact: options.baseline, api: "ops" },
@@ -274,7 +303,7 @@ if (process.argv[2] === "--worker-special") {
         const order = repeat % 2 ? [...variants].reverse() : variants;
         for (const variant of order) {
           const args = [...(bun ? [] : ["--expose-gc"]), fileURLToPath(import.meta.url), "--worker", variant.artifact,
-            variant.api, operation, inputName, String(iterations)];
+            variant.api, operation, inputName, String(iterations), options.mode];
           const child = spawnSync(process.execPath, args, { encoding: "utf8", timeout: 120000 });
           if (child.status !== 0) throw new Error(`${inputName} ${operation} ${variant.name}: ${child.error || child.stderr}`);
           samples[variant.name].push(JSON.parse(child.stdout.trim()));
@@ -285,7 +314,7 @@ if (process.argv[2] === "--worker-special") {
       console.error(`${inputName} ${operation} complete`);
     }
   }
-  const specialCases = { add_varying_scale: options.iterations, add_varying_left_scale: options.iterations,
+  const specialCases = options.input || options.operation ? {} : { add_varying_scale: options.iterations, add_varying_left_scale: options.iterations,
     power_varying_exponent: options.iterations, pow10_varying: options.iterations,
     parse_small_exponent: Math.max(1, Math.floor(options.iterations / 4)),
     cube_root: Math.max(1, Math.floor(options.iterations / 4)),
@@ -311,6 +340,10 @@ if (process.argv[2] === "--worker-special") {
     cases.push({ input: "supplemental", operation, iterations, results });
     console.error(`supplemental ${operation} complete`);
   }
+  const entryHash = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+  const artifacts = { currentEntrySha256: entryHash(options.current),
+    baselineEntrySha256: options.baseline ? entryHash(options.baseline) : null };
   console.log(JSON.stringify({ runtime: bun ? `Bun ${Bun.version} (JSC)` : `Node ${process.version} (V8 ${process.versions.v8})`,
-    platform: `${process.platform} ${process.arch}`, precision: PRECISION, options, cases }, null, 2));
+    platform: `${process.platform} ${process.arch} ${release()}`, cpu: cpus()[0]?.model,
+    precision: PRECISION, artifacts, options, cases }, null, 2));
 }
