@@ -1,6 +1,7 @@
 {
   "entryPoints": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/pipe.ts"
   ],
   "githubPages": true,
   "cacheBust": true,

@@ -225,6 +225,26 @@ Creates a chain with its own working value. Use `.roundToStep(step, roundingMode
 
 Creates a chain that updates the supplied `Big` instance.
 
+#### Operator pipelines
+
+Import operators from `big.esm/pipe` to build reusable steps for `pipe`:
+
+```ts
+import { add, mul, pipe, sub } from "big.esm/pipe";
+
+const pricing = [mul("0.9"), add("5")];
+const finalize = [sub(2)];
+pipe("100", ...pricing, ...finalize).toString(); // "93"
+
+const left = pipe("1.2", add("0.3"));
+const right = pipe("10", sub(2));
+pipe(left, mul(right)).toString(); // "12"
+```
+
+Operators bind arguments to existing arithmetic operations. `pipe` copies its initial value and returns a `Big`. Steps accept decimal strings or numbers and run from left to right. Reuse groups with array spreads, or calculate intermediate `Big` values for grouped subexpressions.
+
+Available operators are `abs`, `add`, `sub`, `mul`, `div`, `divCompact`, `mod`, `pow`, `round`, `roundToStep`, and `sqrt`. Their optional arguments follow the matching operation's defaults.
+
 ## Roadmap
 
 - [x] Generate documentation from JSDoc

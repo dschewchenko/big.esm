@@ -26,6 +26,15 @@ const result = await Bun.build({
 });
 if (!result.success) throw new AggregateError(result.logs, "ESM build failed");
 
+// Keep the shared ESM import so both entry points use the same Big class.
+const pipeSource = await Bun.file(join(root, "src/pipe.ts")).text();
+const pipeJavaScript = await new Bun.Transpiler({
+  loader: "ts",
+  minifySyntax: true,
+  minifyWhitespace: true
+}).transform(pipeSource);
+await Bun.write(join(outdir, "pipe.js"), pipeJavaScript);
+
 await Bun.write(join(outdir, "big.esm.js"), [
   'import * as api from "./core.js";',
   'export * from "./core.js";',

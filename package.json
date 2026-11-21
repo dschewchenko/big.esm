@@ -76,6 +76,12 @@
     "./dist/pipeline.js": {
       "import": "./dist/pipeline.js"
     },
+    "./pipe": {
+      "import": {
+        "types": "./dist/pipe.d.ts",
+        "default": "./dist/pipe.js"
+      }
+    },
     "./dist/operations/*.js": {
       "import": "./dist/operations/*.js"
     },

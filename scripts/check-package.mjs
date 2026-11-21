@@ -5,6 +5,7 @@ import { delimiter, join, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 
 const maxNamedGzipBytes = 1700;
+const maxPipeGzipBytes = 2000;
 
 function listFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -40,7 +41,7 @@ try {
   const installed = readdirSync(join(directory, "node_modules")).filter((name) => !name.startsWith("."));
   if (installed.length !== 1 || installed[0] !== "big.esm") throw new Error(`Unexpected dependencies: ${installed}`);
   const packageRoot = join(directory, "node_modules/big.esm");
-  for (const file of ["dist/index.d.ts", "dist/big.d.ts", "dist/types.d.ts", "dist/operations/add.d.ts"]) {
+  for (const file of ["dist/index.d.ts", "dist/big.d.ts", "dist/types.d.ts", "dist/pipe.d.ts", "dist/operations/add.d.ts"]) {
     readFileSync(join(packageRoot, file));
   }
   const manifest = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8"));
@@ -50,6 +51,10 @@ try {
   if (!manifest.exports?.["."]?.import || hasRequireCondition(manifest.exports)) {
     throw new Error("Expected import-only package exports");
   }
+  if (manifest.exports?.["./pipe"]?.import?.types !== "./dist/pipe.d.ts" ||
+      manifest.exports?.["./pipe"]?.import?.default !== "./dist/pipe.js") {
+    throw new Error("Expected the operator pipe ESM subpath and declarations");
+  }
   const packageFiles = listFiles(packageRoot);
   const commonjsArtifacts = packageFiles.filter((file) => /\.(?:cjs|cts)(?:\.|$)|\.umd\./.test(file));
   if (commonjsArtifacts.length) throw new Error(`Unexpected CommonJS artifacts: ${commonjsArtifacts}`);
@@ -57,31 +62,44 @@ try {
     'import { addBig, createBig } from "big.esm"; globalThis.result = addBig(createBig(1), createBig(2));');
   writeFileSync(join(directory, "browser-pure-entry.js"),
     'import { add } from "big.esm"; globalThis.result = add("1", "2").toString();');
+  writeFileSync(join(directory, "browser-pipe-entry.js"),
+    'import { pipe, add, mul } from "big.esm/pipe"; globalThis.result = pipe("1", add(2), mul(3)).toString(); if (globalThis.result !== "9") throw Error("Pipe bundle result");');
   writeFileSync(join(directory, "browser-full.js"),
     'import * as api from "big.esm"; globalThis.library = api;');
   for (const target of ["browser", "bun"]) {
-    for (const name of ["entry", "pure-entry", "full"]) {
+    for (const name of ["entry", "pure-entry", "pipe-entry", "full"]) {
       execFileSync(bun, ["build", `browser-${name}.js`, `--target=${target}`, "--minify",
         `--outfile=${target}-${name}.bundle.js`, `--metafile=${target}-${name}.meta.json`],
         { cwd: directory, stdio: "ignore" });
       const metafile = JSON.parse(readFileSync(join(directory, `${target}-${name}.meta.json`), "utf8"));
       const inputs = Object.keys(metafile.inputs);
-      if (!inputs.some((path) => path.endsWith("/dist/big.esm.js")) ||
-          !inputs.some((path) => path.endsWith("/dist/core.js"))) {
+      const entryInput = name === "pipe-entry"
+        ? inputs.some((path) => path.endsWith("/dist/pipe.js")) &&
+          inputs.some((path) => path.endsWith("/dist/index.js"))
+        : inputs.some((path) => path.endsWith("/dist/big.esm.js"));
+      if (!entryInput || !inputs.some((path) => path.endsWith("/dist/core.js"))) {
         throw new Error(`Unexpected ${target} entry: ${inputs}`);
       }
     }
     const namedBundle = readFileSync(join(directory, `${target}-entry.bundle.js`));
     const pureNamedBundle = readFileSync(join(directory, `${target}-pure-entry.bundle.js`));
+    const pipeNamedBundle = readFileSync(join(directory, `${target}-pipe-entry.bundle.js`));
     const fullBundle = readFileSync(join(directory, `${target}-full.bundle.js`));
     const namedGzipBytes = gzipSync(namedBundle, { level: 9 }).byteLength;
     const pureNamedGzipBytes = gzipSync(pureNamedBundle, { level: 9 }).byteLength;
+    const pipeNamedGzipBytes = gzipSync(pipeNamedBundle, { level: 9 }).byteLength;
     const fullGzipBytes = gzipSync(fullBundle, { level: 9 }).byteLength;
+    if (pipeNamedBundle.includes("Root") || pipeNamedBundle.includes("Div0")) {
+      throw new Error(`${target} operator pipe bundle includes unused sqrt or division kernels`);
+    }
     if (namedGzipBytes >= maxNamedGzipBytes) {
       throw new Error(`${target} named consumer is ${namedGzipBytes} gzip bytes, expected below ${maxNamedGzipBytes}`);
     }
     if (pureNamedGzipBytes >= maxNamedGzipBytes) {
       throw new Error(`${target} pure named consumer is ${pureNamedGzipBytes} gzip bytes, expected below ${maxNamedGzipBytes}`);
+    }
+    if (pipeNamedGzipBytes >= maxPipeGzipBytes) {
+      throw new Error(`${target} operator pipe consumer is ${pipeNamedGzipBytes} gzip bytes, expected below ${maxPipeGzipBytes}`);
     }
     if (namedGzipBytes >= fullGzipBytes * 0.5) {
       throw new Error(`${target} tree shaking is weak: named=${namedGzipBytes}, full=${fullGzipBytes} gzip bytes`);
@@ -89,7 +107,11 @@ try {
     if (pureNamedGzipBytes >= fullGzipBytes * 0.5) {
       throw new Error(`${target} pure tree shaking is weak: named=${pureNamedGzipBytes}, full=${fullGzipBytes} gzip bytes`);
     }
-    console.log(`${target} consumer gzip bytes: legacy=${namedGzipBytes}, pure=${pureNamedGzipBytes}, full=${fullGzipBytes}`);
+    if (pipeNamedGzipBytes >= fullGzipBytes * 0.5) {
+      throw new Error(`${target} operator pipe tree shaking is weak: named=${pipeNamedGzipBytes}, full=${fullGzipBytes} gzip bytes`);
+    }
+    execFileSync(bun, [join(directory, `${target}-pipe-entry.bundle.js`)], { cwd: directory, stdio: "inherit" });
+    console.log(`${target} consumer gzip bytes: legacy=${namedGzipBytes}, pure=${pureNamedGzipBytes}, pipe=${pipeNamedGzipBytes}, full=${fullGzipBytes}`);
   }
   for (const field of ["dependencies", "optionalDependencies", "peerDependencies"]) {
     if (Object.keys(manifest[field] || {}).length) throw new Error(`Unexpected ${field}`);
@@ -101,6 +123,7 @@ try {
       modBig, modInPlace, mul, mulBig, mulInPlace, pipe, pipeBig, pipeInPlace, pow, pow10, powBig, powInPlace,
       round, roundBig, roundInPlace, roundToIncrement, roundToStep, roundToStepInPlace, serializeBig, sqrt,
       sqrtBig, sqrtInPlace, sub, subBig, subInPlace, sumBig, toExponential, toFixed, toNumber, toPrecision } from "big.esm";
+    import { pipe as operatorPipe, add as addStep, mul as multiplyStep, div as divideStep } from "big.esm/pipe";
     import { addBig as extensionlessDeepAdd } from "big.esm/dist/big.esm";
     import { addBig as explicitDeepAdd } from "big.esm/dist/big.esm.js";
     import { add as deepPureAdd, addInPlace as deepAddInPlace, addBig as deepLegacyAdd } from "big.esm/dist/operations/add";
@@ -167,6 +190,14 @@ try {
         toNumber("1.23") !== 1.23 || toPrecision("45.6", 5) !== "45.600" ||
         sumBig(["0.1", "0.2", 1n]).toString() !== "1.3" ||
         pipe("1.03").roundToStep("0.05").toFixed(2) !== "1.05") throw Error("Decimal conveniences");
+    const operatorInput = createBig("4");
+    const operatorGroup = [addStep(2), multiplyStep(3)];
+    const operatorIntermediate = operatorPipe(operatorInput, ...operatorGroup);
+    const operatorResult = operatorPipe(operatorIntermediate, divideStep(2, 3, "half-up"));
+    if (!(operatorResult instanceof Big) || operatorInput.toString() !== "4" ||
+        operatorIntermediate.toString() !== "18" || operatorResult.toString() !== "9") {
+      throw Error("Operator pipe groups or Big identity");
+    }
     const copiedInput = createBig("1.03");
     const copiedPipeline = pipe(copiedInput).roundToStep("0.05");
     const sharedInput = createBig("1.03");
@@ -201,6 +232,8 @@ try {
       round, roundBig, roundInPlace, roundToIncrement, roundToStep, roundToStepInPlace, serializeBig, sqrt, sqrtBig, sqrtInPlace,
       sub, subBig, subInPlace,
       type BigObject, type BigValue, type SerializedBig } from "big.esm";
+    import { pipe as operatorPipe, add as addStep, mul as multiplyStep, div as divideStep,
+      type PipeOperator } from "big.esm/pipe";
     import type { BigObject as DeepBigObject } from "big.esm/dist/types";
     import type { BigObject as ExplicitBigObject } from "big.esm/dist/types.js";
     import { add as deepAdd, addInPlace as deepAddInPlace, addBig as deepLegacyAdd } from "big.esm/dist/operations/add";
@@ -226,6 +259,12 @@ try {
     const directResults: Big[] = [abs("-2"), add("1", 2n), sub("3", 1n), mul("2", 3), div("1", 8, 3),
       divCompact("1", 8), mod("5", 3), pow("2", 3), sqrt("9"), round("1.25", 1), roundToStep("1.03", "0.05")];
     const purePipe = pipe("1.03").roundToStep("0.05");
+    const operatorGroup: PipeOperator[] = [addStep(2), multiplyStep(3)];
+    const operatorResult: Big = operatorPipe("4", ...operatorGroup, divideStep(2, 3, "half-up"));
+    // @ts-expect-error Operator arguments must be configured before calling pipe.
+    operatorPipe(1, undefined);
+    // @ts-expect-error Operation factories are not operators until invoked.
+    operatorPipe(1, addStep);
     const copyFromBig = pipe(new Big("1")).add(2n);
     const inPlace = addInPlace(new Big(1), "2");
     const inPlaceResults: Big[] = [absInPlace(new Big("-2")), addInPlace(new Big(1), 2n),
@@ -263,7 +302,7 @@ try {
     const serialized: SerializedBig = serializeBig("1.2300");
     const formatted: string = deepPipeCopy(deserializeBig(serialized)).roundToStep("0.05").toPrecision(3);
     api.add(new Big(formatted), "2");
-    void pure; void directResults; void purePipe; void copyFromBig; void inPlace; void inPlaceResults; void legacyResults;
+    void pure; void directResults; void purePipe; void operatorResult; void copyFromBig; void inPlace; void inPlaceResults; void legacyResults;
     void inPlacePipe; void legacyPipe; void deepLegacyPipe;
     construct(object, undefined);
     api.addBig(createBig(object), createBig(value));
