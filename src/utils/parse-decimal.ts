@@ -37,6 +37,9 @@ export function decimalScale(fractionLength: number, exponentText: string | unde
 }
 
 export function parseDecimal(num: string | number, ignoreFraction = false, compactPositiveExponent = false): BigObject {
+  if (typeof num === "number" && Number.isSafeInteger(num)) {
+    return { value: BigInt(num), scale: 0 };
+  }
   const strNum = typeof num === "number" ? String(num) : num;
 
   if (!ignoreFraction && typeof strNum === "string") {

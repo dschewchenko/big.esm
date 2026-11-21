@@ -120,6 +120,11 @@ suite("BigValue operands", () => {
     expect(sub("1.20", "1.20")).toMatchObject({ value: 0n, scale: 2 });
   });
 
+  test("adds safe integer operands exactly beyond the Number range", () => {
+    expect(add(Number.MAX_SAFE_INTEGER, 2)).toMatchObject({ value: 9007199254740993n, scale: 0 });
+    expect(add(Number.MIN_SAFE_INTEGER, -2)).toMatchObject({ value: -9007199254740993n, scale: 0 });
+  });
+
   test("keeps wide alignment, cancellation, and multiplication exact", () => {
     expect(add("999999999999999", "0.0001")).toMatchObject({ value: 9999999999999990001n, scale: 4 });
     expect(sub("9007199254741", ".009")).toMatchObject({ value: 9007199254740991n, scale: 3 });

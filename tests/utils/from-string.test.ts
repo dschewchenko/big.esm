@@ -14,6 +14,16 @@ suite("Big utils fromString", () => {
     expect(fromString(-1.5e3)).toStrictEqual(new Big(BigInt(-1500)));
   });
 
+  test("preserves safe integers and the decimal form of unsafe numbers", () => {
+    expect(fromString(Number.MAX_SAFE_INTEGER, false, false)).toEqual({ value: 9007199254740991n, scale: 0 });
+    expect(fromString(Number.MIN_SAFE_INTEGER, false, false)).toEqual({ value: -9007199254740991n, scale: 0 });
+    expect(fromString(-0, false, false)).toEqual({ value: 0n, scale: 0 });
+    expect(fromString(1_000_000_000_000_000_100, false, false)).toEqual({
+      value: 1_000_000_000_000_000_100n,
+      scale: 0
+    });
+  });
+
   test("fromString converts fractions", () => {
     expect(fromString(1e-6)).toStrictEqual(new Big(BigInt(1), 6));
     expect(fromString(1.23e-4)).toStrictEqual(new Big(BigInt(123), 6));
