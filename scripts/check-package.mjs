@@ -86,8 +86,9 @@ try {
   }
 
   const esm = `import api, { Big, BigPipe, absBig, addBig, alignScale, cloneBig, compareBig, createBig, createCompactBig,
-      divBig, divCompactBig, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, modBig,
-      mulBig, pipeBig, pow10, powBig, roundBig, roundToIncrement, sqrtBig, subBig, toExponential, toFixed } from "big.esm";
+      deserializeBig, divBig, divCompactBig, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, modBig,
+      mulBig, pipeBig, pow10, powBig, roundBig, roundToIncrement, serializeBig, sqrtBig, subBig, sumBig, toExponential,
+      toFixed, toNumber, toPrecision } from "big.esm";
     import { addBig as extensionlessDeepAdd } from "big.esm/dist/big.esm";
     import { addBig as explicitDeepAdd } from "big.esm/dist/big.esm.js";
     import { addBig as operationAdd } from "big.esm/dist/operations/add";
@@ -95,15 +96,17 @@ try {
     import { Big as deepBig } from "big.esm/dist/big";
     import { pipeBig as deepPipe } from "big.esm/dist/pipeline.js";
     import { toFixed as deepFixed } from "big.esm/dist/utils/to-fixed";
+    import { toPrecision as deepPrecision } from "big.esm/dist/utils/to-precision.js";
     import { divCompactBig as coreDivide } from "big.esm/dist/core.js";
     const namedApi = { Big, BigPipe, absBig, addBig, alignScale, cloneBig, compareBig, createBig, createCompactBig,
-      divBig, divCompactBig, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, modBig,
-      mulBig, pipeBig, pow10, powBig, roundBig, roundToIncrement, sqrtBig, subBig, toExponential, toFixed };
+      deserializeBig, divBig, divCompactBig, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, modBig,
+      mulBig, pipeBig, pow10, powBig, roundBig, roundToIncrement, serializeBig, sqrtBig, subBig, sumBig, toExponential,
+      toFixed, toNumber, toPrecision };
     if (api.addBig !== addBig || api.createBig !== createBig ||
         [extensionlessDeepAdd, explicitDeepAdd, operationAdd, operationAddJs].some((item) => item !== addBig) ||
-        deepBig !== Big || deepPipe !== pipeBig || deepFixed !== toFixed || coreDivide !== divCompactBig ||
+        deepBig !== Big || deepPipe !== pipeBig || deepFixed !== toFixed || deepPrecision !== toPrecision || coreDivide !== divCompactBig ||
         Object.entries(namedApi).some(([name, item]) => typeof item !== "function" || api[name] !== item) ||
-        addBig(createBig(1), createBig(2)).toString() !== "3") throw Error("ESM exports");
+        addBig(createBig(1), "2").toString() !== "3") throw Error("ESM exports");
     const rounded = createBig("1.125");
     if (roundBig(rounded, 2, "half-even") !== rounded || rounded.toString() !== "1.12" ||
         toFixed(createBig("1.005"), 2, "half-even") !== "1.00" ||
@@ -112,7 +115,12 @@ try {
         divCompactBig(createBig(1), createBig(8)).toString() !== "0.125" ||
         toExponential(divCompactBig(createCompactBig("3e10000000000"), createBig(2))) !== "1.5e+10000000000" ||
         roundToIncrement(createBig("-1.025"), createBig("0.05"), "half-even").toString() !== "-1" ||
-        !isDecimalInput("1.25") || isDecimalInput("")) throw Error("New decimal exports");
+        !isDecimalInput("1.25") || isDecimalInput("")) throw Error("Decimal exports");
+    const serialized = JSON.stringify(serializeBig("3e10000000000"));
+    if (toExponential(deserializeBig(JSON.parse(serialized))) !== "3e+10000000000" ||
+        toNumber("1.23") !== 1.23 || toPrecision("45.6", 5) !== "45.600" ||
+        sumBig(["0.1", "0.2", 1n]).toString() !== "1.3" ||
+        pipeBig("1.03").roundToIncrement("0.05").toFixed(2) !== "1.05") throw Error("Decimal conveniences");
     const value = createBig("1.2");
     const pipeline = pipeBig(value).add("1");
     if (pipeline.value() !== value || value.toString() !== "2.2") throw Error("ESM mutation");`;
@@ -131,7 +139,8 @@ try {
   execFileSync(node, ["consumer-require.cjs"], { cwd: directory, stdio: "inherit" });
   execFileSync(bun, ["consumer.mjs"], { cwd: directory, stdio: "inherit" });
   execFileSync(bun, ["consumer-require.cjs"], { cwd: directory, stdio: "inherit" });
-  writeFileSync(join(directory, "consumer.mts"), `import api, { addBig, Big, createBig, fromString, type BigObject, type BigValue } from "big.esm";
+  writeFileSync(join(directory, "consumer.mts"), `import api, { addBig, Big, createBig, deserializeBig, fromString, serializeBig,
+      type BigObject, type BigValue, type SerializedBig } from "big.esm";
     import type { BigObject as DeepBigObject } from "big.esm/dist/types";
     import type { BigObject as ExplicitBigObject } from "big.esm/dist/types.js";
     import { addBig as deepAdd } from "big.esm/dist/operations/add";
@@ -154,6 +163,9 @@ try {
     deepAdd(new deepBig(explicitObject), deepPipe("2").value());
     deepAddJs(new Big(1), new Big(2));
     deepFixed(coreDivide(new Big(1), new Big(2)), 2);
+    const serialized: SerializedBig = serializeBig("1.2300");
+    const formatted: string = deepPipe(deserializeBig(serialized)).roundToIncrement("0.05").toPrecision(3);
+    api.addBig(new Big(formatted), "2");
     construct(object, undefined);
     api.addBig(createBig(object), createBig(value));
     generic.toString(); object.value;

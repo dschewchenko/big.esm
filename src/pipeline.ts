@@ -5,10 +5,14 @@ import { modBig } from "./operations/mod.js";
 import { mulBig } from "./operations/mul.js";
 import { powBig } from "./operations/pow.js";
 import { roundBig } from "./operations/round.js";
+import { roundToIncrement } from "./operations/round-to-increment.js";
 import { sqrtBig } from "./operations/sqrt.js";
 import { subBig } from "./operations/sub.js";
 import type { BigValue, RoundingMode } from "./types.js";
 import { createBig } from "./utils/create.js";
+import { toFixed } from "./utils/to-fixed.js";
+import { toNumber } from "./utils/to-number.js";
+import { toPrecision } from "./utils/to-precision.js";
 
 export type BigPipeline = {
   /**
@@ -41,27 +45,27 @@ export class BigPipe implements BigPipeline {
   }
 
   add(value: BigValue): this {
-    addBig(this.current, createBig(value));
+    addBig(this.current, value);
     return this;
   }
 
   sub(value: BigValue): this {
-    subBig(this.current, createBig(value));
+    subBig(this.current, value);
     return this;
   }
 
   mul(value: BigValue): this {
-    mulBig(this.current, createBig(value));
+    mulBig(this.current, value);
     return this;
   }
 
   div(value: BigValue, precision?: number, roundingMode?: RoundingMode): this {
-    divBig(this.current, createBig(value), precision, roundingMode);
+    divBig(this.current, value, precision, roundingMode);
     return this;
   }
 
   mod(value: BigValue): this {
-    modBig(this.current, createBig(value));
+    modBig(this.current, value);
     return this;
   }
 
@@ -72,6 +76,12 @@ export class BigPipe implements BigPipeline {
 
   round(decimalPlaces?: number, roundingMode?: RoundingMode): this {
     roundBig(this.current, decimalPlaces, roundingMode);
+    return this;
+  }
+
+  /** Rounds the current value to a multiple of a positive step. */
+  roundToIncrement(step: BigValue, roundingMode?: RoundingMode): this {
+    roundToIncrement(this.current, step, roundingMode);
     return this;
   }
 
@@ -87,6 +97,21 @@ export class BigPipe implements BigPipeline {
   toString(trimZeros = true): string {
     return this.current.toString(trimZeros);
   }
+
+  /** Formats the current value with exactly the requested decimal places. */
+  toFixed(decimalPlaces?: number, roundingMode?: RoundingMode): string {
+    return toFixed(this.current, decimalPlaces, roundingMode);
+  }
+
+  /** Converts the current value to the nearest representable JavaScript number. */
+  toNumber(): number {
+    return toNumber(this.current);
+  }
+
+  /** Formats the current value to the requested number of significant digits. */
+  toPrecision(significantDigits: number, roundingMode?: RoundingMode): string {
+    return toPrecision(this.current, significantDigits, roundingMode);
+  }
 }
 
 /**
@@ -94,6 +119,6 @@ export class BigPipe implements BigPipeline {
  * The pipeline owns and mutates its `Big` instance in-place.
  * Passing an existing `Big` will mutate that instance.
  */
-export function pipeBig(initial: BigValue): BigPipeline {
+export function pipeBig(initial: BigValue): BigPipe {
   return new BigPipe(initial);
 }

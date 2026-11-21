@@ -1,17 +1,17 @@
 import type { Big } from "../big.js";
-import type { RoundingMode } from "../types.js";
+import type { BigValue, RoundingMode } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { DEFAULT_PRECISION, MAX_DECIMAL_EXPANSION, MAX_DECIMAL_PLACES, ZERO_BIGINT } from "../utils/constants.js";
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
-import { isZero } from "../utils/is-zero.js";
 import { pow10 } from "../utils/pow10.js";
+import { readBigOperand } from "../utils/read-big-operand.js";
 import { divideRounded, roundTinyAway } from "../utils/rounding.js";
 
 /**
  * Divides two Big instances and mutates the dividend with the result.
  *
  * @param {Big} dividend - The dividend Big instance.
- * @param {Big} divisor - The divisor Big instance.
+ * @param {BigValue} operand - The divisor value.
  * @param {number} [precision] - Decimal places to keep, from 0 to 1,000,000. Defaults to 20.
  * @param {RoundingMode} [roundingMode="half-up"] - The rule used to round the quotient.
  * @returns {Big} - The mutated dividend instance.
@@ -29,11 +29,12 @@ import { divideRounded, roundTinyAway } from "../utils/rounding.js";
  */
 export function divBig(
   dividend: Big,
-  divisor: Big,
+  operand: BigValue,
   precision = DEFAULT_PRECISION,
   roundingMode: RoundingMode = "half-up"
 ): Big {
-  if (isZero(divisor)) {
+  const divisor = readBigOperand(operand);
+  if (divisor.value === ZERO_BIGINT) {
     throw new Error("Div0");
   }
 

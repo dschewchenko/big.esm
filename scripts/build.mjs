@@ -52,6 +52,7 @@ const publicFacades = {
   "operations/round-to-increment.js": "roundToIncrement",
   "operations/sqrt.js": "sqrtBig",
   "operations/sub.js": "subBig",
+  "operations/sum.js": "sumBig",
   "utils/align-scale.js": "alignScale",
   "utils/clone.js": "cloneBig",
   "utils/create.js": "createBig",
@@ -59,8 +60,11 @@ const publicFacades = {
   "utils/is-big-object.js": "isBigObject",
   "utils/numeric.js": "isNumericValue",
   "utils/pow10.js": "pow10",
+  "utils/serialization.js": "deserializeBig, serializeBig",
   "utils/to-exponential.js": "toExponential",
-  "utils/to-fixed.js": "toFixed"
+  "utils/to-fixed.js": "toFixed",
+  "utils/to-number.js": "toNumber",
+  "utils/to-precision.js": "toPrecision"
 };
 
 for (const [file, exports] of Object.entries(publicFacades)) {

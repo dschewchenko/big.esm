@@ -1,8 +1,10 @@
 import type { Big } from "../big.js";
+import type { BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
 import { isZero } from "../utils/is-zero.js";
 import { pow10 } from "../utils/pow10.js";
+import { readBigOperand } from "../utils/read-big-operand.js";
 
 const MAX_DIRECT_SCALE_DIFFERENCE = 128;
 
@@ -10,7 +12,7 @@ const MAX_DIRECT_SCALE_DIFFERENCE = 128;
  * Performs the modulo operation (remainder of division) for two Big instances.
  *
  * @param dividend The Big instance representing the dividend.
- * @param divisor The Big instance representing the divisor.
+ * @param operand The value representing the divisor.
  * @returns The mutated dividend instance representing the remainder of the division.
  * @throws {Error} Division by zero is not allowed.
  *
@@ -21,10 +23,11 @@ const MAX_DIRECT_SCALE_DIFFERENCE = 128;
  * modBig(new Big(3), new Big(10)).toString(); // "3"
  * modBig(new Big(10), new Big(10)).toString(); // "0"
  */
-export function modBig(dividend: Big, divisor: Big): Big {
+export function modBig(dividend: Big, operand: BigValue): Big {
   assertScale(dividend.scale);
+  const divisor = readBigOperand(operand);
   assertScale(divisor.scale);
-  if (isZero(divisor)) {
+  if (divisor.value === 0n) {
     throw new Error("Div0");
   }
 

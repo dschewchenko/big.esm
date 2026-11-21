@@ -1,8 +1,9 @@
 import type { Big } from "../big.js";
-import type { RoundingMode } from "../types.js";
+import type { BigValue, RoundingMode } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { DEFAULT_PRECISION, MAX_DECIMAL_EXPANSION, MAX_DECIMAL_PLACES } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
+import { readBigOperand } from "../utils/read-big-operand.js";
 import { divBig } from "./div.js";
 
 /**
@@ -10,19 +11,19 @@ import { divBig } from "./div.js";
  * Repeating quotients and exact quotients beyond the precision limit are rounded once.
  *
  * @param dividend - The operand to mutate and return.
- * @param divisor - The nonzero divisor.
+ * @param operand - The nonzero divisor value.
  * @param maxDecimalPlaces - The maximum fractional places, from 0 to 1,000,000. Defaults to 20.
  * @param roundingMode - The rule used if rounding is needed. Defaults to half-up.
  * @throws If the divisor is zero, the precision is invalid, or the result needs too much decimal expansion.
  *
  * @category Operations
  * @example
- * divCompactBig(createBig(1), createBig(8)).toString(); // "0.125"
- * divCompactBig(createBig(1), createBig(3), 4).toString(); // "0.3333"
+ * divCompactBig(createBig(1), 8).toString(); // "0.125"
+ * divCompactBig(createBig(1), 3, 4).toString(); // "0.3333"
  */
 export function divCompactBig(
   dividend: Big,
-  divisor: Big,
+  operand: BigValue,
   maxDecimalPlaces = DEFAULT_PRECISION,
   roundingMode: RoundingMode = "half-up"
 ): Big {
@@ -31,6 +32,7 @@ export function divCompactBig(
   }
 
   assertScale(dividend.scale);
+  const divisor = readBigOperand(operand);
   assertScale(divisor.scale);
   if (divisor.value === 0n) throw new Error("Div0");
   if (dividend.value === 0n) {

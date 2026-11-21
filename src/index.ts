@@ -16,6 +16,7 @@ export { roundBig } from "./operations/round.js";
 export { roundToIncrement } from "./operations/round-to-increment.js";
 export { sqrtBig } from "./operations/sqrt.js";
 export { subBig } from "./operations/sub.js";
+export { sumBig } from "./operations/sum.js";
 export type { BigPipeline } from "./pipeline.js";
 export { BigPipe, pipeBig } from "./pipeline.js";
 // types
@@ -28,5 +29,9 @@ export { createCompactBig, fromString, isDecimalInput } from "./utils/from-strin
 export { isBigObject } from "./utils/is-big-object.js";
 export { isNumericValue } from "./utils/numeric.js";
 export { pow10 } from "./utils/pow10.js";
+export type { SerializedBig } from "./utils/serialization.js";
+export { deserializeBig, serializeBig } from "./utils/serialization.js";
 export { toExponential } from "./utils/to-exponential.js";
 export { toFixed } from "./utils/to-fixed.js";
+export { toNumber } from "./utils/to-number.js";
+export { toPrecision } from "./utils/to-precision.js";

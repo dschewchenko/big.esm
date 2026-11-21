@@ -42,7 +42,7 @@ yarn add big.esm
 import { addBig, cloneBig, createBig } from "big.esm";
 
 const a = createBig("12345678910.12345678910");
-const b = createBig("9876543210.9876543210");
+const b = "9876543210.9876543210";
 
 addBig(a, b);
 console.log(a.toString()); // 22222222121.1111111101
@@ -64,6 +64,8 @@ import { pipeBig } from "big.esm";
 console.log(
   pipeBig("1.5e3").add(500).div(2, 0, "down").toString()
 ); // 1000
+
+console.log(pipeBig("1.03").roundToIncrement("0.05").toFixed(2)); // "1.05"
 ```
 
 Use `big.esm` for the public API. Deep ESM imports for public operation and utility modules work with or without `.js`, for example `big.esm/dist/operations/add`.
@@ -149,27 +151,53 @@ Formats the number with exactly the requested number of decimal places, includin
 
 Formats the exact value in scientific notation without mutating `a`. For example, `toExponential(createBig("1e-10000000000"))` returns `"1e-10000000000"` without expanding the exponent.
 
+#### `toPrecision(value: BigValue, significantDigits: number, roundingMode = "half-up"): string`
+
+Formats the input to 1–1,000,000 significant digits, including trailing zeros. For example, `toPrecision("45.6", 5)` returns `"45.600"`. It uses scientific notation when the rounded exponent is at most −7, at least 21, or at least `significantDigits`.
+
+#### `toNumber(value: BigValue): number`
+
+Converts the full decimal value to a JavaScript number. `toNumber("1.23")` returns `1.23`. JavaScript rounding applies, with `Infinity` or `-Infinity` for overflow and signed zero for underflow.
+
+#### `serializeBig(value: BigValue): SerializedBig` · `deserializeBig(data: unknown): Big`
+
+Round-trip a value as a JSON-safe coefficient string and scale. This preserves the stored scale, including trailing zeros and large compact exponents.
+
+```js
+import { deserializeBig, serializeBig, toExponential } from "big.esm";
+
+const json = JSON.stringify(serializeBig("3e10000000000"));
+const restored = deserializeBig(JSON.parse(json));
+toExponential(restored); // "3e+10000000000"
+```
+
 ### Mathematical operations
 
 Math operations mutate the first argument and return it.
 
-#### `addBig(a: Big, b: Big): Big`
+A `BigValue` argument accepts a string, number, bigint, `Big`, or `BigObject` directly.
+
+#### `addBig(a: Big, b: BigValue): Big`
 
 Adds `b` to `a` (mutates `a`).
 
-#### `subBig(a: Big, b: Big): Big`
+#### `subBig(a: Big, b: BigValue): Big`
 
 Subtracts `b` from `a` (mutates `a`).
 
-#### `mulBig(a: Big, b: Big): Big`
+#### `sumBig(values: Iterable<BigValue>): Big`
+
+Sums any iterable of decimal inputs without mutating its items. An empty iterable returns zero. `sumBig(["0.1", "0.2", 1n])` produces `1.3`.
+
+#### `mulBig(a: Big, b: BigValue): Big`
 
 Multiplies `a` by `b` (mutates `a`).
 
-#### `divBig(a: Big, b: Big, precision = 20, roundingMode = "half-up"): Big`
+#### `divBig(a: Big, b: BigValue, precision = 20, roundingMode = "half-up"): Big`
 
 Divides `a` by `b` in place at the requested decimal scale. Precision ranges from 0 to 1,000,000 places.
 
-#### `divCompactBig(a: Big, b: Big, maxDecimalPlaces = 20, roundingMode = "half-up"): Big`
+#### `divCompactBig(a: Big, b: BigValue, maxDecimalPlaces = 20, roundingMode = "half-up"): Big`
 
 Divides `a` by `b` in place and uses a compact scale for terminating results that fit within the requested precision. Repeating quotients and longer fractions are rounded once. `1 / 8` yields `0.125`. `1 / 3` with four places yields `0.3333`.
 
@@ -187,13 +215,13 @@ console.log(toExponential(value)); // "1.5e+10000000000"
 
 Rounds `a` in place to at most the requested number of decimal places. The number of places must be a non-negative safe integer.
 
-#### `roundToIncrement(a: Big, step: Big, roundingMode = "half-up"): Big`
+#### `roundToIncrement(a: Big, step: BigValue, roundingMode = "half-up"): Big`
 
 Rounds `a` in place to a multiple of a positive `step` at the step's scale. For example, rounding `1.03` to a step of `0.05` gives `1.05`. In `half-even` mode, an exact tie selects an even multiple of the step. Scale alignment uses the same expansion limit as division.
 
 Division, rounding and fixed-point formatting accept `half-up` (ties away from zero), `half-even` (ties to even), `down` (toward zero), `up` (away from zero), `floor` (toward negative infinity) and `ceil` (toward positive infinity).
 
-#### `modBig(a: Big, b: Big): Big`
+#### `modBig(a: Big, b: BigValue): Big`
 
 Calculates `a % b` (mutates `a`).
 
@@ -223,9 +251,9 @@ Returns the maximum of `a` and `b` by reference (no cloning).
 
 ### Pipeline
 
-#### `pipeBig(initial: BigValue): BigPipeline`
+#### `pipeBig(initial: BigValue): BigPipe`
 
-Creates a chainable pipeline that mutates its internal `Big` in place. Use `.round(decimalPlaces, roundingMode)` to round the current value.
+Creates a chainable pipeline that mutates its internal `Big` in place. Use `.roundToIncrement(step, roundingMode)` for step rounding. Finish with `.toFixed(places)`, `.toPrecision(digits)`, or `.toNumber()`.
 
 #### `new BigPipe(initial: BigValue): BigPipe`
 

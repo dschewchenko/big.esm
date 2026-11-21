@@ -1,9 +1,10 @@
 import type { Big } from "../big.js";
-import type { RoundingMode } from "../types.js";
+import type { BigValue, RoundingMode } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { MAX_DECIMAL_EXPANSION } from "../utils/constants.js";
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
 import { pow10 } from "../utils/pow10.js";
+import { readBigOperand } from "../utils/read-big-operand.js";
 import { divideRounded, roundTinyAway } from "../utils/rounding.js";
 
 /**
@@ -11,7 +12,7 @@ import { divideRounded, roundTinyAway } from "../utils/rounding.js";
  * The result uses the increment's existing scale.
  *
  * @param big - The value to round, replaced in place with the rounded multiple.
- * @param step - The positive increment, unchanged by this operation.
+ * @param operand - The positive increment value, unchanged by this operation.
  * @param roundingMode - The rounding rule. Defaults to half-up.
  * @returns The mutated value.
  * @throws If the increment is not positive, either scale is invalid, or required alignment exceeds 2,000,000 places.
@@ -19,10 +20,11 @@ import { divideRounded, roundTinyAway } from "../utils/rounding.js";
  * @category Operations
  *
  * @example
- * roundToIncrement(createBig("1.03"), createBig("0.05")).toString(); // "1.05"
- * roundToIncrement(createBig("1.025"), createBig("0.05"), "half-even").toString(); // "1"
+ * roundToIncrement(createBig("1.03"), "0.05").toString(); // "1.05"
+ * roundToIncrement(createBig("1.025"), "0.05", "half-even").toString(); // "1"
  */
-export function roundToIncrement(big: Big, step: Big, roundingMode: RoundingMode = "half-up"): Big {
+export function roundToIncrement(big: Big, operand: BigValue, roundingMode: RoundingMode = "half-up"): Big {
+  const step = readBigOperand(operand);
   if (step.value <= 0n) throw new RangeError("Step");
   const valueScale = big.scale;
   const incrementScale = step.scale;
