@@ -133,6 +133,15 @@ suite("BigValue operands", () => {
     expect(() => mul("42", "1e9007199254740992")).toThrow("Exp");
   });
 
+  test("legacy addition keeps the v2 mutation behavior with an extra JavaScript argument", () => {
+    const left = new Big("1.2");
+    const right = Object.freeze(new Big("0.05"));
+
+    expect(Reflect.apply(addBig, undefined, [left, right, false])).toBe(left);
+    expect(left).toMatchObject({ value: 125n, scale: 2 });
+    expect(right).toMatchObject({ value: 5n, scale: 2 });
+  });
+
   test("keeps the legacy names as direct mutable aliases", () => {
     expect(addBig).toBe(addInPlace);
     expect(subBig).toBe(subInPlace);

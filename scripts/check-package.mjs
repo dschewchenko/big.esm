@@ -4,9 +4,7 @@ import { tmpdir } from "node:os";
 import { delimiter, join, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 
-// Keep room for short-decimal parsing and the literal powers used for scale alignment.
-const maxLegacyNamedGzipBytes = 1700;
-const maxPureNamedGzipBytes = 1750;
+const maxNamedGzipBytes = 1700;
 
 function listFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -79,11 +77,11 @@ try {
     const namedGzipBytes = gzipSync(namedBundle, { level: 9 }).byteLength;
     const pureNamedGzipBytes = gzipSync(pureNamedBundle, { level: 9 }).byteLength;
     const fullGzipBytes = gzipSync(fullBundle, { level: 9 }).byteLength;
-    if (namedGzipBytes >= maxLegacyNamedGzipBytes) {
-      throw new Error(`${target} named consumer is ${namedGzipBytes} gzip bytes, expected below ${maxLegacyNamedGzipBytes}`);
+    if (namedGzipBytes >= maxNamedGzipBytes) {
+      throw new Error(`${target} named consumer is ${namedGzipBytes} gzip bytes, expected below ${maxNamedGzipBytes}`);
     }
-    if (pureNamedGzipBytes >= maxPureNamedGzipBytes) {
-      throw new Error(`${target} pure named consumer is ${pureNamedGzipBytes} gzip bytes, expected below ${maxPureNamedGzipBytes}`);
+    if (pureNamedGzipBytes >= maxNamedGzipBytes) {
+      throw new Error(`${target} pure named consumer is ${pureNamedGzipBytes} gzip bytes, expected below ${maxNamedGzipBytes}`);
     }
     if (namedGzipBytes >= fullGzipBytes * 0.5) {
       throw new Error(`${target} tree shaking is weak: named=${namedGzipBytes}, full=${fullGzipBytes} gzip bytes`);
@@ -256,6 +254,8 @@ try {
     addInPlace("1", "2");
     // @ts-expect-error Legacy Big-suffixed operations retain their Big/Big signature.
     addBig(new Big(1), "2");
+    // @ts-expect-error The mutation flag was removed in v2.
+    addBig(new Big(1), new Big(2), false);
     // @ts-expect-error Mutating pipelines require a Big instance.
     pipeInPlace("1");
     roundToIncrement(new Big("1.03"), new Big("0.05"));

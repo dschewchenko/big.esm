@@ -1,6 +1,32 @@
 import type { BigObject } from "../types.js";
 import { ZERO_BIGINT } from "./constants.js";
-import { readShortDecimal } from "./short-decimal.js";
+
+/** Reads a short plain decimal with an exact integer coefficient. */
+function parseShortDecimal(text: string): BigObject | undefined {
+  const length = text.length;
+  // At most 15 digits fit in a safe integer, including every prefix of the coefficient.
+  if (length > 15) return undefined;
+  const negative = text.charCodeAt(0) === 45;
+  const start = negative ? 1 : 0;
+  let value = 0;
+  let point = -1;
+  for (let index = start; index < length; index++) {
+    const digit = text.charCodeAt(index) - 48;
+    if (digit >= 0 && digit <= 9) {
+      value = value * 10 + digit;
+    } else if (digit === -2 && point < 0) {
+      point = index;
+    } else {
+      return undefined;
+    }
+  }
+  if (length === start || (point >= 0 && length === start + 1)) return undefined;
+
+  return {
+    value: BigInt(negative ? -value : value),
+    scale: point < 0 || value === 0 ? 0 : length - point - 1
+  };
+}
 
 export const NUMERIC_PATTERN = /^(-)?(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/;
 
@@ -14,8 +40,8 @@ export function parseDecimal(num: string | number, ignoreFraction = false, compa
   const strNum = typeof num === "number" ? String(num) : num;
 
   if (!ignoreFraction && typeof strNum === "string") {
-    const short = readShortDecimal(strNum);
-    if (short !== undefined) return { value: BigInt(short.value), scale: short.scale };
+    const short = parseShortDecimal(strNum);
+    if (short !== undefined) return short;
   }
 
   const match = NUMERIC_PATTERN.exec(strNum);

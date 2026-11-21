@@ -4,7 +4,6 @@ import { assertScale } from "../utils/assert-scale.js";
 import { ZERO_BIGINT } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
-import { addShortDecimals } from "../utils/short-decimal.js";
 
 /**
  * Adds two values and returns a new Big instance.
@@ -19,10 +18,6 @@ import { addShortDecimals } from "../utils/short-decimal.js";
  * add("1.1", "2.2").toString(); // "3.3"
  */
 export function add(a: BigValue, b: BigValue): Big {
-  if (typeof a === "string" && typeof b === "string") {
-    const sum = addShortDecimals(a, b);
-    if (sum !== undefined) return new Big(BigInt(sum.value), sum.scale);
-  }
   return addTo(new Big(a), b);
 }
 
@@ -67,6 +62,8 @@ function addTo(a: Big, b: BigValue): Big {
 }
 
 /**
+ * Mutates and returns the first operand. The third argument from v1 was removed in v2.
+ *
  * @deprecated Use `add` for a new result or `addInPlace` to mutate the first operand.
  * @inlineType BigBinaryOperation
  */

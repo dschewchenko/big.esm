@@ -84,9 +84,11 @@ The default benchmark prepares fresh operands before timing. Use `--mode end-to-
 - `big.esm` is not a drop-in replacement for `big.js`. It does not support the same API and does not have the same functionality. It is a completely different library.
 
 
-## Migrating from the mutation API
+## Choosing whether to mutate
 
-The arithmetic helpers introduced in v2, such as `addBig(a, b)`, mutate `a`. Use `add(a, b)` for a new result or `addInPlace(a, b)` to update `a` explicitly. The earlier mutating names are deprecated in 3.x.
+In v1, `addBig(a, b, mutable = false)` returned a new result by default. The [v2.0.0 breaking change](https://github.com/dschewchenko/big.esm/releases/tag/v2.0.0) removed the flag. Since v2, `addBig(a, b)` updates `a` and returns it. JavaScript calls with a third argument still update `a`, even when that argument is `false`.
+
+In v3.2, use `add(a, b)` for a new result or `addInPlace(a, b)` to update `a` explicitly. The legacy mutating names are deprecated and retain their behavior.
 
 `pipeBig(big)` and `new BigPipe(big)` reuse `big`. Use `pipe(big)` or `pipeInPlace(big)` to choose ownership at the start of the chain. `createBig(existingBig)` reuses its input, and `cloneBig(existingBig)` makes a copy.
 
