@@ -3,7 +3,7 @@ import type { BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { createBig } from "../utils/create.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
-import { addBig } from "./add.js";
+import { addInPlace } from "./add.js";
 
 /**
  * Sums an iterable of decimal values exactly without mutating its items.
@@ -25,7 +25,7 @@ export function sumBig(values: Iterable<BigValue>): Big {
       result.value = operand.value;
       result.scale = operand.scale;
     } else {
-      addBig(result, operand);
+      addInPlace(result, operand);
     }
   }
   return result;

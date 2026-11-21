@@ -1,34 +1,32 @@
 import { expect, suite, test } from "vitest";
-import {
-  addBig,
-  Big,
-  createCompactBig,
-  divBig,
-  divCompactBig,
-  modBig,
-  mulBig,
-  roundToIncrement,
-  subBig
-} from "../../src";
+import { Big } from "../../src/big.js";
+import { add, addBig, addInPlace } from "../../src/operations/add.js";
+import { div, divBig, divInPlace } from "../../src/operations/div.js";
+import { divCompact, divCompactBig, divCompactInPlace } from "../../src/operations/div-compact.js";
+import { mod, modBig, modInPlace } from "../../src/operations/mod.js";
+import { mul, mulBig, mulInPlace } from "../../src/operations/mul.js";
+import { roundToIncrement } from "../../src/operations/round-to-increment.js";
+import { sub, subBig, subInPlace } from "../../src/operations/sub.js";
+import { createCompactBig } from "../../src/utils/from-string.js";
 
-suite("BigValue right-hand operands", () => {
-  test("adds, subtracts, and multiplies primitive operands in place", () => {
+suite("BigValue operands", () => {
+  test("mutates the first Big for primitive right-hand operands", () => {
     const addend = new Big("1.20");
-    expect(addBig(addend, "2.30")).toBe(addend);
+    expect(addInPlace(addend, "2.30")).toBe(addend);
     expect(addend.toString(false)).toBe("3.50");
 
     const minuend = new Big("5.5");
-    expect(subBig(minuend, 2)).toBe(minuend);
+    expect(subInPlace(minuend, 2)).toBe(minuend);
     expect(minuend.toString()).toBe("3.5");
 
     const factor = new Big("1.20");
-    expect(mulBig(factor, 3n)).toBe(factor);
+    expect(mulInPlace(factor, 3n)).toBe(factor);
     expect(factor.toString(false)).toBe("3.60");
   });
 
   test("uses the same positive exponent expansion and scale as createBig", () => {
     const compactValue = createCompactBig("1e+10");
-    const result = addBig(compactValue, "1e+5");
+    const result = addInPlace(compactValue, "1e+5");
 
     expect(result.value).toBe(10_000_100_000n);
     expect(result.scale).toBe(0);
@@ -37,17 +35,17 @@ suite("BigValue right-hand operands", () => {
 
   test("supports raw divisors in rounded and compact division", () => {
     const quotient = new Big("1");
-    expect(divBig(quotient, "8", 5)).toBe(quotient);
+    expect(divInPlace(quotient, "8", 5)).toBe(quotient);
     expect(quotient.toString()).toBe("0.125");
 
     const compactQuotient = new Big("1");
-    expect(divCompactBig(compactQuotient, 8n)).toBe(compactQuotient);
+    expect(divCompactInPlace(compactQuotient, 8n)).toBe(compactQuotient);
     expect(compactQuotient.toString()).toBe("0.125");
   });
 
   test("supports raw divisors in modulo with negative dividends", () => {
     const dividend = new Big("-10.5");
-    expect(modBig(dividend, 4n)).toBe(dividend);
+    expect(modInPlace(dividend, 4n)).toBe(dividend);
     expect(dividend.toString()).toBe("-2.5");
   });
 
@@ -65,7 +63,7 @@ suite("BigValue right-hand operands", () => {
     const right = { value: 25n, scale: 1 };
     const left = new Big("1");
 
-    expect(addBig(left, right)).toBe(left);
+    expect(addInPlace(left, right)).toBe(left);
     expect(left.toString()).toBe("3.5");
     expect(right).toEqual({ value: 25n, scale: 1 });
   });
@@ -73,7 +71,7 @@ suite("BigValue right-hand operands", () => {
   test("preserves aliasing when the right operand is the mutated Big", () => {
     const value = new Big("1.25");
 
-    expect(addBig(value, value)).toBe(value);
+    expect(addInPlace(value, value)).toBe(value);
     expect(value.toString()).toBe("2.5");
   });
 
@@ -83,17 +81,43 @@ suite("BigValue right-hand operands", () => {
     const invalidShape = { value: "2", scale: 0 };
     const invalidScale = { value: 2n, scale: 1.5 };
 
-    expect(() => addBig(value, "not-a-number")).toThrow();
-    expect(() => Reflect.apply(addBig, undefined, [value, invalidShape])).toThrow(TypeError);
-    expect(() => addBig(value, invalidScale)).toThrow(RangeError);
+    expect(() => addInPlace(value, "not-a-number")).toThrow();
+    expect(() => Reflect.apply(addInPlace, undefined, [value, invalidShape])).toThrow(TypeError);
+    expect(() => addInPlace(value, invalidScale)).toThrow(RangeError);
     expect(value).toMatchObject(original);
   });
 
   test("rejects zero divisors and nonpositive increments from raw operands", () => {
     const dividend = new Big("1");
-    expect(() => divBig(dividend, "0")).toThrow("Div0");
-    expect(() => modBig(dividend, 0n)).toThrow("Div0");
+    expect(() => divInPlace(dividend, "0")).toThrow("Div0");
+    expect(() => modInPlace(dividend, 0n)).toThrow("Div0");
     expect(() => roundToIncrement(dividend, "-0.05")).toThrow("Step");
     expect(dividend.toString()).toBe("1");
+  });
+
+  test("returns new results without mutating frozen or shared inputs", () => {
+    const frozenLeft = Object.freeze(new Big("1.20"));
+    const frozenRight = Object.freeze({ value: 25n, scale: 1 });
+    const shared = new Big("4");
+
+    expect(add(frozenLeft, frozenRight).toString()).toBe("3.7");
+    expect(sub("5.5", 2).toString()).toBe("3.5");
+    expect(mul("1.20", 3n).toString()).toBe("3.6");
+    expect(div(1, "8", 5).toString()).toBe("0.125");
+    expect(divCompact(1, 8n).toString()).toBe("0.125");
+    expect(mod("10.5", 4n).toString()).toBe("2.5");
+    expect(add(shared, 1).toString()).toBe("5");
+    expect(shared.toString()).toBe("4");
+    expect(frozenLeft.toString(false)).toBe("1.20");
+    expect(frozenRight).toEqual({ value: 25n, scale: 1 });
+  });
+
+  test("keeps the legacy names as direct mutable aliases", () => {
+    expect(addBig).toBe(addInPlace);
+    expect(subBig).toBe(subInPlace);
+    expect(mulBig).toBe(mulInPlace);
+    expect(divBig).toBe(divInPlace);
+    expect(divCompactBig).toBe(divCompactInPlace);
+    expect(modBig).toBe(modInPlace);
   });
 });

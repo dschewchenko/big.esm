@@ -1,13 +1,13 @@
-import type { Big } from "./big.js";
-import { addBig } from "./operations/add.js";
-import { divBig } from "./operations/div.js";
-import { modBig } from "./operations/mod.js";
-import { mulBig } from "./operations/mul.js";
-import { powBig } from "./operations/pow.js";
-import { roundBig } from "./operations/round.js";
-import { roundToIncrement } from "./operations/round-to-increment.js";
-import { sqrtBig } from "./operations/sqrt.js";
-import { subBig } from "./operations/sub.js";
+import { Big } from "./big.js";
+import { addInPlace } from "./operations/add.js";
+import { divInPlace } from "./operations/div.js";
+import { modInPlace } from "./operations/mod.js";
+import { mulInPlace } from "./operations/mul.js";
+import { powInPlace } from "./operations/pow.js";
+import { roundInPlace } from "./operations/round.js";
+import { roundToStepInPlace } from "./operations/round-to-increment.js";
+import { sqrtInPlace } from "./operations/sqrt.js";
+import { subInPlace } from "./operations/sub.js";
 import type { BigValue, RoundingMode } from "./types.js";
 import { createBig } from "./utils/create.js";
 import { toFixed } from "./utils/to-fixed.js";
@@ -40,53 +40,54 @@ export type BigPipeline = {
 export class BigPipe implements BigPipeline {
   current: Big;
 
+  /** @deprecated Use `pipe` for an owned value or `pipeInPlace` to update a supplied Big. */
   constructor(initial: BigValue) {
     this.current = createBig(initial);
   }
 
   add(value: BigValue): this {
-    addBig(this.current, value);
+    addInPlace(this.current, value);
     return this;
   }
 
   sub(value: BigValue): this {
-    subBig(this.current, value);
+    subInPlace(this.current, value);
     return this;
   }
 
   mul(value: BigValue): this {
-    mulBig(this.current, value);
+    mulInPlace(this.current, value);
     return this;
   }
 
   div(value: BigValue, precision?: number, roundingMode?: RoundingMode): this {
-    divBig(this.current, value, precision, roundingMode);
+    divInPlace(this.current, value, precision, roundingMode);
     return this;
   }
 
   mod(value: BigValue): this {
-    modBig(this.current, value);
+    modInPlace(this.current, value);
     return this;
   }
 
   pow(exp = 2): this {
-    powBig(this.current, exp);
+    powInPlace(this.current, exp);
     return this;
   }
 
   round(decimalPlaces?: number, roundingMode?: RoundingMode): this {
-    roundBig(this.current, decimalPlaces, roundingMode);
+    roundInPlace(this.current, decimalPlaces, roundingMode);
     return this;
   }
 
   /** Rounds the current value to a multiple of a positive step. */
-  roundToIncrement(step: BigValue, roundingMode?: RoundingMode): this {
-    roundToIncrement(this.current, step, roundingMode);
+  roundToStep(step: BigValue, roundingMode?: RoundingMode): this {
+    roundToStepInPlace(this.current, step, roundingMode);
     return this;
   }
 
   sqrt(root = 2, precision?: number): this {
-    sqrtBig(this.current, root, precision);
+    sqrtInPlace(this.current, root, precision);
     return this;
   }
 
@@ -115,10 +116,25 @@ export class BigPipe implements BigPipeline {
 }
 
 /**
- * Creates a pipeline for chaining Big operations.
- * The pipeline owns and mutates its `Big` instance in-place.
- * Passing an existing `Big` will mutate that instance.
+ * Creates a chain with its own Big. The chain updates that copy as operations are applied.
+ *
+ * @example
+ * pipe("1.03").roundToStep("0.05").toFixed(2); // "1.05"
  */
-export function pipeBig(initial: BigValue): BigPipe {
+export function pipe(initial: BigValue): BigPipe {
+  return new BigPipe(initial instanceof Big ? new Big(initial) : initial);
+}
+
+/** Creates a chain that updates the supplied mutable Big. */
+export function pipeInPlace(initial: Big): BigPipe {
+  if (!(initial instanceof Big)) throw new TypeError("pipeInPlace requires a Big instance");
+  return new BigPipe(initial);
+}
+
+/**
+ * Creates a chain that reuses an existing Big.
+ * @deprecated Use `pipe` to work on a copy or `pipeInPlace` to mutate the supplied Big explicitly.
+ */
+export function pipeBig(initial: BigValue): BigPipeline {
   return new BigPipe(initial);
 }

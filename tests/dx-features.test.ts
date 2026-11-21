@@ -1,16 +1,36 @@
 import { expect, test } from "vitest";
-import { createBig, createCompactBig, pipeBig, sumBig, toExponential } from "../src";
+import { compare, createBig, createCompactBig, pipe, pipeBig, pipeInPlace, sumBig, toExponential } from "../src";
 
 test("rounds and formats a pipeline without constructing operands", () => {
-  expect(pipeBig("1.03").roundToIncrement("0.05").toFixed(2)).toBe("1.05");
+  expect(pipe("1.03").roundToStep("0.05").toFixed(2)).toBe("1.05");
 
-  const original = createBig("1.03");
-  const pipe = pipeBig(original);
-  expect(pipe.roundToIncrement("0.05")).toBe(pipe);
-  expect(pipe.value()).toBe(original);
-  expect(pipe.toPrecision(2, "half-even")).toBe("1.0");
-  expect(pipe.toNumber()).toBe(1.05);
-  expect(original.toString()).toBe("1.05");
+  const original = Object.freeze(createBig("1.03"));
+  const chain = pipe(original);
+  expect(chain.roundToStep("0.05")).toBe(chain);
+  expect(chain.value()).not.toBe(original);
+  expect(chain.toPrecision(2, "half-even")).toBe("1.0");
+  expect(chain.toNumber()).toBe(1.05);
+  expect(original.toString()).toBe("1.03");
+});
+
+test("a pipeline mutates an existing Big when selected explicitly", () => {
+  const value = createBig("1.03");
+  const chain = pipeInPlace(value).roundToStep("0.05");
+  expect(chain.value()).toBe(value);
+  expect(value.toString()).toBe("1.05");
+  expect(() => pipeInPlace("1.03" as never)).toThrow(TypeError);
+});
+
+test("the existing pipeBig entry still reuses a Big", () => {
+  const value = createBig(1);
+  expect(pipeBig(value).add("0.05").value()).toBe(value);
+  expect(value.toString()).toBe("1.05");
+});
+
+test("compares values of different input types without wrapping them", () => {
+  expect(compare("1.2300", { value: 123n, scale: 2 })).toBe(0);
+  expect(compare("-1.01", -1n)).toBe(-1);
+  expect(compare(1.01, "1")).toBe(1);
 });
 
 test("sums an iterable of mixed inputs without mutating its items", () => {

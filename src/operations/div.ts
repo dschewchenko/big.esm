@@ -1,4 +1,4 @@
-import type { Big } from "../big.js";
+import { Big } from "../big.js";
 import type { BigValue, RoundingMode } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { DEFAULT_PRECISION, MAX_DECIMAL_EXPANSION, MAX_DECIMAL_PLACES, ZERO_BIGINT } from "../utils/constants.js";
@@ -7,27 +7,51 @@ import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
 import { divideRounded, roundTinyAway } from "../utils/rounding.js";
 
+/** @inline */
+type LegacyDivOperation = (dividend: Big, divisor: Big, precision?: number, roundingMode?: RoundingMode) => Big;
+
 /**
- * Divides two Big instances and mutates the dividend with the result.
+ * Divides two values and returns a new Big instance.
  *
- * @param {Big} dividend - The dividend Big instance.
- * @param {BigValue} operand - The divisor value.
- * @param {number} [precision] - Decimal places to keep, from 0 to 1,000,000. Defaults to 20.
- * @param {RoundingMode} [roundingMode="half-up"] - The rule used to round the quotient.
- * @returns {Big} - The mutated dividend instance.
+ * @param dividend - The numerator.
+ * @param divisor - The nonzero divisor.
+ * @param precision - Decimal places to keep, from 0 to 1,000,000. Defaults to 20.
+ * @param roundingMode - The rule used to round the quotient.
+ * @returns A new Big instance containing the quotient.
+ * @throws If the divisor is zero, precision is invalid, or expansion exceeds the limit.
+ *
+ * @category Operations
+ */
+export function div(
+  dividend: BigValue,
+  divisor: BigValue,
+  precision = DEFAULT_PRECISION,
+  roundingMode: RoundingMode = "half-up"
+): Big {
+  return divInPlace(new Big(dividend), divisor, precision, roundingMode);
+}
+
+/**
+ * Divides a Big instance by a BigValue and mutates the dividend with the result.
+ *
+ * @param dividend - The dividend Big instance.
+ * @param operand - The divisor value.
+ * @param precision - Decimal places to keep, from 0 to 1,000,000. Defaults to 20.
+ * @param roundingMode - The rule used to round the quotient.
+ * @returns The mutated dividend instance.
  * @throws If the divisor is zero, the precision is invalid, or scale alignment would expand by more than 2,000,000 places.
  *
  * @category Operations
  *
  * @example
- * divBig(new Big(10), new Big(3)).toString(); // "3.33333333333333333333"
- * divBig(new Big(10), new Big(3), 0).toString(); // "3"
- * divBig(new Big(10), new Big(3), 2).toString(); // "3.33"
- * divBig(new Big(10), new Big(3), 2, "down").toString(); // "3.33"
- * divBig(new Big(10), new Big(3), 2, "up").toString(); // "3.34"
- * divBig(new Big(-10), new Big(3), 2, "up").toString(); // "-3.34"
+ * divInPlace(new Big(10), new Big(3)).toString(); // "3.33333333333333333333"
+ * divInPlace(new Big(10), new Big(3), 0).toString(); // "3"
+ * divInPlace(new Big(10), new Big(3), 2).toString(); // "3.33"
+ * divInPlace(new Big(10), new Big(3), 2, "down").toString(); // "3.33"
+ * divInPlace(new Big(10), new Big(3), 2, "up").toString(); // "3.34"
+ * divInPlace(new Big(-10), new Big(3), 2, "up").toString(); // "-3.34"
  */
-export function divBig(
+export function divInPlace(
   dividend: Big,
   operand: BigValue,
   precision = DEFAULT_PRECISION,
@@ -80,3 +104,6 @@ export function divBig(
   dividend.scale = resultScale;
   return dividend;
 }
+
+/** @deprecated Use `div` for a new result or `divInPlace` to mutate the dividend. */
+export const divBig: LegacyDivOperation = divInPlace;

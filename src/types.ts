@@ -24,6 +24,9 @@ export type PossibleNumber = number | string | bigint;
  */
 export type BigValue = PossibleNumber | Big | BigObject;
 
+/** @internal */
+export type BigBinaryOperation = (a: Big, b: Big) => Big;
+
 /**
  * The rounding rule for division, rounding and fixed-point formatting.
  * `half-up` rounds ties away from zero. With `half-even`, the last retained digit is even on ties.

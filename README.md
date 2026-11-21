@@ -39,34 +39,24 @@ yarn add big.esm
 ## Usage
 
 ```js
-import { addBig, cloneBig, createBig } from "big.esm";
+import { add, addInPlace, createBig, pipe } from "big.esm";
 
-const a = createBig("12345678910.12345678910");
-const b = "9876543210.9876543210";
+const total = add("0.1", "0.2");
+console.log(total.toString()); // "0.3"
 
-addBig(a, b);
-console.log(a.toString()); // 22222222121.1111111101
+const balance = createBig("1.00");
+const next = add(balance, "0.25");
+console.log(next.toString(), balance.toString()); // "1.25" "1"
 
-// If you need immutability, clone first:
-const c = cloneBig(a);
-addBig(c, b);
+addInPlace(balance, "0.25");
+console.log(balance.toString()); // "1.25"
+
+console.log(pipe("1.03").roundToStep("0.05").toFixed(2)); // "1.05"
 ```
 
 Pass decimal literals as strings to preserve all their digits. A JavaScript expression like `0.1 + 0.2` has already rounded before `createBig` receives it.
 
-`createBig(existingBig)` and `pipeBig(existingBig)` reuse the supplied instance. Pass `cloneBig(existingBig)` to work on a copy.
-
-The pipeline accepts strings, numbers, and bigints directly.
-
-```js
-import { pipeBig } from "big.esm";
-
-console.log(
-  pipeBig("1.5e3").add(500).div(2, 0, "down").toString()
-); // 1000
-
-console.log(pipeBig("1.03").roundToIncrement("0.05").toFixed(2)); // "1.05"
-```
+`pipe(existingBig)` starts with a copy. `pipeInPlace(existingBig)` updates the supplied instance as the chain runs. Pipeline methods accept decimal values directly.
 
 Use `big.esm` for the public API. Deep ESM imports for public operation and utility modules work with or without `.js`, for example `big.esm/dist/operations/add`.
 
@@ -94,16 +84,11 @@ The default benchmark prepares fresh operands before timing. Use `--mode end-to-
 - `big.esm` is not a drop-in replacement for `big.js`. It does not support the same API and does not have the same functionality. It is a completely different library.
 
 
-## Breaking changes (v2)
+## Migrating from the mutation API
 
-Starting from v2, the library is **mutable-first** to stay **small and fast** (fewer allocations, less GC, no runtime "clone vs mutate" checks in hot paths):
+The arithmetic helpers introduced in v2, such as `addBig(a, b)`, mutate `a`. Use `add(a, b)` for a new result or `addInPlace(a, b)` to update `a` explicitly. The earlier mutating names are deprecated in 3.x.
 
-- Arithmetic helpers (`addBig`, `subBig`, `mulBig`, `divBig`, `modBig`, `powBig`, `sqrtBig`, `absBig`) **mutate the first argument** and return it.
-- `alignScale(a, b)` **mutates** the operand with the smaller scale.
-- `minBig`/`maxBig` return **one of the inputs** (no cloning).
-- `pipeBig(big)` / `new BigPipe(big)` **new** api, **mutates** the passed `Big`.
-
-If these changes are breaking for your codebase, clone before calling operations (`cloneBig(a)`) or adjust your code to work with mutation.
+`pipeBig(big)` and `new BigPipe(big)` reuse `big`. Use `pipe(big)` or `pipeInPlace(big)` to choose ownership at the start of the chain. `createBig(existingBig)` reuses its input, and `cloneBig(existingBig)` makes a copy.
 
 ## API
 
@@ -173,73 +158,52 @@ toExponential(restored); // "3e+10000000000"
 
 ### Mathematical operations
 
-Math operations mutate the first argument and return it.
+Pure operations return a new `Big`. Each `InPlace` variant takes a `Big` as its first argument, updates it, and returns that instance. Other decimal arguments accept a string, number, bigint, `Big`, or `BigObject`.
 
-A `BigValue` argument accepts a string, number, bigint, `Big`, or `BigObject` directly.
-
-#### `addBig(a: Big, b: BigValue): Big`
-
-Adds `b` to `a` (mutates `a`).
-
-#### `subBig(a: Big, b: BigValue): Big`
-
-Subtracts `b` from `a` (mutates `a`).
+| Pure | Updates the first `Big` |
+| --- | --- |
+| `add(a, b)` | `addInPlace(a, b)` |
+| `sub(a, b)` | `subInPlace(a, b)` |
+| `mul(a, b)` | `mulInPlace(a, b)` |
+| `div(a, b, precision?, roundingMode?)` | `divInPlace(a, b, precision?, roundingMode?)` |
+| `divCompact(a, b, maxDecimalPlaces?, roundingMode?)` | `divCompactInPlace(a, b, maxDecimalPlaces?, roundingMode?)` |
+| `mod(a, b)` | `modInPlace(a, b)` |
+| `abs(a)` | `absInPlace(a)` |
+| `pow(a, exp?)` | `powInPlace(a, exp?)` |
+| `sqrt(a, root?, precision?)` | `sqrtInPlace(a, root?, precision?)` |
+| `round(a, decimalPlaces?, roundingMode?)` | `roundInPlace(a, decimalPlaces?, roundingMode?)` |
+| `roundToStep(a, step, roundingMode?)` | `roundToStepInPlace(a, step, roundingMode?)` |
 
 #### `sumBig(values: Iterable<BigValue>): Big`
 
 Sums any iterable of decimal inputs without mutating its items. An empty iterable returns zero. `sumBig(["0.1", "0.2", 1n])` produces `1.3`.
 
-#### `mulBig(a: Big, b: BigValue): Big`
+#### Division
 
-Multiplies `a` by `b` (mutates `a`).
-
-#### `divBig(a: Big, b: BigValue, precision = 20, roundingMode = "half-up"): Big`
-
-Divides `a` by `b` in place at the requested decimal scale. Precision ranges from 0 to 1,000,000 places.
-
-#### `divCompactBig(a: Big, b: BigValue, maxDecimalPlaces = 20, roundingMode = "half-up"): Big`
-
-Divides `a` by `b` in place and uses a compact scale for terminating results that fit within the requested precision. Repeating quotients and longer fractions are rounded once. `1 / 8` yields `0.125`. `1 / 3` with four places yields `0.3333`.
+`div` divides at the requested decimal scale. `divCompact` uses a compact scale for terminating results that fit within the requested precision. Repeating quotients and longer fractions are rounded once. `divCompact(1, 8)` yields `0.125` with scale 3. `divCompact(1, 3, 4)` yields `0.3333`. Precision ranges from 0 to 1,000,000 places and defaults to 20.
 
 Both division functions limit scale expansion to 2,000,000 places and throw `RangeError` before a calculation exceeds that limit. `toFixed` uses the same bound for added zeros. Within those bounds, existing coefficients and output strings remain subject to the runtime's limits.
 
 ```js
-import { createBig, createCompactBig, divCompactBig, toExponential } from "big.esm";
+import { createCompactBig, divCompact, toExponential } from "big.esm";
 
 const value = createCompactBig("3e10000000000");
-divCompactBig(value, createBig(2));
-console.log(toExponential(value)); // "1.5e+10000000000"
+console.log(toExponential(divCompact(value, 2))); // "1.5e+10000000000"
 ```
 
-#### `roundBig(a: Big, decimalPlaces = 0, roundingMode = "half-up"): Big`
+#### Rounding
 
-Rounds `a` in place to at most the requested number of decimal places. The number of places must be a non-negative safe integer.
+`round` keeps at most the requested number of decimal places, which must be a non-negative safe integer and defaults to zero. `roundToStep` rounds to a multiple of a positive step at the step's scale. `roundToStep("1.03", "0.05")` gives `1.05`. In `half-even` mode, an exact tie selects an even multiple of the step. Scale alignment uses the same expansion limit as division.
 
-#### `roundToIncrement(a: Big, step: BigValue, roundingMode = "half-up"): Big`
+Division, rounding and fixed-point formatting default to `half-up` (ties away from zero). They also accept `half-even` (ties to even), `down` (toward zero), `up` (away from zero), `floor` (toward negative infinity) and `ceil` (toward positive infinity).
 
-Rounds `a` in place to a multiple of a positive `step` at the step's scale. For example, rounding `1.03` to a step of `0.05` gives `1.05`. In `half-even` mode, an exact tie selects an even multiple of the step. Scale alignment uses the same expansion limit as division.
+#### Absolute value, remainder, powers and roots
 
-Division, rounding and fixed-point formatting accept `half-up` (ties away from zero), `half-even` (ties to even), `down` (toward zero), `up` (away from zero), `floor` (toward negative infinity) and `ceil` (toward positive infinity).
+`abs` computes the absolute value. `mod` calculates the remainder using the sign of the dividend. `pow` raises a value to a non-negative safe integer exponent and defaults to 2. `sqrt` computes the real root of safe integer degree at least 2 and defaults to the square root. Degree 1 is also accepted for zero and for `1` stored with scale `0`. Odd roots accept negative inputs. The result is rounded to the requested decimal places with ties away from zero. Precision defaults to 20.
 
-#### `modBig(a: Big, b: BigValue): Big`
+#### `compare(a: BigValue, b: BigValue): -1 | 0 | 1`
 
-Calculates `a % b` (mutates `a`).
-
-#### `powBig(a: Big, exp: number): Big`
-
-Raises `a` to a non-negative safe integer exponent (mutates `a`).
-
-#### `sqrtBig(a: Big, root = 2, precision = 20): Big`
-
-Calculates the real integer-degree root of `a` (mutates `a`). The degree must be a safe integer of at least 2. Degree 1 is also accepted for zero and for `1` stored with scale `0`. Odd roots accept negative inputs. Results are rounded to the requested number of decimal places, with ties away from zero.
-
-#### `absBig(a: Big): Big`
-
-Replaces `a` with `|a|` (mutates `a`).
-
-#### `compareBig(a: Big, b: Big): -1 | 0 | 1`
-
-Compares two `Big` instances. Returns `-1` if `a < b`, `0` if `a == b` and `1` if `a > b`.
+Compares exact decimal values. Returns `-1` if `a < b`, `0` if `a == b` and `1` if `a > b`.
 
 #### `minBig(a: Big, b: Big): Big`
 
@@ -251,13 +215,13 @@ Returns the maximum of `a` and `b` by reference (no cloning).
 
 ### Pipeline
 
-#### `pipeBig(initial: BigValue): BigPipe`
+#### `pipe(initial: BigValue): BigPipe`
 
-Creates a chainable pipeline that mutates its internal `Big` in place. Use `.roundToIncrement(step, roundingMode)` for step rounding. Finish with `.toFixed(places)`, `.toPrecision(digits)`, or `.toNumber()`.
+Creates a chain with its own working value. Use `.roundToStep(step, roundingMode)` for step rounding. Finish with `.toFixed(places)`, `.toPrecision(digits)`, or `.toNumber()`.
 
-#### `new BigPipe(initial: BigValue): BigPipe`
+#### `pipeInPlace(initial: Big): BigPipe`
 
-Class form of the pipeline.
+Creates a chain that updates the supplied `Big` instance.
 
 ## Roadmap
 

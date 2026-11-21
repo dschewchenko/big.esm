@@ -1,4 +1,4 @@
-import type { Big } from "../big.js";
+import { Big } from "../big.js";
 import type { BigValue, RoundingMode } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { MAX_DECIMAL_EXPANSION } from "../utils/constants.js";
@@ -7,31 +7,53 @@ import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
 import { divideRounded, roundTinyAway } from "../utils/rounding.js";
 
+/** @inline */
+type BigStepRoundingOperation = (big: Big, step: Big, roundingMode?: RoundingMode) => Big;
+
 /**
- * Rounds a Big value to a multiple of a positive decimal increment and mutates it.
- * The result uses the increment's existing scale.
+ * Rounds a value to a multiple of a positive decimal step without mutating the input.
+ * The result uses the step's existing scale.
  *
- * @param big - The value to round, replaced in place with the rounded multiple.
- * @param operand - The positive increment value, unchanged by this operation.
+ * @param value - The value to round.
+ * @param step - The positive step value.
  * @param roundingMode - The rounding rule. Defaults to half-up.
- * @returns The mutated value.
- * @throws If the increment is not positive, either scale is invalid, or required alignment exceeds 2,000,000 places.
+ * @returns A new Big instance containing the rounded multiple.
+ * @throws If the step is not positive, either scale is invalid, or required alignment exceeds 2,000,000 places.
  *
  * @category Operations
  *
  * @example
- * roundToIncrement(createBig("1.03"), "0.05").toString(); // "1.05"
- * roundToIncrement(createBig("1.025"), "0.05", "half-even").toString(); // "1"
+ * roundToStep("1.03", "0.05").toString(); // "1.05"
+ * roundToStep("1.025", "0.05", "half-even").toString(); // "1"
  */
-export function roundToIncrement(big: Big, operand: BigValue, roundingMode: RoundingMode = "half-up"): Big {
-  const step = readBigOperand(operand);
-  if (step.value <= 0n) throw new RangeError("Step");
+export function roundToStep(value: BigValue, step: BigValue, roundingMode: RoundingMode = "half-up"): Big {
+  return roundToStepInPlace(new Big(value), step, roundingMode);
+}
+
+/**
+ * Rounds a Big value to a multiple of a positive decimal step and mutates it.
+ * The result uses the step's existing scale.
+ *
+ * @param big - The value to round, replaced in place with the rounded multiple.
+ * @param step - The positive step value. It is unchanged unless it is also `big`.
+ * @param roundingMode - The rounding rule. Defaults to half-up.
+ * @returns The mutated value.
+ * @throws If the step is not positive, either scale is invalid, or required alignment exceeds 2,000,000 places.
+ *
+ * @category Operations
+ *
+ * @example
+ * roundToStepInPlace(new Big("1.03"), "0.05").toString(); // "1.05"
+ */
+export function roundToStepInPlace(big: Big, step: BigValue, roundingMode: RoundingMode = "half-up"): Big {
+  const stepValue = readBigOperand(step);
+  if (stepValue.value <= 0n) throw new RangeError("Step");
   const valueScale = big.scale;
-  const incrementScale = step.scale;
+  const incrementScale = stepValue.scale;
   assertScale(valueScale);
   assertScale(incrementScale);
   const value = big.value;
-  const increment = step.value;
+  const increment = stepValue.value;
   if (value === 0n) {
     big.scale = incrementScale;
     return big;
@@ -68,3 +90,6 @@ export function roundToIncrement(big: Big, operand: BigValue, roundingMode: Roun
   big.scale = incrementScale;
   return big;
 }
+
+/** @deprecated Use {@link roundToStep} for a non-mutating operation or {@link roundToStepInPlace} to mutate explicitly. */
+export const roundToIncrement: BigStepRoundingOperation = roundToStepInPlace;

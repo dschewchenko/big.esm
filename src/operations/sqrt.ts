@@ -1,8 +1,28 @@
-import type { Big } from "../big.js";
+import { Big } from "../big.js";
+import type { BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { boundedRoot } from "../utils/bounded-root.js";
 import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
+
+/**
+ * Calculates the real nth root of a value without mutating the input.
+ *
+ * @param value - The radicand.
+ * @param root - A safe integer degree of at least 2. Degree 1 is also accepted for zero and one. Negative radicands require an odd degree.
+ * @param precision - A non-negative safe integer specifying decimal places; defaults to 20.
+ * @returns A new Big instance containing the root rounded to the nearest value with ties away from zero.
+ * @throws If the precision, degree, or radicand is invalid.
+ *
+ * @category Operations
+ *
+ * @example
+ * sqrt("0.01", 2, 3).toString(); // "0.1"
+ * sqrt("-2", 3, 2).toString(); // "-1.26"
+ */
+export function sqrt(value: BigValue, root = 2, precision = DEFAULT_PRECISION): Big {
+  return sqrtInPlace(new Big(value), root, precision);
+}
 
 /**
  * Calculates the real nth root of a Big instance and mutates it with the result.
@@ -16,10 +36,9 @@ import { pow10 } from "../utils/pow10.js";
  * @category Operations
  *
  * @example
- * sqrtBig(createBig("0.01"), 2, 3).toString(); // "0.1"
- * sqrtBig(createBig("-2"), 3, 2).toString(); // "-1.26"
+ * sqrtInPlace(new Big("0.01"), 2, 3).toString(); // "0.1"
  */
-export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION): Big {
+export function sqrtInPlace(big: Big, root = 2, precision = DEFAULT_PRECISION): Big {
   assertScale(big.scale);
   if (!Number.isSafeInteger(precision) || precision < 0) throw new Error("Prec");
   const unitShortcut = big.value === ZERO_BIGINT || (big.scale === 0 && big.value === ONE_BIGINT);
@@ -71,6 +90,9 @@ export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION): Big 
   big.scale = resultScale;
   return big;
 }
+
+/** @deprecated Use {@link sqrt} for a non-mutating operation or {@link sqrtInPlace} to mutate explicitly. */
+export const sqrtBig = sqrtInPlace;
 
 function bigIntRoot(value: bigint, degree: number): bigint {
   if (value < 2n) return value;

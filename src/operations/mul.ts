@@ -1,12 +1,15 @@
-import type { Big } from "../big.js";
-import type { BigValue } from "../types.js";
+import { Big } from "../big.js";
+import type { BigBinaryOperation, BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
 
-/**
- * Multiplies a Big by a decimal value and mutates the first operand.
- */
-export function mulBig(a: Big, b: BigValue): Big {
+/** Multiplies two values and returns a new Big instance. */
+export function mul(a: BigValue, b: BigValue): Big {
+  return mulInPlace(new Big(a), b);
+}
+
+/** Multiplies a Big instance by a BigValue and mutates the first operand. */
+export function mulInPlace(a: Big, b: BigValue): Big {
   const leftScale = a.scale;
   assertScale(leftScale);
   const right = typeof b === "object" && b !== null ? b : readBigOperand(b);
@@ -20,3 +23,9 @@ export function mulBig(a: Big, b: BigValue): Big {
   a.scale = scale;
   return a;
 }
+
+/**
+ * @deprecated Use `mul` for a new result or `mulInPlace` to mutate the first operand.
+ * @inlineType BigBinaryOperation
+ */
+export const mulBig: BigBinaryOperation = mulInPlace;

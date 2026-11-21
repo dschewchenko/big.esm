@@ -1,26 +1,41 @@
-import type { Big } from "../big.js";
-import type { BigValue } from "../types.js";
+import { Big } from "../big.js";
+import type { BigBinaryOperation, BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { ZERO_BIGINT } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
 
 /**
- * Adds two Big values and mutates the first argument.
+ * Adds two values and returns a new Big instance.
+ *
+ * @param a - The first value.
+ * @param b - The second value.
+ * @returns A new Big instance containing the sum.
+ *
+ * @category Operations
+ *
+ * @example
+ * add("1.1", "2.2").toString(); // "3.3"
+ */
+export function add(a: BigValue, b: BigValue): Big {
+  return addInPlace(new Big(a), b);
+}
+
+/**
+ * Adds a BigValue to a Big instance and mutates the first argument.
  *
  * @param a - The first value to add, replaced in place by the sum.
- * @param b - The second value to add. Accepts any `BigValue` and is unchanged unless it is also `a`.
+ * @param b - The second value to add. It is unchanged unless it is also `a`.
  * @returns The mutated first argument.
  *
  * @category Operations
  *
  * @example
- * addBig(new Big(1), 2); // the first instance, now 3
- * addBig(new Big("1.1"), "2.2"); // the first instance, now 3.3
- * addBig(new Big("1.1"), 2n); // the first instance, now 3.1
- * addBig(new Big(1), "2.5"); // the first instance, now 3.5
+ * addInPlace(new Big(1), new Big(2)); // the first instance, now 3
+ * addInPlace(new Big("1.1"), "2.2"); // the first instance, now 3.3
+ * addInPlace(new Big("1.1"), 2n); // the first instance, now 3.1
  */
-export function addBig(a: Big, b: BigValue): Big {
+export function addInPlace(a: Big, b: BigValue): Big {
   assertScale(a.scale);
   const right = readBigOperand(b);
   assertScale(right.scale);
@@ -41,3 +56,9 @@ export function addBig(a: Big, b: BigValue): Big {
   a.scale = right.scale;
   return a;
 }
+
+/**
+ * @deprecated Use `add` for a new result or `addInPlace` to mutate the first operand.
+ * @inlineType BigBinaryOperation
+ */
+export const addBig: BigBinaryOperation = addInPlace;

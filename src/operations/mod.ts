@@ -1,4 +1,4 @@
-import type { Big } from "../big.js";
+import { Big } from "../big.js";
 import type { BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
@@ -8,22 +8,30 @@ import { readBigOperand } from "../utils/read-big-operand.js";
 
 const MAX_DIRECT_SCALE_DIFFERENCE = 128;
 
+/** @inline */
+type LegacyModOperation = (dividend: Big, divisor: Big) => Big;
+
+/** Returns the remainder of two values in a new Big instance. */
+export function mod(dividend: BigValue, divisor: BigValue): Big {
+  return modInPlace(new Big(dividend), divisor);
+}
+
 /**
- * Performs the modulo operation (remainder of division) for two Big instances.
+ * Performs modulo for a Big instance and any supported divisor, mutating the dividend.
  *
- * @param dividend The Big instance representing the dividend.
- * @param operand The value representing the divisor.
- * @returns The mutated dividend instance representing the remainder of the division.
- * @throws {Error} Division by zero is not allowed.
+ * @param dividend - The dividend Big instance.
+ * @param operand - The value representing the divisor.
+ * @returns The mutated dividend instance.
+ * @throws If the divisor is zero.
  *
  * @category Operations
  *
  * @example
- * modBig(new Big(10), new Big(3)).toString(); // "1"
- * modBig(new Big(3), new Big(10)).toString(); // "3"
- * modBig(new Big(10), new Big(10)).toString(); // "0"
+ * modInPlace(new Big(10), new Big(3)).toString(); // "1"
+ * modInPlace(new Big(3), new Big(10)).toString(); // "3"
+ * modInPlace(new Big(10), 10).toString(); // "0"
  */
-export function modBig(dividend: Big, operand: BigValue): Big {
+export function modInPlace(dividend: Big, operand: BigValue): Big {
   assertScale(dividend.scale);
   const divisor = readBigOperand(operand);
   assertScale(divisor.scale);
@@ -72,3 +80,6 @@ function pow10Modulo(exp: bigint, modulus: bigint): bigint {
 
   return result;
 }
+
+/** @deprecated Use `mod` for a new result or `modInPlace` to mutate the dividend. */
+export const modBig: LegacyModOperation = modInPlace;

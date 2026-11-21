@@ -2,23 +2,23 @@
 export { Big } from "./big.js";
 
 // math operations
-export { absBig } from "./operations/abs.js";
-export { addBig } from "./operations/add.js";
-export { compareBig } from "./operations/compare.js";
-export { divBig } from "./operations/div.js";
-export { divCompactBig } from "./operations/div-compact.js";
+export { abs, absBig, absInPlace } from "./operations/abs.js";
+export { add, addBig, addInPlace } from "./operations/add.js";
+export { compare, compareBig } from "./operations/compare.js";
+export { div, divBig, divInPlace } from "./operations/div.js";
+export { divCompact, divCompactBig, divCompactInPlace } from "./operations/div-compact.js";
 export { maxBig } from "./operations/max.js";
 export { minBig } from "./operations/min.js";
-export { modBig } from "./operations/mod.js";
-export { mulBig } from "./operations/mul.js";
-export { powBig } from "./operations/pow.js";
-export { roundBig } from "./operations/round.js";
-export { roundToIncrement } from "./operations/round-to-increment.js";
-export { sqrtBig } from "./operations/sqrt.js";
-export { subBig } from "./operations/sub.js";
+export { mod, modBig, modInPlace } from "./operations/mod.js";
+export { mul, mulBig, mulInPlace } from "./operations/mul.js";
+export { pow, powBig, powInPlace } from "./operations/pow.js";
+export { round, roundBig, roundInPlace } from "./operations/round.js";
+export { roundToIncrement, roundToStep, roundToStepInPlace } from "./operations/round-to-increment.js";
+export { sqrt, sqrtBig, sqrtInPlace } from "./operations/sqrt.js";
+export { sub, subBig, subInPlace } from "./operations/sub.js";
 export { sumBig } from "./operations/sum.js";
 export type { BigPipeline } from "./pipeline.js";
-export { BigPipe, pipeBig } from "./pipeline.js";
+export { BigPipe, pipe, pipeBig, pipeInPlace } from "./pipeline.js";
 // types
 export type { BigObject, BigValue, CompareResult, PossibleNumber, RoundingMode } from "./types.js";
 export { alignScale } from "./utils/align-scale.js";
