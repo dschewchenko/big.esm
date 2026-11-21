@@ -17,11 +17,18 @@ execFileSync(process.execPath, [
 ], { cwd: root, stdio: "inherit" });
 
 const result = await Bun.build({
-  entrypoints: [join(root, "src/package-entry.ts")],
+  entrypoints: [join(root, "src/index.ts")],
   format: "esm",
   target: "browser",
   minify: true,
-  naming: "big.esm.js",
+  naming: "core.js",
   outdir
 });
 if (!result.success) throw new AggregateError(result.logs, "ESM build failed");
+
+await Bun.write(join(outdir, "big.esm.js"), [
+  'import * as api from "./core.js";',
+  'export * from "./core.js";',
+  "export default api;",
+  ""
+].join("\n"));
