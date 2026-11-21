@@ -1,3 +1,15 @@
+# [3.1.0](https://github.com/dschewchenko/big.esm/compare/v3.0.0...v3.1.0) (2026-11-21)
+
+
+### Bug Fixes
+
+* restore tree shaking for ESM imports ([9b0a685](https://github.com/dschewchenko/big.esm/commit/9b0a68554e5e0b41fa2b89bda3ce8d4861e7b2a2))
+
+
+### Features
+
+* add bounded decimal arithmetic and formatting ([0b8a471](https://github.com/dschewchenko/big.esm/commit/0b8a471a08c7077bca380bd2f6f0a0ca2a6da242))
+
 # [3.0.0](https://github.com/dschewchenko/big.esm/compare/v2.0.1...v3.0.0) (2026-11-20)
 
 
