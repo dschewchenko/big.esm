@@ -28,6 +28,10 @@
       }
     },
     "./package": "./package.json",
+    "./package.json": "./package.json",
+    "./README.md": "./README.md",
+    "./LICENSE": "./LICENSE",
+    "./CHANGELOG.md": "./CHANGELOG.md",
     "./dist/big.esm": {
       "import": {
         "types": "./dist/package-entry.d.ts",
@@ -40,11 +44,110 @@
         "default": "./dist/big.esm.js"
       }
     },
-    "./dist/*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*"
+    "./dist/core": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/core.js"
     },
-    "./*": "./*"
+    "./dist/core.js": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/core.js"
+    },
+    "./dist/index": {
+      "import": "./dist/index.js"
+    },
+    "./dist/index.js": {
+      "import": "./dist/index.js"
+    },
+    "./dist/package-entry": {
+      "import": "./dist/package-entry.js"
+    },
+    "./dist/package-entry.js": {
+      "import": "./dist/package-entry.js"
+    },
+    "./dist/big": {
+      "import": "./dist/big.js"
+    },
+    "./dist/big.js": {
+      "import": "./dist/big.js"
+    },
+    "./dist/pipeline": {
+      "import": "./dist/pipeline.js"
+    },
+    "./dist/pipeline.js": {
+      "import": "./dist/pipeline.js"
+    },
+    "./dist/operations/*.js": {
+      "import": "./dist/operations/*.js"
+    },
+    "./dist/operations/*": {
+      "import": "./dist/operations/*.js"
+    },
+    "./dist/utils/align-scale": {
+      "import": "./dist/utils/align-scale.js"
+    },
+    "./dist/utils/align-scale.js": {
+      "import": "./dist/utils/align-scale.js"
+    },
+    "./dist/utils/clone": {
+      "import": "./dist/utils/clone.js"
+    },
+    "./dist/utils/clone.js": {
+      "import": "./dist/utils/clone.js"
+    },
+    "./dist/utils/create": {
+      "import": "./dist/utils/create.js"
+    },
+    "./dist/utils/create.js": {
+      "import": "./dist/utils/create.js"
+    },
+    "./dist/utils/from-string": {
+      "import": "./dist/utils/from-string.js"
+    },
+    "./dist/utils/from-string.js": {
+      "import": "./dist/utils/from-string.js"
+    },
+    "./dist/utils/is-big-object": {
+      "import": "./dist/utils/is-big-object.js"
+    },
+    "./dist/utils/is-big-object.js": {
+      "import": "./dist/utils/is-big-object.js"
+    },
+    "./dist/utils/numeric": {
+      "import": "./dist/utils/numeric.js"
+    },
+    "./dist/utils/numeric.js": {
+      "import": "./dist/utils/numeric.js"
+    },
+    "./dist/utils/pow10": {
+      "import": "./dist/utils/pow10.js"
+    },
+    "./dist/utils/pow10.js": {
+      "import": "./dist/utils/pow10.js"
+    },
+    "./dist/utils/to-exponential": {
+      "import": "./dist/utils/to-exponential.js"
+    },
+    "./dist/utils/to-exponential.js": {
+      "import": "./dist/utils/to-exponential.js"
+    },
+    "./dist/utils/to-fixed": {
+      "import": "./dist/utils/to-fixed.js"
+    },
+    "./dist/utils/to-fixed.js": {
+      "import": "./dist/utils/to-fixed.js"
+    },
+    "./dist/types": {
+      "types": "./dist/types.d.ts"
+    },
+    "./dist/types.js": {
+      "types": "./dist/types.d.ts"
+    },
+    "./dist/*.d.ts": {
+      "types": "./dist/*.d.ts"
+    },
+    "./dist/operations/*.d.ts": {
+      "types": "./dist/operations/*.d.ts"
+    }
   },
   "module": "dist/big.esm.js",
   "types": "dist/package-entry.d.ts",

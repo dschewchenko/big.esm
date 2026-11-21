@@ -52,7 +52,11 @@ const c = cloneBig(a);
 addBig(c, b);
 ```
 
-Pipeline (chainable, mutates its internal `Big`):
+Pass decimal literals as strings to preserve all their digits. A JavaScript expression like `0.1 + 0.2` has already rounded before `createBig` receives it.
+
+`createBig(existingBig)` and `pipeBig(existingBig)` reuse the supplied instance. Pass `cloneBig(existingBig)` to work on a copy.
+
+The pipeline accepts strings, numbers, and bigints directly.
 
 ```js
 import { pipeBig } from "big.esm";
@@ -61,6 +65,8 @@ console.log(
   pipeBig("1.5e3").add(500).div(2, 0, "down").toString()
 ); // 1000
 ```
+
+Use `big.esm` for the public API. Deep ESM imports for public operation and utility modules work with or without `.js`, for example `big.esm/dist/operations/add`.
 
 ## Benchmarks
 
@@ -110,6 +116,8 @@ Creates a `Big` instance from a `string`, `number`, `bigint`, `Big`, or `BigObje
 The number is stored as an integer coefficient times `10 ** -scale`. The scale must be a safe integer and can be negative. An omitted scale is inferred from the input. If you pass a scale with a primitive input, the input is truncated toward zero to obtain the integer coefficient before applying the scale. For example, `createBig("1.5e3", 2)` represents `15`, and `createBig(1n, -2)` represents `100`. Structural inputs use the exported `BigObject` type with a `bigint` coefficient and a numeric scale.
 
 Keep `scale` a safe integer when writing it directly. Operations and formatters reject invalid scales before using them.
+
+`valueOf()` exposes the integer coefficient. For `createBig("1.23")`, `valueOf()` returns `123n` and `Number(...)` returns `123`. Use `toString()` for the full decimal value. `new Big(existingBig)` creates a copy.
 
 #### `createCompactBig(value: PossibleNumber): Big`
 

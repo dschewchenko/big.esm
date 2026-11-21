@@ -1,4 +1,4 @@
-import type { BigObject, BigValue, PossibleNumber } from "./types.js";
+import type { BigValue, PossibleNumber } from "./types.js";
 import { assertScale } from "./utils/assert-scale.js";
 import { fromString } from "./utils/from-string.js";
 import { isBigObject } from "./utils/is-big-object.js";
@@ -52,21 +52,13 @@ export class Big {
   public scale: number;
 
   /**
-   * Creates a new Big instance.
+   * Creates a new Big from a decimal input or copies an existing Big or BigObject.
    *
-   * @param {Big | BigObject} value - The value to create the Big instance from.
-   * @throws {TypeError} - If the value is not a number, string, BigInt, or Big instance.
+   * @param {BigValue} value - A string, number, bigint, Big, or BigObject.
+   * @throws {TypeError} - If the input has an unsupported type.
    * @return {Big} - A new Big instance.
    */
-  constructor(value: Big | BigObject);
-  /**
-   * Creates a new Big instance.
-   *
-   * @param {PossibleNumber} value - The value to create the Big instance from. It Can be a number, string, or BigInt.
-   * @throws {TypeError} - If the value is not a number, string, BigInt, or Big instance.
-   * @return {Big} - A new Big instance.
-   */
-  constructor(value: PossibleNumber);
+  constructor(value: BigValue);
   /**
    * Creates a new Big instance.
    *
@@ -75,7 +67,7 @@ export class Big {
    * @throws {TypeError} - If the value is not a number, string, BigInt, or Big instance.
    * @return {Big} - A new Big instance.
    */
-  constructor(value: PossibleNumber, scale: number | string);
+  constructor(value: PossibleNumber, scale?: number | string);
   /**
    * Implements the overloaded constructors for the Big class.
    * @param {BigValue} value - The value to create the Big instance from. Can be a number, string, BigInt, or another Big instance.
@@ -121,9 +113,11 @@ export class Big {
   }
 
   /**
-   * Returns the primitive value of the Big instance.
+   * Returns the integer coefficient. JavaScript's Number and BigInt conversions use this coefficient without applying the scale.
    *
-   * @returns {bigint} The primitive value of the Big instance.
+   * @returns {bigint} The stored coefficient, `value`.
+   * @example
+   * createBig("1.23").valueOf(); // 123n
    */
   valueOf(): bigint {
     return this.value;
