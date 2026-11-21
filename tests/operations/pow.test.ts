@@ -87,7 +87,7 @@ suite("Big pow", () => {
     expect(() => powBig(base, exponent)).toThrow();
   });
 
-  test("throws an error when the exponent is a negative integer", () => {
+  test("throws an error when the exponent is a negative integer less than minus one", () => {
     const base = new Big(numbers[0]);
     const exponent = -2;
 

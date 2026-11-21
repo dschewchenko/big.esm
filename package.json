@@ -73,7 +73,7 @@
     "url": "https://github.com/dschewchenko/big.esm/issues"
   },
   "homepage": "https://github.com/dschewchenko/big.esm#readme",
-  "packageManager": "bun@1.4.4",
+  "packageManager": "bun@1.4.5",
   "engines": {
     "bun": ">=1.0.0",
     "node": ">=16"
