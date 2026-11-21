@@ -87,6 +87,13 @@ suite("Big pow", () => {
     expect(() => powBig(base, exponent)).toThrow();
   });
 
+  test("rejects exponents outside the safe integer range before mutation", () => {
+    const base = new Big(2);
+    expect(() => powBig(base, Number.MAX_SAFE_INTEGER + 1)).toThrow("Exp");
+    expect(base.value).toBe(2n);
+    expect(base.scale).toBe(0);
+  });
+
   test("throws an error when the exponent is a negative integer less than minus one", () => {
     const base = new Big(numbers[0]);
     const exponent = -2;

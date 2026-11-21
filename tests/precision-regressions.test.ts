@@ -44,14 +44,16 @@ test.each([-1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])("rejects invali
   expect(() => sqrtBig(createBig(2), 2, precision)).toThrow("Prec");
 });
 
-test.each([0, 1, 1.5, NaN, Infinity])(
-  "preserves zero handling and rejects invalid root %s for nonzero values",
-  (root) => {
-    expect(sqrtBig(createBig(0), root).toString()).toBe("0");
-    expect(sqrtBig(createBig(1), root).toString()).toBe("1");
-    expect(() => sqrtBig(createBig(2), root)).toThrow("Root");
-  }
-);
+test("preserves the degree-one zero and positive-unit shortcuts", () => {
+  expect(sqrtBig(createBig(0), 1).toString()).toBe("0");
+  expect(sqrtBig(createBig(1), 1).toString()).toBe("1");
+});
+
+test.each([0, 1.5, NaN, Infinity])("rejects invalid root %s for zero, one and nonzero values", (root) => {
+  expect(() => sqrtBig(createBig(0), root)).toThrow("Root");
+  expect(() => sqrtBig(createBig(1), root)).toThrow("Root");
+  expect(() => sqrtBig(createBig(2), root)).toThrow("Root");
+});
 
 test.each([
   ["1", 2, 3, "1"],
@@ -94,11 +96,19 @@ test.each([
   expect(createBig(input, 2).toString()).toBe(output);
 });
 
-test("preserves scale coercion from the published version", () => {
-  expect(createBig("123.45", 2.9).toString()).toBe("1.23");
-  expect(createBig("123.45", "2.9").toString()).toBe("1.23");
-  expect(createBig("123.45", "abc").toString()).toBe("123.45");
-  expect(createBig("123.45", "").toString()).toBe("123");
+test("requires a safe integer scale while preserving integer string coercion", () => {
+  expect(createBig("123.45", "2.0").toString()).toBe("1.23");
+  expect(createBig("123.45", "2e1").scale).toBe(20);
+  expect(createBig(1n, "-2").toString()).toBe("100");
+  for (const scale of [2.9, "2.9", "abc", "", " ", NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+    expect(() => createBig("123.45", scale as number | string)).toThrow("Scale");
+  }
+});
+
+test("constructor and factory reject fractional BigObject scales consistently", () => {
+  const value = { value: 123n, scale: 1.5 };
+  expect(() => createBig(value)).toThrow();
+  expect(() => new Big(value)).toThrow();
 });
 
 test("preserves division argument handling", () => {

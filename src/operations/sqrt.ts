@@ -1,4 +1,5 @@
 import type { Big } from "../big.js";
+import { assertScale } from "../utils/assert-scale.js";
 import { boundedRoot } from "../utils/bounded-root.js";
 import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
@@ -7,7 +8,7 @@ import { pow10 } from "../utils/pow10.js";
  * Calculates the real nth root of a Big instance and mutates it with the result.
  *
  * @param big - The radicand, replaced in place by the result.
- * @param root - An integer degree of at least 2. Negative radicands require an odd degree.
+ * @param root - A safe integer degree of at least 2. Degree 1 is also accepted for zero and one. Negative radicands require an odd degree.
  * @param precision - A non-negative safe integer specifying decimal places; defaults to 20.
  * @returns The mutated radicand, rounded to the nearest value with ties away from zero.
  * @throws If the precision, degree, or radicand is invalid.
@@ -19,20 +20,25 @@ import { pow10 } from "../utils/pow10.js";
  * sqrtBig(createBig("-2"), 3, 2).toString(); // "-1.26"
  */
 export function sqrtBig(big: Big, root = 2, precision = DEFAULT_PRECISION): Big {
-  if (precision < 0) throw new Error("Prec");
-  const resultScale = Math.max(0, precision);
+  assertScale(big.scale);
+  if (!Number.isSafeInteger(precision) || precision < 0) throw new Error("Prec");
+  const unitShortcut = big.value === ZERO_BIGINT || (big.scale === 0 && big.value === ONE_BIGINT);
+  if (
+    !Number.isSafeInteger(root) ||
+    (root < 2 && !(root === 1 && unitShortcut)) ||
+    (big.value < ZERO_BIGINT && root % 2 === 0)
+  ) {
+    throw new Error("Root");
+  }
+  const resultScale = precision;
   if (big.value === ZERO_BIGINT) {
     big.scale = resultScale;
     return big;
   }
-  if (!Number.isSafeInteger(resultScale)) throw new Error("Prec");
   if (big.scale === 0 && big.value === ONE_BIGINT) {
     big.value = pow10(resultScale);
     big.scale = resultScale;
     return big;
-  }
-  if (!Number.isInteger(root) || root < 2 || (big.value < ZERO_BIGINT && root % 2 === 0)) {
-    throw new Error("Root");
   }
   if (big.scale === 0 && big.value === -ONE_BIGINT) {
     big.value = -pow10(resultScale);

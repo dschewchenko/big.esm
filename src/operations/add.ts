@@ -1,4 +1,5 @@
 import type { Big } from "../big.js";
+import { assertScale } from "../utils/assert-scale.js";
 import { ZERO_BIGINT } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
 
@@ -17,6 +18,8 @@ import { pow10 } from "../utils/pow10.js";
  * addBig(new Big(1.1), new Big(2)); // the first instance, now 3.1
  */
 export function addBig(a: Big, b: Big): Big {
+  assertScale(a.scale);
+  assertScale(b.scale);
   const scaleDifference = a.scale - b.scale;
 
   if (scaleDifference === 0) {

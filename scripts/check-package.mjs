@@ -2,6 +2,9 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, join, resolve } from "node:path";
+import { gzipSync } from "node:zlib";
+
+const maxNamedGzipBytes = 1600;
 
 function listFiles(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -61,28 +64,48 @@ try {
         { cwd: directory, stdio: "ignore" });
       const metafile = JSON.parse(readFileSync(join(directory, `${target}-${name}.meta.json`), "utf8"));
       const inputs = Object.keys(metafile.inputs);
-      if (!inputs.some((path) => path.endsWith("/dist/big.esm.js"))) {
+      if (!inputs.some((path) => path.endsWith("/dist/big.esm.js")) ||
+          !inputs.some((path) => path.endsWith("/dist/core.js"))) {
         throw new Error(`Unexpected ${target} entry: ${inputs}`);
       }
     }
-    if (readFileSync(join(directory, `${target}-entry.bundle.js`)).length >=
-        readFileSync(join(directory, `${target}-full.bundle.js`)).length) throw new Error(`${target} tree shaking failed`);
+    const namedBundle = readFileSync(join(directory, `${target}-entry.bundle.js`));
+    const fullBundle = readFileSync(join(directory, `${target}-full.bundle.js`));
+    const namedGzipBytes = gzipSync(namedBundle, { level: 9 }).byteLength;
+    const fullGzipBytes = gzipSync(fullBundle, { level: 9 }).byteLength;
+    if (namedGzipBytes >= maxNamedGzipBytes) {
+      throw new Error(`${target} named consumer is ${namedGzipBytes} gzip bytes, expected below ${maxNamedGzipBytes}`);
+    }
+    if (namedGzipBytes >= fullGzipBytes * 0.5) {
+      throw new Error(`${target} tree shaking is weak: named=${namedGzipBytes}, full=${fullGzipBytes} gzip bytes`);
+    }
+    console.log(`${target} consumer gzip bytes: named=${namedGzipBytes}, full=${fullGzipBytes}`);
   }
   for (const field of ["dependencies", "optionalDependencies", "peerDependencies"]) {
     if (Object.keys(manifest[field] || {}).length) throw new Error(`Unexpected ${field}`);
   }
 
-  const esm = `import api, { Big, BigPipe, absBig, addBig, alignScale, cloneBig, compareBig, createBig, divBig,
-      fromString, isBigObject, isNumericValue, maxBig, minBig, modBig, mulBig, pipeBig, pow10, powBig,
-      sqrtBig, subBig } from "big.esm";
+  const esm = `import api, { Big, BigPipe, absBig, addBig, alignScale, cloneBig, compareBig, createBig, createCompactBig,
+      divBig, divCompactBig, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, modBig,
+      mulBig, pipeBig, pow10, powBig, roundBig, roundToIncrement, sqrtBig, subBig, toExponential, toFixed } from "big.esm";
     import { addBig as extensionlessDeepAdd } from "big.esm/dist/big.esm";
     import { addBig as explicitDeepAdd } from "big.esm/dist/big.esm.js";
-    const namedApi = { Big, BigPipe, absBig, addBig, alignScale, cloneBig, compareBig, createBig, divBig,
-      fromString, isBigObject, isNumericValue, maxBig, minBig, modBig, mulBig, pipeBig, pow10, powBig, sqrtBig, subBig };
+    const namedApi = { Big, BigPipe, absBig, addBig, alignScale, cloneBig, compareBig, createBig, createCompactBig,
+      divBig, divCompactBig, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, modBig,
+      mulBig, pipeBig, pow10, powBig, roundBig, roundToIncrement, sqrtBig, subBig, toExponential, toFixed };
     if (api.addBig !== addBig || api.createBig !== createBig ||
         [extensionlessDeepAdd, explicitDeepAdd].some((item) => item !== addBig) ||
         Object.entries(namedApi).some(([name, item]) => typeof item !== "function" || api[name] !== item) ||
         addBig(createBig(1), createBig(2)).toString() !== "3") throw Error("ESM exports");
+    const rounded = createBig("1.125");
+    if (roundBig(rounded, 2, "half-even") !== rounded || rounded.toString() !== "1.12" ||
+        toFixed(createBig("1.005"), 2, "half-even") !== "1.00" ||
+        toExponential(createBig("1e-10000000000")) !== "1e-10000000000" ||
+        createCompactBig("1e10000000000").scale !== -10000000000 ||
+        divCompactBig(createBig(1), createBig(8)).toString() !== "0.125" ||
+        toExponential(divCompactBig(createCompactBig("3e10000000000"), createBig(2))) !== "1.5e+10000000000" ||
+        roundToIncrement(createBig("-1.025"), createBig("0.05"), "half-even").toString() !== "-1" ||
+        !isDecimalInput("1.25") || isDecimalInput("")) throw Error("New decimal exports");
     const value = createBig("1.2");
     const pipeline = pipeBig(value).add("1");
     if (pipeline.value() !== value || value.toString() !== "2.2") throw Error("ESM mutation");`;
@@ -101,12 +124,13 @@ try {
   execFileSync(node, ["consumer-require.cjs"], { cwd: directory, stdio: "inherit" });
   execFileSync(bun, ["consumer.mjs"], { cwd: directory, stdio: "inherit" });
   execFileSync(bun, ["consumer-require.cjs"], { cwd: directory, stdio: "inherit" });
-  writeFileSync(join(directory, "consumer.mts"), `import api, { addBig, createBig, fromString, type Big, type BigValue } from "big.esm";
-    import type { BigObject } from "big.esm/dist/types";
+  writeFileSync(join(directory, "consumer.mts"), `import api, { addBig, createBig, fromString, type Big, type BigObject, type BigValue } from "big.esm";
+    import type { BigObject as DeepBigObject } from "big.esm/dist/types";
     api.addBig(api.createBig(1), api.createBig(2));
     const value: BigValue = "1"; const parsed: Big = fromString(value); addBig(parsed, createBig(2));
     const generic: Big = fromString<true>(value, false, true);
-    const object: BigObject = fromString<false>(value, false, false);
+    const rootObject: BigObject = { value: 1n, scale: 0 };
+    const object: DeepBigObject = rootObject;
     api.addBig(createBig(object), createBig(value));
     generic.toString(); object.value;
     // @ts-expect-error A boolean is not a BigValue.

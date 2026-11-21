@@ -1,7 +1,10 @@
 import type { Big } from "../big.js";
+import { assertScale } from "../utils/assert-scale.js";
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
 import { isZero } from "../utils/is-zero.js";
 import { pow10 } from "../utils/pow10.js";
+
+const MAX_DIRECT_SCALE_DIFFERENCE = 128;
 
 /**
  * Performs the modulo operation (remainder of division) for two Big instances.
@@ -19,6 +22,8 @@ import { pow10 } from "../utils/pow10.js";
  * modBig(new Big(10), new Big(10)).toString(); // "0"
  */
 export function modBig(dividend: Big, divisor: Big): Big {
+  assertScale(dividend.scale);
+  assertScale(divisor.scale);
   if (isZero(divisor)) {
     throw new Error("Div0");
   }
@@ -36,7 +41,7 @@ export function modBig(dividend: Big, divisor: Big): Big {
       if (compareAbsoluteScaled(divisor.value, shift, dividend.value, 0) > 0) return dividend;
     }
     dividend.value %= divisor.value * pow10(scaleDifference);
-  } else if (scaleDifference >= -21) {
+  } else if (scaleDifference >= -MAX_DIRECT_SCALE_DIFFERENCE) {
     dividend.value = (dividend.value * pow10(-scaleDifference)) % divisor.value;
     dividend.scale = divisor.scale;
   } else {

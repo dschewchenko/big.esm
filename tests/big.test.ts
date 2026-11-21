@@ -1,5 +1,5 @@
 import { expect, suite, test } from "vitest";
-import { Big } from "../src";
+import { addBig, Big, createBig } from "../src";
 import {
   bigints,
   numbers,
@@ -96,10 +96,45 @@ suite("Big", () => {
     expect(big6.scale).toBe(2);
   });
 
-  test("calculates scale when a string scale is not numeric", () => {
-    const big = new Big("123.45", "abc");
-    expect(big.value).toBe(12345n);
-    expect(big.scale).toBe(2);
+  test.each([1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1, "2.5", "2.0000000000000001", "1e-400", "abc", "", " "])(
+    "rejects invalid scale %s",
+    (scale) => {
+      expect(() => new Big("123.45", scale as number | string)).toThrow("Scale");
+    }
+  );
+
+  test("accepts safe integer scales represented by numeric strings", () => {
+    expect(new Big("123.45", "2.0").toString()).toBe("1.23");
+    expect(new Big("123.45", "2e1").scale).toBe(20);
+    expect(new Big("123.45", "200e-2").scale).toBe(2);
+    expect(new Big(1n, "0x1e").scale).toBe(30);
+    expect(new Big(1n, "-2").toString()).toBe("100");
+  });
+
+  test.each([1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])(
+    "rejects invalid public scale before formatting and arithmetic %s",
+    (scale) => {
+      const big = new Big(1);
+      expect(Object.keys(big)).toEqual(["value", "scale"]);
+      expect(Object.assign({}, big)).toEqual({ value: 1n, scale: 0 });
+
+      big.scale = scale;
+      expect(big.scale).toBe(scale);
+      expect(() => big.toString()).toThrow("Scale");
+      expect(() => new Big(big)).toThrow("Scale");
+      expect(() => createBig(big)).toThrow("Scale");
+      expect(() => addBig(big, new Big(0))).toThrow("Scale");
+      expect(Object.keys(big)).toEqual(["value", "scale"]);
+      expect(Object.assign({}, big)).toEqual({ value: 1n, scale });
+    }
+  );
+
+  test("preserves valid direct scale mutation and clones it", () => {
+    const big = new Big(1);
+    big.scale = -2;
+    expect(big.scale).toBe(-2);
+    expect(big.toString()).toBe("100");
+    expect(new Big(big).scale).toBe(-2);
   });
 
   test("construction from string with decimal places", () => {

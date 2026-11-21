@@ -61,4 +61,25 @@ suite("Big mod", () => {
     expect(result.toString()).toBe("1.248");
     expect(dividend.toString()).toBe("1.248");
   });
+
+  test.each([128, 129])("preserves exact signed remainders at scale gap %i", (scaleDifference) => {
+    const signs = [
+      [1n, 1n],
+      [1n, -1n],
+      [-1n, 1n],
+      [-1n, -1n]
+    ] as const;
+
+    for (const [dividendSign, divisorSign] of signs) {
+      const dividend = new Big(dividendSign * 123456789012345678901n);
+      const divisor = new Big(divisorSign * 9876543210987654321n, scaleDifference);
+      const expected = (dividend.value * 10n ** BigInt(scaleDifference)) % divisor.value;
+
+      const result = modBig(dividend, divisor);
+
+      expect(result).toBe(dividend);
+      expect(result.value).toBe(expected);
+      expect(result.scale).toBe(scaleDifference);
+    }
+  });
 });
