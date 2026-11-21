@@ -1,4 +1,5 @@
 import type { Big } from "../big.js";
+import { assertScale } from "./assert-scale.js";
 import { ZERO_BIGINT } from "./constants.js";
 import { pow10 } from "./pow10.js";
 
@@ -22,6 +23,8 @@ import { pow10 } from "./pow10.js";
  * console.log(y.toString()); // "123.456789"
  */
 export function alignScale(a: Big, b: Big): [Big, Big] {
+  assertScale(a.scale);
+  assertScale(b.scale);
   const scaleDifference = a.scale - b.scale;
   if (scaleDifference === 0) return [a, b];
 

@@ -73,18 +73,13 @@ bun run benchmark:compare --baseline /path/to/baseline/big.esm.js --current /pat
 node --expose-gc benchmarks/benchmark.js --baseline /path/to/baseline/big.esm.js --current /path/to/current/big.esm.js --repeats 5
 ```
 
-The JSON output includes timings, result validation against big.js, retained heap deltas after garbage collection, and peak process RSS. RSS includes the runtime and is not a direct measurement of library allocations. Each run prints JSON to standard output without modifying the documentation or deleting previous benchmark results.
+The default benchmark prepares fresh operands before timing. Use `--mode end-to-end` to include operand construction and measure retained heap after garbage collection. Both modes validate against `big.js` and report peak process RSS, which includes the runtime. The benchmark prints JSON without rewriting documentation or deleting past results.
 
-The figures below are historical measurements from 2025 using the previous benchmark methodology.
-
-- **Speed (ops)**: `big.esm v2` vs `big.js` — `26.26x faster` (median; min `2.17x`, max `154.43x`) → `2.26x faster` than `big.esm v1` (mutable mode; median `11.63x` vs `big.js`).
-- **Speed (pipeBig)**: `pipeBig` vs `big.js` — `29.8x faster` (median; min `2.84x`, max `148.27x`).
-- **Size (full)**: `big.esm v2` — `5.25 KB` minified / `1.87 KB` brotli (≈`1.30x` / `1.46x` smaller than `big.js`).
-- **Size (pipe-only)**: `bigPipe (v2)` — `4.40 KB` minified / `1.62 KB` brotli (≈`1.55x` / `1.68x` smaller than `big.js`).
+`BENCHMARK.md` also includes historical results for v1 and v2 and explains the measurement methods.
 
 ## Compatibility
 
-`big.esm` is compatible with all modern browsers, Bun 1.0+, and Node.js 16+. It uses `BigInt` internally, so it is not compatible with older runtimes. On info from [caniuse.com](https://caniuse.com/#feat=bigint) `BigInt` is supported by 98.84% of all browsers(as of 2025-12-18).
+`big.esm` requires a browser with [BigInt support](https://caniuse.com/#feat=bigint), Bun 1.0+, or Node.js 16+.
 
 ## Notes
 
@@ -112,7 +107,13 @@ More information in the [documentation](https://dschewchenko.github.io/big.esm/)
 
 Creates a `Big` instance from a `string`, `number`, `bigint`, `Big`, or `BigObject`. Preferred constructor helper. 
 
-The scale controls the position of the decimal point. If omitted, it is calculated automatically. If specified, the input is truncated toward zero to obtain the integer coefficient before the scale is applied. For example, `createBig("1.5e3", 2)` represents `15`, and `createBig(1n, -2)` represents `100`.
+The number is stored as an integer coefficient times `10 ** -scale`. The scale must be a safe integer and can be negative. An omitted scale is inferred from the input. If you pass a scale with a primitive input, the input is truncated toward zero to obtain the integer coefficient before applying the scale. For example, `createBig("1.5e3", 2)` represents `15`, and `createBig(1n, -2)` represents `100`. Structural inputs use the exported `BigObject` type with a `bigint` coefficient and a numeric scale.
+
+Keep `scale` a safe integer when writing it directly. Operations and formatters reject invalid scales before using them.
+
+#### `createCompactBig(value: PossibleNumber): Big`
+
+Parses a number without expanding a positive exponent into trailing zeros. `createCompactBig("3e10000000000")` stores `3n` with scale `-10000000000`. Use `toExponential` to display large exponents compactly.
 
 ### Utilities
 
@@ -126,7 +127,19 @@ Aligns the scale of two `Big` instances by mutating the one with the smaller sca
 
 #### `isNumericValue(value: any): boolean`
 
-Checks if the value is a valid numeric value for creating a `Big` instance.
+Accepts a `bigint`, a JavaScript `number`, or a string that `Number` can convert without returning `NaN`.
+
+#### `isDecimalInput(value: unknown): value is PossibleNumber`
+
+Checks for a `bigint`, a finite number, or a decimal string with a safe exponent and scale. It checks syntax and bounds without expanding the number. Construction and fixed-point display are still subject to the runtime's BigInt and string limits.
+
+#### `toFixed(a: Big, decimalPlaces = 0, roundingMode = "half-up"): string`
+
+Formats the number with exactly the requested number of decimal places, including trailing zeros. It leaves `a` unchanged. The range is 0 to 1,000,000 places. For example, `toFixed(createBig("1.005"), 2, "half-even")` returns `"1.00"`.
+
+#### `toExponential(a: Big): string`
+
+Formats the exact value in scientific notation without mutating `a`. For example, `toExponential(createBig("1e-10000000000"))` returns `"1e-10000000000"` without expanding the exponent.
 
 ### Mathematical operations
 
@@ -146,7 +159,31 @@ Multiplies `a` by `b` (mutates `a`).
 
 #### `divBig(a: Big, b: Big, precision = 20, roundingMode = "half-up"): Big`
 
-Divides `a` by `b` (mutates `a`). Precision is a non-negative integer number of decimal places. `half-up` rounds ties away from zero, `down` rounds toward zero, and `up` rounds away from zero.
+Divides `a` by `b` in place at the requested decimal scale. Precision ranges from 0 to 1,000,000 places.
+
+#### `divCompactBig(a: Big, b: Big, maxDecimalPlaces = 20, roundingMode = "half-up"): Big`
+
+Divides `a` by `b` in place and uses a compact scale for terminating results that fit within the requested precision. Repeating quotients and longer fractions are rounded once. `1 / 8` yields `0.125`. `1 / 3` with four places yields `0.3333`.
+
+Both division functions limit scale expansion to 2,000,000 places and throw `RangeError` before a calculation exceeds that limit. `toFixed` uses the same bound for added zeros. Within those bounds, existing coefficients and output strings remain subject to the runtime's limits.
+
+```js
+import { createBig, createCompactBig, divCompactBig, toExponential } from "big.esm";
+
+const value = createCompactBig("3e10000000000");
+divCompactBig(value, createBig(2));
+console.log(toExponential(value)); // "1.5e+10000000000"
+```
+
+#### `roundBig(a: Big, decimalPlaces = 0, roundingMode = "half-up"): Big`
+
+Rounds `a` in place to at most the requested number of decimal places. The number of places must be a non-negative safe integer.
+
+#### `roundToIncrement(a: Big, step: Big, roundingMode = "half-up"): Big`
+
+Rounds `a` in place to a multiple of a positive `step` at the step's scale. For example, rounding `1.03` to a step of `0.05` gives `1.05`. In `half-even` mode, an exact tie selects an even multiple of the step. Scale alignment uses the same expansion limit as division.
+
+Division, rounding and fixed-point formatting accept `half-up` (ties away from zero), `half-even` (ties to even), `down` (toward zero), `up` (away from zero), `floor` (toward negative infinity) and `ceil` (toward positive infinity).
 
 #### `modBig(a: Big, b: Big): Big`
 
@@ -154,11 +191,11 @@ Calculates `a % b` (mutates `a`).
 
 #### `powBig(a: Big, exp: number): Big`
 
-Raises `a` to `exp` (mutates `a`).
+Raises `a` to a non-negative safe integer exponent (mutates `a`).
 
 #### `sqrtBig(a: Big, root = 2, precision = 20): Big`
 
-Calculates the real integer-degree root of `a` (mutates `a`). The degree must be an integer of at least 2. Odd roots accept negative inputs. Results are rounded to the requested number of decimal places, with ties away from zero.
+Calculates the real integer-degree root of `a` (mutates `a`). The degree must be a safe integer of at least 2. Degree 1 is also accepted for zero and for `1` stored with scale `0`. Odd roots accept negative inputs. Results are rounded to the requested number of decimal places, with ties away from zero.
 
 #### `absBig(a: Big): Big`
 
@@ -180,7 +217,7 @@ Returns the maximum of `a` and `b` by reference (no cloning).
 
 #### `pipeBig(initial: BigValue): BigPipeline`
 
-Creates a chainable pipeline that mutates its internal `Big` in-place.
+Creates a chainable pipeline that mutates its internal `Big` in place. Use `.round(decimalPlaces, roundingMode)` to round the current value.
 
 #### `new BigPipe(initial: BigValue): BigPipe`
 
@@ -190,7 +227,7 @@ Class form of the pipeline.
 
 - [x] Generate documentation from JSDoc
 - [x] Remove trailing zeros from toString method
-- [ ] Add formatting options
+- [x] Add fixed-point and scientific formatting
 - [ ] Add more mathematical functions
 
 ## License

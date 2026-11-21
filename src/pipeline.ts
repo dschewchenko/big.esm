@@ -4,6 +4,7 @@ import { divBig } from "./operations/div.js";
 import { modBig } from "./operations/mod.js";
 import { mulBig } from "./operations/mul.js";
 import { powBig } from "./operations/pow.js";
+import { roundBig } from "./operations/round.js";
 import { sqrtBig } from "./operations/sqrt.js";
 import { subBig } from "./operations/sub.js";
 import type { BigValue, RoundingMode } from "./types.js";
@@ -20,6 +21,7 @@ export type BigPipeline = {
   div: (value: BigValue, precision?: number, roundingMode?: RoundingMode) => BigPipeline;
   mod: (value: BigValue) => BigPipeline;
   pow: (exp?: number) => BigPipeline;
+  round: (decimalPlaces?: number, roundingMode?: RoundingMode) => BigPipeline;
   sqrt: (root?: number, precision?: number) => BigPipeline;
   /**
    * Returns the current Big value. Alias to avoid accessing the getter directly.
@@ -65,6 +67,11 @@ export class BigPipe implements BigPipeline {
 
   pow(exp = 2): this {
     powBig(this.current, exp);
+    return this;
+  }
+
+  round(decimalPlaces?: number, roundingMode?: RoundingMode): this {
+    roundBig(this.current, decimalPlaces, roundingMode);
     return this;
   }
 

@@ -1,5 +1,6 @@
 import { Big } from "../big.js";
 import type { BigObject, BigValue, PossibleNumber } from "../types.js";
+import { assertScale } from "./assert-scale.js";
 import { isBigObject } from "./is-big-object.js";
 
 /**
@@ -28,7 +29,7 @@ export function createBig(value: PossibleNumber): Big;
  * Use this function instead of the Big constructor to create a Big instance from a value.
  *
  * @param {PossibleNumber} value - The value to create the Big instance from. Can be a number, string, or BigInt.
- * @param {number | string | undefined} [scale] - The scale for the value (optional), representing the number of decimal places. If scale provided and value has a fractional part, the fractional part will be removed.
+ * @param {number | string | undefined} [scale] - The scale for the value, as a safe integer or a string that converts to one. If provided and the value has a fractional part, the fractional part will be removed.
  * @return {Big} - A new Big instance.
  *
  * @category Utilities
@@ -48,12 +49,15 @@ export function createBig(value: BigValue, scale?: number | string | undefined):
 /**
  * Implements the overloaded function for creating a Big instance.
  * @param {BigValue} value - The value to create the Big instance from. Can be a number, string, BigInt, or another Big instance.
- * @param {number | string | undefined} [scale] - The scale for the value (optional), representing the number of decimal places. If scale provided and value has a fractional part, the fractional part will be removed.
+ * @param {number | string | undefined} [scale] - The scale for the value, as a safe integer or a string that converts to one. If provided and the value has a fractional part, the fractional part will be removed.
  *
  * @category Utilities
  */
 export function createBig(value: BigValue, scale?: number | string | undefined): Big {
-  if (value instanceof Big) return value;
+  if (value instanceof Big) {
+    assertScale(value.scale);
+    return value;
+  }
 
   if (isBigObject(value)) {
     return new Big((value as BigObject).value, (value as BigObject).scale);

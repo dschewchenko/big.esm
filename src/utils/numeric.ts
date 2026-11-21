@@ -1,7 +1,8 @@
 /**
- * Checks if a value is a numeric value (bigint, number, or string representation of a number).
+ * Checks for a bigint, a JavaScript number (including NaN and Infinity), or a string
+ * that JavaScript's Number conversion accepts. Use `isDecimalInput` to check the decimal grammar.
  * @param {any} value - The value to check.
- * @returns {boolean} Returns true if the value is a numeric value, false otherwise.
+ * @returns {boolean} Whether the value meets the JavaScript coercion check.
  *
  * @category Utilities
  *

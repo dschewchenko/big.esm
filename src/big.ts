@@ -1,7 +1,29 @@
 import type { BigObject, BigValue, PossibleNumber } from "./types.js";
+import { assertScale } from "./utils/assert-scale.js";
 import { fromString } from "./utils/from-string.js";
 import { isBigObject } from "./utils/is-big-object.js";
 import { trimZeros } from "./utils/trim-zeros.js";
+
+function parseScale(scale: number | string): number {
+  if (typeof scale === "number" && Number.isSafeInteger(scale)) return scale;
+  if (typeof scale === "string") {
+    const text = scale.trim();
+    const parsed = Number(text);
+    if (text && Number.isSafeInteger(parsed) && isIntegralScaleText(text)) return parsed;
+  }
+  throw new RangeError("Scale");
+}
+
+function isIntegralScaleText(text: string): boolean {
+  if (!/[.eE]/.test(text) || /^0[xob]/i.test(text)) return true;
+
+  // Number may round a fractional scale to an integer or underflow it to zero.
+  const [mantissa, exponent = "0"] = text.split(/[eE]/, 2);
+  const point = mantissa.indexOf(".");
+  const fractionLength = point < 0 ? 0 : mantissa.length - point - 1;
+  const places = fractionLength - Number(exponent);
+  return places <= 0 || !/[1-9]/.test(mantissa.replace(".", "").slice(-places));
+}
 
 /**
  * The Big class for working with large numbers and fractions using BigInt.
@@ -25,7 +47,7 @@ export class Big {
   public value: bigint;
 
   /**
-   * The position of the decimal point. A negative scale adds zeros to the right of the coefficient.
+   * The position of the decimal point, as a safe integer. A negative scale adds zeros to the right of the coefficient.
    */
   public scale: number;
 
@@ -49,7 +71,7 @@ export class Big {
    * Creates a new Big instance.
    *
    * @param {PossibleNumber} value - The value to create the Big instance from. Can be a number, string, or BigInt.
-   * @param {number | string} [scale] - The scale for the value (optional), representing the number of decimal places. If scale provided and value has a fractional part, the fractional part will be removed.
+   * @param {number | string} [scale] - The scale for the value, as a safe integer or a string that converts to one. If provided and the value has a fractional part, the fractional part will be removed.
    * @throws {TypeError} - If the value is not a number, string, BigInt, or Big instance.
    * @return {Big} - A new Big instance.
    */
@@ -57,12 +79,13 @@ export class Big {
   /**
    * Implements the overloaded constructors for the Big class.
    * @param {BigValue} value - The value to create the Big instance from. Can be a number, string, BigInt, or another Big instance.
-   * @param {number | string | undefined} [scale] - The scale for the value (optional), representing the number of decimal places. If scale provided and value has a fractional part, the fractional part will be removed.
+   * @param {number | string | undefined} [scale] - The scale for the value, as a safe integer or a string that converts to one. If provided and the value has a fractional part, the fractional part will be removed.
    * @throws {TypeError} - If the value is not a number, string, BigInt, or Big instance.
    * @return {Big} - A new Big instance.
    */
   constructor(value: BigValue, scale?: number | string) {
     if (value instanceof Big) {
+      assertScale(value.scale);
       this.value = value.value;
       this.scale = value.scale;
       return;
@@ -78,13 +101,8 @@ export class Big {
       throw new TypeError("Big");
     }
 
-    let scaleDefined = scale !== undefined;
-    let scaleNumber = 0;
-    if (scaleDefined) {
-      scaleNumber = typeof scale === "number" ? scale : Number(scale);
-      scaleDefined = !Number.isNaN(scaleNumber);
-      if (scaleDefined) scaleNumber = Math.floor(scaleNumber);
-    }
+    const scaleDefined = scale !== undefined;
+    const scaleNumber = scale === undefined ? 0 : parseScale(scale);
 
     if (typeof value === "bigint") {
       this.value = value;
@@ -119,6 +137,7 @@ export class Big {
    */
   toString(shouldTrimZeros: boolean = true): string {
     const scale = this.scale;
+    assertScale(scale);
     const value = this.value.toString();
     if (scale < 0) return value === "0" ? value : value + "0".repeat(-scale);
     if (!(scale > 0) || (shouldTrimZeros && value === "0")) return value;

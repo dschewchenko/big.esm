@@ -35,6 +35,31 @@ suite("sqrtBig", () => {
     expect(() => sqrtBig(big, 2, -1)).toThrow();
   });
 
+  test.each([1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1, -1])(
+    "rejects invalid precision %s before the zero and one shortcuts",
+    (precision) => {
+      const zero = new Big(0);
+      const one = new Big(1);
+      expect(() => sqrtBig(zero, 2, precision)).toThrow("Prec");
+      expect(() => sqrtBig(one, 2, precision)).toThrow("Prec");
+      expect(zero.value).toBe(0n);
+      expect(zero.scale).toBe(0);
+      expect(one.value).toBe(1n);
+      expect(one.scale).toBe(0);
+    }
+  );
+
+  test.each([1.5, NaN, Infinity, 0, Number.MAX_SAFE_INTEGER + 1])("rejects root %s for zero and one", (root) => {
+    const zero = new Big(0);
+    const one = new Big(1);
+    expect(() => sqrtBig(zero, root)).toThrow("Root");
+    expect(() => sqrtBig(one, root)).toThrow("Root");
+    expect(zero.value).toBe(0n);
+    expect(zero.scale).toBe(0);
+    expect(one.value).toBe(1n);
+    expect(one.scale).toBe(0);
+  });
+
   test("throws an error when calculating the square root of a negative number with precision and rounding mode", () => {
     const big = new Big(numbersNegative[0]);
     expect(() => sqrtBig(big, 2, 2)).toThrow();

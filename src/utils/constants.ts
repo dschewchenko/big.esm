@@ -5,6 +5,12 @@
  */
 export const DEFAULT_PRECISION = 20;
 
+/** Maximum requested decimal places for division and fixed-point formatting. */
+export const MAX_DECIMAL_PLACES = 1_000_000;
+
+/** Maximum decimal expansion requested by a single division or fixed formatter. */
+export const MAX_DECIMAL_EXPANSION = 2 * MAX_DECIMAL_PLACES;
+
 /**
  * Zero as a BigInt.
  *

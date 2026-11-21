@@ -1,5 +1,6 @@
 import type { Big } from "../big.js";
 import type { CompareResult } from "../types.js";
+import { assertScale } from "../utils/assert-scale.js";
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
 import { pow10 } from "../utils/pow10.js";
 
@@ -18,6 +19,8 @@ import { pow10 } from "../utils/pow10.js";
  * compareBig(new Big(1), new Big(1)); // 0
  */
 export const compareBig = (a: Big, b: Big): CompareResult => {
+  assertScale(a.scale);
+  assertScale(b.scale);
   if (a.scale === b.scale) {
     if (a.value > b.value) return 1;
     if (a.value < b.value) return -1;

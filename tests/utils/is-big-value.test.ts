@@ -16,4 +16,12 @@ suite("Big utils isBigObject", () => {
     expect(isBigObject({ value: BigInt(0), scale: "" })).toBe(false);
     expect(isBigObject({ value: "", scale: 0 })).toBe(false);
   });
+
+  test("requires BigObject scales to be safe integers", () => {
+    expect(isBigObject({ value: 1n, scale: -2 })).toBe(true);
+    expect(isBigObject({ value: 1n, scale: 1.5 })).toBe(false);
+    expect(isBigObject({ value: 1n, scale: NaN })).toBe(false);
+    expect(isBigObject({ value: 1n, scale: Infinity })).toBe(false);
+    expect(isBigObject({ value: 1n, scale: Number.MAX_SAFE_INTEGER + 1 })).toBe(false);
+  });
 });
