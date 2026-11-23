@@ -1,12 +1,26 @@
 {
   "entryPoints": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/pipe.ts"
+  ],
+  "projectDocuments": [
+    "guides/*.md"
   ],
   "githubPages": true,
   "cacheBust": true,
   "cleanOutputDir": true,
   "out": "docs",
+  "customCss": "tools/typedoc/site.css",
   "searchInComments": true,
+  "searchInDocuments": true,
+  "navigationLinks": {
+    "GitHub": "https://github.com/dschewchenko/big.esm",
+    "npm": "https://www.npmjs.com/package/big.esm"
+  },
+  "navigation": {
+    "includeCategories": true
+  },
+  "categoryOrder": ["Guides", "Core", "Operations", "Fluent pipeline", "Operator pipeline", "Utilities", "Types", "*"],
   "categorizeByGroup": false,
   "plugin": ["typedoc-plugin-merge-modules", "typedoc-plugin-mdn-links"]
 }

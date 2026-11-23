@@ -14,6 +14,16 @@ suite("Big utils fromString", () => {
     expect(fromString(-1.5e3)).toStrictEqual(new Big(BigInt(-1500)));
   });
 
+  test("preserves safe integers and the decimal form of unsafe numbers", () => {
+    expect(fromString(Number.MAX_SAFE_INTEGER, false, false)).toEqual({ value: 9007199254740991n, scale: 0 });
+    expect(fromString(Number.MIN_SAFE_INTEGER, false, false)).toEqual({ value: -9007199254740991n, scale: 0 });
+    expect(fromString(-0, false, false)).toEqual({ value: 0n, scale: 0 });
+    expect(fromString(1_000_000_000_000_000_100, false, false)).toEqual({
+      value: 1_000_000_000_000_000_100n,
+      scale: 0
+    });
+  });
+
   test("fromString converts fractions", () => {
     expect(fromString(1e-6)).toStrictEqual(new Big(BigInt(1), 6));
     expect(fromString(1.23e-4)).toStrictEqual(new Big(BigInt(123), 6));
@@ -49,6 +59,25 @@ suite("Big utils fromString", () => {
   test("fromString converts zero to Big Instance with zero", () => {
     expect(fromString("0")).toStrictEqual(new Big(BigInt(0)));
   });
+
+  test.each([
+    ["-.5", -5n, 1],
+    ["1.", 1n, 0],
+    ["00012.3400", 123400n, 4],
+    ["-0.00", 0n, 0],
+    ["999999999999999", 999999999999999n, 0],
+    ["9007199254740993", 9007199254740993n, 0]
+  ])("reads plain decimal %s exactly", (text, value, scale) => {
+    expect(fromString(text, false, false)).toEqual({ value, scale });
+    expect(new Big(text)).toMatchObject({ value, scale });
+  });
+
+  test.each(["", "-", ".", "-.", "+1", "1.2.3", "1 2", "1e", "1\n", "０.1"])(
+    "rejects invalid decimal syntax %j",
+    (text) => {
+      expect(() => fromString(text)).toThrow("Num");
+    }
+  );
 
   test("fromString throws errors for invalid inputs", () => {
     expect(() => fromString("not a number")).toThrow();

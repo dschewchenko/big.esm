@@ -1,24 +1,34 @@
 import type { Big } from "../big.js";
-import type { CompareResult } from "../types.js";
+import type { BigObject, BigValue, CompareResult } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
 import { pow10 } from "../utils/pow10.js";
+import { readBigOperand } from "../utils/read-big-operand.js";
+
+/** @inline */
+type BigComparison = (a: Big, b: Big) => CompareResult;
 
 /**
- * Compares two Big numbers and returns a CompareResult indicating the relation between them.
+ * Compares two decimal values.
  *
- * @param {Big} a - The first Big number to compare.
- * @param {Big} b - The second Big number to compare.
- * @returns {CompareResult} - 1 if a > b, -1 if a < b, or 0 if a == b.
+ * @param a - The first decimal value.
+ * @param b - The second decimal value.
+ * @returns -1 if a < b, 0 if they are equal, or 1 if a > b.
  *
  * @category Operations
  *
  * @example
- * compareBig(new Big(1), new Big(2)); // -1
- * compareBig(new Big(2), new Big(1)); // 1
- * compareBig(new Big(1), new Big(1)); // 0
+ * compare("1.25", "1.2500"); // 0
+ * compare(1n, "1.25"); // -1
  */
-export const compareBig = (a: Big, b: Big): CompareResult => {
+export function compare(a: BigValue, b: BigValue): CompareResult {
+  return compareParts(readBigOperand(a), readBigOperand(b));
+}
+
+/** Compares two Big instances without modifying them. */
+export const compareBig: BigComparison = compareParts;
+
+function compareParts(a: BigObject, b: BigObject): CompareResult {
   assertScale(a.scale);
   assertScale(b.scale);
   if (a.scale === b.scale) {
@@ -43,4 +53,4 @@ export const compareBig = (a: Big, b: Big): CompareResult => {
   const sign = a.value < 0n ? -1 : 1;
   const magnitudeComparison = compareAbsoluteScaled(a.value, -BigInt(a.scale), b.value, -BigInt(b.scale));
   return magnitudeComparison === 0 ? 0 : ((sign * magnitudeComparison) as CompareResult);
-};
+}

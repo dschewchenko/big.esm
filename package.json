@@ -76,6 +76,12 @@
     "./dist/pipeline.js": {
       "import": "./dist/pipeline.js"
     },
+    "./pipe": {
+      "import": {
+        "types": "./dist/pipe.d.ts",
+        "default": "./dist/pipe.js"
+      }
+    },
     "./dist/operations/*.js": {
       "import": "./dist/operations/*.js"
     },
@@ -124,6 +130,12 @@
     "./dist/utils/pow10.js": {
       "import": "./dist/utils/pow10.js"
     },
+    "./dist/utils/serialization": {
+      "import": "./dist/utils/serialization.js"
+    },
+    "./dist/utils/serialization.js": {
+      "import": "./dist/utils/serialization.js"
+    },
     "./dist/utils/to-exponential": {
       "import": "./dist/utils/to-exponential.js"
     },
@@ -135,6 +147,18 @@
     },
     "./dist/utils/to-fixed.js": {
       "import": "./dist/utils/to-fixed.js"
+    },
+    "./dist/utils/to-number": {
+      "import": "./dist/utils/to-number.js"
+    },
+    "./dist/utils/to-number.js": {
+      "import": "./dist/utils/to-number.js"
+    },
+    "./dist/utils/to-precision": {
+      "import": "./dist/utils/to-precision.js"
+    },
+    "./dist/utils/to-precision.js": {
+      "import": "./dist/utils/to-precision.js"
     },
     "./dist/types": {
       "types": "./dist/types.d.ts"

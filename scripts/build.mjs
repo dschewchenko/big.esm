@@ -26,6 +26,15 @@ const result = await Bun.build({
 });
 if (!result.success) throw new AggregateError(result.logs, "ESM build failed");
 
+// Keep the shared ESM import so both entry points use the same Big class.
+const pipeSource = await Bun.file(join(root, "src/pipe.ts")).text();
+const pipeJavaScript = await new Bun.Transpiler({
+  loader: "ts",
+  minifySyntax: true,
+  minifyWhitespace: true
+}).transform(pipeSource);
+await Bun.write(join(outdir, "pipe.js"), pipeJavaScript);
+
 await Bun.write(join(outdir, "big.esm.js"), [
   'import * as api from "./core.js";',
   'export * from "./core.js";',
@@ -37,21 +46,22 @@ const publicFacades = {
   "index.js": "*",
   "package-entry.js": "default",
   "big.js": "Big",
-  "pipeline.js": "BigPipe, pipeBig",
-  "operations/abs.js": "absBig",
-  "operations/add.js": "addBig",
-  "operations/compare.js": "compareBig",
-  "operations/div.js": "divBig",
-  "operations/div-compact.js": "divCompactBig",
+  "pipeline.js": "BigPipe, pipe, pipeBig, pipeInPlace",
+  "operations/abs.js": "abs, absInPlace, absBig",
+  "operations/add.js": "add, addInPlace, addBig",
+  "operations/compare.js": "compare, compareBig",
+  "operations/div.js": "div, divInPlace, divBig",
+  "operations/div-compact.js": "divCompact, divCompactInPlace, divCompactBig",
   "operations/max.js": "maxBig",
   "operations/min.js": "minBig",
-  "operations/mod.js": "modBig",
-  "operations/mul.js": "mulBig",
-  "operations/pow.js": "powBig",
-  "operations/round.js": "roundBig",
-  "operations/round-to-increment.js": "roundToIncrement",
-  "operations/sqrt.js": "sqrtBig",
-  "operations/sub.js": "subBig",
+  "operations/mod.js": "mod, modInPlace, modBig",
+  "operations/mul.js": "mul, mulInPlace, mulBig",
+  "operations/pow.js": "pow, powInPlace, powBig",
+  "operations/round.js": "round, roundInPlace, roundBig",
+  "operations/round-to-increment.js": "roundToStep, roundToStepInPlace, roundToIncrement",
+  "operations/sqrt.js": "sqrt, sqrtInPlace, sqrtBig",
+  "operations/sub.js": "sub, subInPlace, subBig",
+  "operations/sum.js": "sumBig",
   "utils/align-scale.js": "alignScale",
   "utils/clone.js": "cloneBig",
   "utils/create.js": "createBig",
@@ -59,8 +69,11 @@ const publicFacades = {
   "utils/is-big-object.js": "isBigObject",
   "utils/numeric.js": "isNumericValue",
   "utils/pow10.js": "pow10",
+  "utils/serialization.js": "deserializeBig, serializeBig",
   "utils/to-exponential.js": "toExponential",
-  "utils/to-fixed.js": "toFixed"
+  "utils/to-fixed.js": "toFixed",
+  "utils/to-number.js": "toNumber",
+  "utils/to-precision.js": "toPrecision"
 };
 
 for (const [file, exports] of Object.entries(publicFacades)) {

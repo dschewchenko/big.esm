@@ -1,0 +1,4 @@
+/* The README already supplies the homepage heading. */
+.tsd-page-title:has(+ .tsd-typography > #bigesm) {
+  display: none;
+}
