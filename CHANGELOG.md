@@ -1,3 +1,18 @@
+# [3.2.0](https://github.com/dschewchenko/big.esm/compare/v3.1.1...v3.2.0) (2026-11-23)
+
+
+### Features
+
+* add tree-shakeable pipe operators ([e8e9236](https://github.com/dschewchenko/big.esm/commit/e8e9236f634a0166b00cc745871138449847a06f))
+* make decimal mutation explicit ([c09bd8a](https://github.com/dschewchenko/big.esm/commit/c09bd8a3edd0d24a942bac01a01dba62af1f909f))
+* simplify decimal inputs and formatting ([86f3238](https://github.com/dschewchenko/big.esm/commit/86f3238c5afcbfc787c524f9c3fb65357e7cbace))
+
+
+### Performance Improvements
+
+* accelerate short decimal arithmetic ([32c0d8a](https://github.com/dschewchenko/big.esm/commit/32c0d8abce4bb89eb89cc01ef9a37cb8c2abaf4e))
+* parse safe integer inputs directly ([a469a34](https://github.com/dschewchenko/big.esm/commit/a469a34c09bc89e3f58d064923d4a37498957872))
+
 ## [3.1.1](https://github.com/dschewchenko/big.esm/compare/v3.1.0...v3.1.1) (2026-11-23)
 
 
