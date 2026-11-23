@@ -90,11 +90,18 @@ try {
       mulBig, pipeBig, pow10, powBig, roundBig, roundToIncrement, sqrtBig, subBig, toExponential, toFixed } from "big.esm";
     import { addBig as extensionlessDeepAdd } from "big.esm/dist/big.esm";
     import { addBig as explicitDeepAdd } from "big.esm/dist/big.esm.js";
+    import { addBig as operationAdd } from "big.esm/dist/operations/add";
+    import { addBig as operationAddJs } from "big.esm/dist/operations/add.js";
+    import { Big as deepBig } from "big.esm/dist/big";
+    import { pipeBig as deepPipe } from "big.esm/dist/pipeline.js";
+    import { toFixed as deepFixed } from "big.esm/dist/utils/to-fixed";
+    import { divCompactBig as coreDivide } from "big.esm/dist/core.js";
     const namedApi = { Big, BigPipe, absBig, addBig, alignScale, cloneBig, compareBig, createBig, createCompactBig,
       divBig, divCompactBig, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, modBig,
       mulBig, pipeBig, pow10, powBig, roundBig, roundToIncrement, sqrtBig, subBig, toExponential, toFixed };
     if (api.addBig !== addBig || api.createBig !== createBig ||
-        [extensionlessDeepAdd, explicitDeepAdd].some((item) => item !== addBig) ||
+        [extensionlessDeepAdd, explicitDeepAdd, operationAdd, operationAddJs].some((item) => item !== addBig) ||
+        deepBig !== Big || deepPipe !== pipeBig || deepFixed !== toFixed || coreDivide !== divCompactBig ||
         Object.entries(namedApi).some(([name, item]) => typeof item !== "function" || api[name] !== item) ||
         addBig(createBig(1), createBig(2)).toString() !== "3") throw Error("ESM exports");
     const rounded = createBig("1.125");
@@ -111,7 +118,7 @@ try {
     if (pipeline.value() !== value || value.toString() !== "2.2") throw Error("ESM mutation");`;
   const require = `const { createRequire } = require("node:module");
     const load = createRequire(__filename);
-    for (const specifier of ["big.esm", "big.esm/dist/big.esm", "big.esm/dist/big.esm.js"]) {
+    for (const specifier of ["big.esm", "big.esm/dist/big.esm", "big.esm/dist/big.esm.js", "big.esm/dist/operations/add", "big.esm/dist/operations/add.js"]) {
       let failure;
       try { load(specifier); } catch (error) { failure = error; }
       if (!failure || !["ERR_PACKAGE_PATH_NOT_EXPORTED", "MODULE_NOT_FOUND"].includes(failure.code)) {
@@ -124,13 +131,30 @@ try {
   execFileSync(node, ["consumer-require.cjs"], { cwd: directory, stdio: "inherit" });
   execFileSync(bun, ["consumer.mjs"], { cwd: directory, stdio: "inherit" });
   execFileSync(bun, ["consumer-require.cjs"], { cwd: directory, stdio: "inherit" });
-  writeFileSync(join(directory, "consumer.mts"), `import api, { addBig, createBig, fromString, type Big, type BigObject, type BigValue } from "big.esm";
+  writeFileSync(join(directory, "consumer.mts"), `import api, { addBig, Big, createBig, fromString, type BigObject, type BigValue } from "big.esm";
     import type { BigObject as DeepBigObject } from "big.esm/dist/types";
+    import type { BigObject as ExplicitBigObject } from "big.esm/dist/types.js";
+    import { addBig as deepAdd } from "big.esm/dist/operations/add";
+    import { addBig as deepAddJs } from "big.esm/dist/operations/add.js";
+    import { Big as deepBig } from "big.esm/dist/big.js";
+    import { pipeBig as deepPipe } from "big.esm/dist/pipeline";
+    import { toFixed as deepFixed } from "big.esm/dist/utils/to-fixed.js";
+    import { divCompactBig as coreDivide } from "big.esm/dist/core.js";
+    // @ts-expect-error Internal helpers have no public runtime entry point.
+    import { assertScale } from "big.esm/dist/utils/assert-scale";
+    function construct(value: BigValue, scale?: number): Big[] {
+      return [new Big(value), new Big("1.23", scale)];
+    }
     api.addBig(api.createBig(1), api.createBig(2));
     const value: BigValue = "1"; const parsed: Big = fromString(value); addBig(parsed, createBig(2));
     const generic: Big = fromString<true>(value, false, true);
     const rootObject: BigObject = { value: 1n, scale: 0 };
     const object: DeepBigObject = rootObject;
+    const explicitObject: ExplicitBigObject = rootObject;
+    deepAdd(new deepBig(explicitObject), deepPipe("2").value());
+    deepAddJs(new Big(1), new Big(2));
+    deepFixed(coreDivide(new Big(1), new Big(2)), 2);
+    construct(object, undefined);
     api.addBig(createBig(object), createBig(value));
     generic.toString(); object.value;
     // @ts-expect-error A boolean is not a BigValue.
