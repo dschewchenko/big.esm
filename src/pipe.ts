@@ -21,6 +21,8 @@ declare const boundOperator: unique symbol;
 /**
  * A reusable operation configured with its arguments for {@link pipe}.
  * Values from a supplied `Big` are read each time the operator runs.
+ *
+ * @category Operator pipeline
  */
 export type PipeOperator = {
   readonly [boundOperator]: true;
@@ -45,16 +47,36 @@ type DivisionArguments = {
 const divide: Operation<DivisionArguments> = (working, options) =>
   divInPlace(working, options.divisor, options.precision, options.roundingMode);
 
-/** Configures addition for use in {@link pipe}. */
+/**
+ * Configures addition for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const add = (operand: BigValue): PipeOperator => bind(addInPlace, operand);
 
-/** Configures subtraction for use in {@link pipe}. */
+/**
+ * Configures subtraction for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const sub = (operand: BigValue): PipeOperator => bind(subInPlace, operand);
 
-/** Configures multiplication for use in {@link pipe}. */
+/**
+ * Configures multiplication for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const mul = (operand: BigValue): PipeOperator => bind(mulInPlace, operand);
 
-/** Configures division for use in {@link pipe}. */
+/**
+ * Configures division for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const div = (divisor: BigValue, precision?: number, roundingMode?: RoundingMode): PipeOperator =>
   bind(divide, { divisor, precision, roundingMode });
 
@@ -67,17 +89,37 @@ type CompactDivisionArguments = {
 const divideCompact: Operation<CompactDivisionArguments> = (working, options) =>
   divCompactInPlace(working, options.divisor, options.maxDecimalPlaces, options.roundingMode);
 
-/** Configures compact division for use in {@link pipe}. */
+/**
+ * Configures compact division for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const divCompact = (divisor: BigValue, maxDecimalPlaces?: number, roundingMode?: RoundingMode): PipeOperator =>
   bind(divideCompact, { divisor, maxDecimalPlaces, roundingMode });
 
-/** Configures modulo for use in {@link pipe}. */
+/**
+ * Configures modulo for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const mod = (divisor: BigValue): PipeOperator => bind(modInPlace, divisor);
 
-/** Configures absolute value for use in {@link pipe}. */
+/**
+ * Configures absolute value for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const abs = (): PipeOperator => bind(absInPlace, undefined);
 
-/** Configures integer exponentiation for use in {@link pipe}. */
+/**
+ * Configures integer exponentiation for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const pow = (exponent?: number): PipeOperator => bind(powInPlace, exponent);
 
 type RoundingArguments = {
@@ -88,7 +130,12 @@ type RoundingArguments = {
 const roundValue: Operation<RoundingArguments> = (working, options) =>
   roundInPlace(working, options.decimalPlaces, options.roundingMode);
 
-/** Configures decimal-place rounding for use in {@link pipe}. */
+/**
+ * Configures decimal-place rounding for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const round = (decimalPlaces?: number, roundingMode?: RoundingMode): PipeOperator =>
   bind(roundValue, { decimalPlaces, roundingMode });
 
@@ -100,7 +147,12 @@ type RoundToStepArguments = {
 const roundToStepValue: Operation<RoundToStepArguments> = (working, options) =>
   roundToStepInPlace(working, options.step, options.roundingMode);
 
-/** Configures rounding to a positive step for use in {@link pipe}. */
+/**
+ * Configures rounding to a positive step for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const roundToStep = (step: BigValue, roundingMode?: RoundingMode): PipeOperator =>
   bind(roundToStepValue, { step, roundingMode });
 
@@ -111,7 +163,12 @@ type RootArguments = {
 
 const root: Operation<RootArguments> = (working, options) => sqrtInPlace(working, options.degree, options.precision);
 
-/** Configures an nth root for use in {@link pipe}. */
+/**
+ * Configures an nth root for use in {@link pipe}.
+ *
+ * @category Operator pipeline
+ * @group Operators
+ */
 export const sqrt = (degree?: number, precision?: number): PipeOperator => bind(root, { degree, precision });
 
 /**
@@ -119,6 +176,9 @@ export const sqrt = (degree?: number, precision?: number): PipeOperator => bind(
  * Each operator changes only the owned working value, which is returned as a `Big`.
  * Operator arrays can be grouped and spread into a pipeline. A prior pipeline result
  * can also be used as an operand to build a separate expression.
+ *
+ * @category Operator pipeline
+ * @group Entry point
  *
  * @example
  * ```ts

@@ -14,6 +14,11 @@ import { toFixed } from "./utils/to-fixed.js";
 import { toNumber } from "./utils/to-number.js";
 import { toPrecision } from "./utils/to-precision.js";
 
+/**
+ * Fluent chain API exposed by the deprecated `pipeBig` helper.
+ *
+ * @category Fluent pipeline
+ */
 export type BigPipeline = {
   /**
    * The current Big value inside the pipeline.
@@ -37,6 +42,11 @@ export type BigPipeline = {
   toString: (trimZeros?: boolean) => string;
 };
 
+/**
+ * A fluent chain backed by one Big value.
+ *
+ * @category Fluent pipeline
+ */
 export class BigPipe implements BigPipeline {
   current: Big;
 
@@ -120,12 +130,20 @@ export class BigPipe implements BigPipeline {
  *
  * @example
  * pipe("1.03").roundToStep("0.05").toFixed(2); // "1.05"
+ *
+ * @category Fluent pipeline
+ * @group Fluent chains
  */
 export function pipe(initial: BigValue): BigPipe {
   return new BigPipe(initial instanceof Big ? new Big(initial) : initial);
 }
 
-/** Creates a chain that updates the supplied mutable Big. */
+/**
+ * Creates a chain that updates the supplied mutable Big.
+ *
+ * @category Fluent pipeline
+ * @group Fluent chains
+ */
 export function pipeInPlace(initial: Big): BigPipe {
   if (!(initial instanceof Big)) throw new TypeError("pipeInPlace requires a Big instance");
   return new BigPipe(initial);
@@ -134,6 +152,9 @@ export function pipeInPlace(initial: Big): BigPipe {
 /**
  * Creates a chain that reuses an existing Big.
  * @deprecated Use `pipe` to work on a copy or `pipeInPlace` to mutate the supplied Big explicitly.
+ *
+ * @category Fluent pipeline
+ * @group Legacy chains
  */
 export function pipeBig(initial: BigValue): BigPipeline {
   return new BigPipe(initial);

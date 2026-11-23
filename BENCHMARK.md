@@ -30,6 +30,48 @@ bun run benchmark --operation remainder --input moderateScaleGap --repeats 7
 bun run benchmark:weight
 ```
 
+## Current pipe bundle size
+
+This local package build compares the fluent root `pipe` with the reusable operators from `big.esm/pipe`. Both browser bundles calculate the same expression, `(100 × 0.9 + 5) − 2`, and produce `"93"`. The table reports gzip level 9 after minification:
+
+| Bundler | Fluent `pipe` | Operator `pipe` |
+| --- | ---: | ---: |
+| Bun 1.4.4 | 4,728 B | 1,843 B |
+| Vite 8 with Node.js 26.13.1 | 5,609 B | 2,495 B |
+
+To reproduce the Bun measurements from the package root, run `mkdir -p benchmarks/artifacts/pipe-size` and save the two entries in that directory.
+
+`fluent.mjs`
+
+```js
+import { pipe } from "big.esm";
+
+const result = pipe("100").mul("0.9").add("5").sub(2).toString();
+if (result !== "93") throw Error(result);
+```
+
+`operators.mjs`
+
+```js
+import { add, mul, pipe, sub } from "big.esm/pipe";
+
+const pricing = [mul("0.9"), add("5")];
+const finalize = [sub(2)];
+const result = pipe("100", ...pricing, ...finalize).toString();
+if (result !== "93") throw Error(result);
+```
+
+```bash
+bun run build
+bun build benchmarks/artifacts/pipe-size/fluent.mjs --target browser --minify --outfile benchmarks/artifacts/pipe-size/fluent.js
+bun build benchmarks/artifacts/pipe-size/operators.mjs --target browser --minify --outfile benchmarks/artifacts/pipe-size/operators.js
+bun benchmarks/artifacts/pipe-size/fluent.js
+bun benchmarks/artifacts/pipe-size/operators.js
+bun -e 'import { gzipSync } from "node:zlib"; for (const file of process.argv.slice(1)) console.log(file, gzipSync(await Bun.file(file).bytes(), { level: 9 }).byteLength, "gzip bytes")' benchmarks/artifacts/pipe-size/fluent.js benchmarks/artifacts/pipe-size/operators.js
+```
+
+The table measures browser bundles for this expression. The package archive measured 24.11 KB with the updated README, compared with 24.98 KB before the operator API was added.
+
 ## Historical results
 
 ### Speed (big.esm v2 vs big.js)

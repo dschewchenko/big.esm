@@ -1,7 +1,8 @@
 import type { Big } from "./big.js";
 
 /**
- * The object type for the Big class.
+ * A decimal represented by an integer coefficient and a safe integer scale.
+ * For example, `{ value: 123n, scale: 2 }` represents 1.23.
  *
  * @category Types
  */
@@ -11,14 +12,15 @@ export type BigObject = {
 };
 
 /**
- * Possible number types for processing.
+ * A finite JavaScript number, a decimal string or a bigint.
+ * Use decimal strings to preserve digits that cannot be represented by a Number.
  *
  * @category Types
  */
 export type PossibleNumber = number | string | bigint;
 
 /**
- * Possible value types for the Big class.
+ * A decimal input accepted by the constructor and pure arithmetic functions.
  *
  * @category Types
  */

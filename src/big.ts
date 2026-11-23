@@ -25,7 +25,7 @@ function isIntegralScaleText(text: string): boolean {
 }
 
 /**
- * The Big class for working with large numbers and fractions using BigInt.
+ * An exact finite decimal stored as `value × 10 ** (-scale)`.
  *
  * @category Core
  *
@@ -41,12 +41,13 @@ function isIntegralScaleText(text: string): boolean {
  */
 export class Big {
   /**
-   * The value of the Big instance.
+   * The integer coefficient of the decimal.
    */
   public value: bigint;
 
   /**
-   * The position of the decimal point, as a safe integer. A negative scale adds zeros to the right of the coefficient.
+   * The exponent of ten with the sign reversed. A positive scale counts fractional places.
+   * A negative scale represents trailing integer zeros. Keep the scale a safe integer.
    */
   public scale: number;
 
@@ -120,7 +121,8 @@ export class Big {
   }
 
   /**
-   * Returns a string representation of the Big instance.
+   * Formats the value in fixed-point decimal notation. Use `toExponential(big)` to display a large
+   * exponent without expanding it into zeros.
    *
    * @param {boolean} [shouldTrimZeros=true] - Whether to trim trailing zeros from the fractional part. Defaults to true.
    * @return {string} - A string representation of the Big instance.
@@ -150,9 +152,10 @@ export class Big {
   }
 
   /**
-   * Returns the JSON representation of the Big instance.
+   * Returns the same string as `toString()` for JSON serialization.
+   * Use `serializeBig(big)` to preserve the stored scale through a JSON round trip.
    *
-   * @returns {string} The JSON representation of the Big instance. It is the same as the string representation, because JSON does not support BigInt.
+   * @returns {string} The decimal value with fractional trailing zeros trimmed.
    */
   toJSON(): string {
     return this.toString();
