@@ -1,3 +1,10 @@
+## [3.1.1](https://github.com/dschewchenko/big.esm/compare/v3.1.0...v3.1.1) (2026-11-23)
+
+
+### Bug Fixes
+
+* align TypeScript with ESM entry points ([f2c2ccc](https://github.com/dschewchenko/big.esm/commit/f2c2cccaecb416ac2c07322fec4996fb62166388)), closes [#40](https://github.com/dschewchenko/big.esm/issues/40)
+
 # [3.1.0](https://github.com/dschewchenko/big.esm/compare/v3.0.0...v3.1.0) (2026-11-21)
 
 
