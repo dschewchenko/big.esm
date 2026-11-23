@@ -1,28 +1,47 @@
-import type { Big } from "../big.js";
-import type { RoundingMode } from "../types.js";
+import { Big } from "../big.js";
+import type { BigValue, RoundingMode } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { DEFAULT_PRECISION, MAX_DECIMAL_EXPANSION, MAX_DECIMAL_PLACES } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
-import { divBig } from "./div.js";
+import { readBigOperand } from "../utils/read-big-operand.js";
+import { divInPlace } from "./div.js";
+
+/** @inline */
+type LegacyDivCompactOperation = (
+  dividend: Big,
+  divisor: Big,
+  maxDecimalPlaces?: number,
+  roundingMode?: RoundingMode
+) => Big;
+
+/** Divides two values and returns a new Big with a compact exact scale when possible. */
+export function divCompact(
+  dividend: BigValue,
+  divisor: BigValue,
+  maxDecimalPlaces = DEFAULT_PRECISION,
+  roundingMode: RoundingMode = "half-up"
+): Big {
+  return divCompactInPlace(new Big(dividend), divisor, maxDecimalPlaces, roundingMode);
+}
 
 /**
  * Divides in place, retaining a compact scale when the exact quotient fits within the requested decimal places.
  * Repeating quotients and exact quotients beyond the precision limit are rounded once.
  *
  * @param dividend - The operand to mutate and return.
- * @param divisor - The nonzero divisor.
+ * @param operand - The nonzero divisor value.
  * @param maxDecimalPlaces - The maximum fractional places, from 0 to 1,000,000. Defaults to 20.
  * @param roundingMode - The rule used if rounding is needed. Defaults to half-up.
  * @throws If the divisor is zero, the precision is invalid, or the result needs too much decimal expansion.
  *
  * @category Operations
  * @example
- * divCompactBig(createBig(1), createBig(8)).toString(); // "0.125"
- * divCompactBig(createBig(1), createBig(3), 4).toString(); // "0.3333"
+ * divCompactInPlace(new Big(1), 8).toString(); // "0.125"
+ * divCompactInPlace(new Big(1), 3, 4).toString(); // "0.3333"
  */
-export function divCompactBig(
+export function divCompactInPlace(
   dividend: Big,
-  divisor: Big,
+  operand: BigValue,
   maxDecimalPlaces = DEFAULT_PRECISION,
   roundingMode: RoundingMode = "half-up"
 ): Big {
@@ -31,6 +50,7 @@ export function divCompactBig(
   }
 
   assertScale(dividend.scale);
+  const divisor = readBigOperand(operand);
   assertScale(divisor.scale);
   if (divisor.value === 0n) throw new Error("Div0");
   if (dividend.value === 0n) {
@@ -51,11 +71,11 @@ export function divCompactBig(
   // A reduced ratio terminates exactly when the denominator is a product of twos and fives.
   const twos = factorOfTwoCount(denominator);
   const fives = powerOfFiveExponent(denominator >> BigInt(twos));
-  if (fives === undefined) return divBig(dividend, divisor, maxDecimalPlaces, roundingMode);
+  if (fives === undefined) return divInPlace(dividend, divisor, maxDecimalPlaces, roundingMode);
 
   const shift = BigInt(dividend.scale) - BigInt(divisor.scale);
   const exactScale = shift + BigInt(Math.max(twos, fives));
-  if (exactScale > BigInt(maxDecimalPlaces)) return divBig(dividend, divisor, maxDecimalPlaces, roundingMode);
+  if (exactScale > BigInt(maxDecimalPlaces)) return divInPlace(dividend, divisor, maxDecimalPlaces, roundingMode);
 
   const minimumScale = BigInt(Number.MIN_SAFE_INTEGER);
   let scale = Number(exactScale);
@@ -114,3 +134,6 @@ function powerOfFiveExponent(value: bigint): number | undefined {
   }
   return value === 1n ? count : undefined;
 }
+
+/** @deprecated Use `divCompact` for a new result or `divCompactInPlace` to mutate the dividend. */
+export const divCompactBig: LegacyDivCompactOperation = divCompactInPlace;
