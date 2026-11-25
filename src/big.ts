@@ -1,7 +1,7 @@
 import type { BigValue, PossibleNumber } from "./types.js";
 import { assertScale } from "./utils/assert-scale.js";
 import { parseDecimal } from "./utils/parse-decimal.js";
-import { trimZeros } from "./utils/trim-zeros.js";
+import { fractionalEnd } from "./utils/trim-zeros.js";
 
 function parseScale(scale: number | string): number {
   if (typeof scale === "number" && Number.isSafeInteger(scale)) return scale;
@@ -134,21 +134,15 @@ export class Big {
     if (scale < 0) return value === "0" ? value : value + "0".repeat(-scale);
     if (!(scale > 0) || (shouldTrimZeros && value === "0")) return value;
 
-    const sign = value.startsWith("-") ? "-" : "";
-    const digits = sign ? value.slice(1) : value;
-    const point = Math.max(0, digits.length - scale);
-    const integer = digits.slice(0, point) || "0";
-    const fraction = digits.slice(point);
-    if (!shouldTrimZeros) return `${sign}${integer}.${fraction.padStart(scale, "0")}`;
+    const firstDigit = value.charCodeAt(0) === 45 ? 1 : 0;
+    const point = Math.max(firstDigit, value.length - scale);
+    const integer = point > firstDigit ? value.slice(0, point) : firstDigit ? "-0" : "0";
+    const end = shouldTrimZeros ? fractionalEnd(value, point) : value.length;
+    if (end === point) return integer;
 
-    const trimmed = trimZeros(fraction);
-    if (trimmed.length === 0) {
-      return `${sign}${integer}`;
-    }
-
-    // Trim the coefficient first so we never scan the leading scale padding.
-    const width = scale - (fraction.length - trimmed.length);
-    return `${sign}${integer}.${trimmed.padStart(width, "0")}`;
+    // Trim the coefficient before padding the fraction.
+    const width = scale - (value.length - end);
+    return `${integer}.${value.slice(point, end).padStart(width, "0")}`;
   }
 
   /**

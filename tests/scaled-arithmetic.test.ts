@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { compareBig, createBig, divBig, modBig } from "../src";
+import { Big, compareBig, createBig, divBig, modBig } from "../src";
 
 test("compares numbers across enormous decimal scale gaps without aligning them", () => {
   const tiny = createBig("1e-10000000000");
@@ -45,6 +45,18 @@ test("keeps zero remainder scale behavior when operand scales differ", () => {
   const zero = createBig(0);
   expect(modBig(zero, createBig("1.23"))).toBe(zero);
   expect(zero.scale).toBe(2);
+});
+
+test.each([-123n, -340n])("preserves the dividend sign with a negative divisor across extreme scales", (value) => {
+  const scale = Number.MAX_SAFE_INTEGER;
+  const dividend = new Big(value, -scale);
+  const divisor = new Big(-17n, scale);
+  // Ten has period 16 modulo 17, so this reference needs only a small power.
+  const expected = (value * 10n ** ((2n * BigInt(scale)) % 16n)) % divisor.value;
+
+  expect(modBig(dividend, divisor)).toBe(dividend);
+  expect(dividend).toEqual(new Big(expected, scale));
+  expect(divisor).toEqual(new Big(-17n, scale));
 });
 
 test("handles opposite safe-integer scale extremes without overflowing scale differences", () => {

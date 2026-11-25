@@ -5,7 +5,7 @@ import { MAX_DECIMAL_EXPANSION } from "../utils/constants.js";
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
 import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
-import { divideRounded, roundTinyAway } from "../utils/rounding.js";
+import { divideRounded, roundTinyAway, validateRoundingMode } from "../utils/rounding.js";
 
 /** @inline */
 type BigStepRoundingOperation = (big: Big, step: Big, roundingMode?: RoundingMode) => Big;
@@ -18,7 +18,7 @@ type BigStepRoundingOperation = (big: Big, step: Big, roundingMode?: RoundingMod
  * @param step - The positive step value.
  * @param roundingMode - The rounding rule. Defaults to half-up.
  * @returns A new Big instance containing the rounded multiple.
- * @throws If the step is not positive, either scale is invalid, or required alignment exceeds 2,000,000 places.
+ * @throws If the step is not positive, roundingMode or either scale is invalid, or required alignment exceeds 2,000,000 places.
  *
  * @category Operations
  *
@@ -38,7 +38,7 @@ export function roundToStep(value: BigValue, step: BigValue, roundingMode: Round
  * @param step - The positive step value. It is unchanged unless it is also `big`.
  * @param roundingMode - The rounding rule. Defaults to half-up.
  * @returns The mutated value.
- * @throws If the step is not positive, either scale is invalid, or required alignment exceeds 2,000,000 places.
+ * @throws If the step is not positive, roundingMode or either scale is invalid, or required alignment exceeds 2,000,000 places.
  *
  * @category Operations
  *
@@ -46,6 +46,7 @@ export function roundToStep(value: BigValue, step: BigValue, roundingMode: Round
  * roundToStepInPlace(new Big("1.03"), "0.05").toString(); // "1.05"
  */
 export function roundToStepInPlace(big: Big, step: BigValue, roundingMode: RoundingMode = "half-up"): Big {
+  if (roundingMode !== "half-up") validateRoundingMode(roundingMode);
   const stepValue = readBigOperand(step);
   if (stepValue.value <= 0n) throw new RangeError("Step");
   const valueScale = big.scale;

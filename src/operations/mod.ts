@@ -57,28 +57,29 @@ export function modInPlace(dividend: Big, operand: BigValue): Big {
     dividend.scale = divisor.scale;
   } else {
     if (!Number.isSafeInteger(dividend.scale) || !Number.isSafeInteger(divisor.scale)) throw new Error("Scale");
-    const exponent = BigInt(divisor.scale) - BigInt(dividend.scale);
-    const divisorMagnitude = divisor.value < 0n ? -divisor.value : divisor.value;
     const remainder = dividend.value % divisor.value;
     dividend.value =
-      remainder === 0n ? remainder : (remainder * pow10Modulo(exponent, divisorMagnitude)) % divisor.value;
+      remainder === 0n
+        ? remainder
+        : scaleRemainder(remainder, BigInt(divisor.scale) - BigInt(dividend.scale), divisor.value);
     dividend.scale = divisor.scale;
   }
   return dividend;
 }
 
-function pow10Modulo(exp: bigint, modulus: bigint): bigint {
+function scaleRemainder(remainder: bigint, exp: bigint, modulus: bigint): bigint {
   let power = 10n % modulus;
   let result = 1n;
   let exponent = exp;
 
-  while (exponent > 0n) {
+  // Stop at the highest bit so the last square is never computed.
+  while (exponent > 1n) {
     if (exponent & 1n) result = (result * power) % modulus;
     exponent >>= 1n;
-    if (exponent > 0n) power = (power * power) % modulus;
+    power = (power * power) % modulus;
   }
 
-  return result;
+  return (((result * power) % modulus) * remainder) % modulus;
 }
 
 /** @deprecated Use `mod` for a new result or `modInPlace` to mutate the dividend. */

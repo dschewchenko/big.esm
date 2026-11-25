@@ -1,9 +1,10 @@
-import { Big } from "../big.js";
+import type { Big } from "../big.js";
 import type { BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { boundedRoot } from "../utils/bounded-root.js";
 import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
+import { copyBigWithExpansionLimit } from "../utils/read-big-operand.js";
 
 /**
  * Calculates the real nth root of a value without mutating the input.
@@ -21,7 +22,7 @@ import { pow10 } from "../utils/pow10.js";
  * sqrt("-2", 3, 2).toString(); // "-1.26"
  */
 export function sqrt(value: BigValue, root = 2, precision = DEFAULT_PRECISION): Big {
-  return sqrtInPlace(new Big(value), root, precision);
+  return sqrtInPlace(copyBigWithExpansionLimit(value), root, precision);
 }
 
 /**
@@ -41,7 +42,9 @@ export function sqrt(value: BigValue, root = 2, precision = DEFAULT_PRECISION): 
 export function sqrtInPlace(big: Big, root = 2, precision = DEFAULT_PRECISION): Big {
   assertScale(big.scale);
   if (!Number.isSafeInteger(precision) || precision < 0) throw new Error("Prec");
-  const unitShortcut = big.value === ZERO_BIGINT || (big.scale === 0 && big.value === ONE_BIGINT);
+  const positiveOne =
+    (big.value === ONE_BIGINT && big.scale === 0) || (root === 1 && isPositiveOne(big.value, big.scale));
+  const unitShortcut = big.value === ZERO_BIGINT || positiveOne;
   if (
     !Number.isSafeInteger(root) ||
     (root < 2 && !(root === 1 && unitShortcut)) ||
@@ -54,7 +57,7 @@ export function sqrtInPlace(big: Big, root = 2, precision = DEFAULT_PRECISION): 
     big.scale = resultScale;
     return big;
   }
-  if (big.scale === 0 && big.value === ONE_BIGINT) {
+  if (positiveOne) {
     big.value = pow10(resultScale);
     big.scale = resultScale;
     return big;
@@ -67,6 +70,21 @@ export function sqrtInPlace(big: Big, root = 2, precision = DEFAULT_PRECISION): 
 
   const negative = big.value < ZERO_BIGINT;
   const absolute = negative ? -big.value : big.value;
+  if (absolute === ONE_BIGINT && big.scale % root === 0) {
+    const coefficientPower = resultScale - big.scale / root;
+    if (coefficientPower < 0) {
+      big.value = ZERO_BIGINT;
+      big.scale = resultScale;
+      return big;
+    }
+    if (Number.isSafeInteger(coefficientPower) && Number.isSafeInteger(root * (coefficientPower + 1))) {
+      const exactPower = pow10(coefficientPower);
+      big.value = negative ? -exactPower : exactPower;
+      big.scale = resultScale;
+      return big;
+    }
+  }
+
   const workScale = root * (resultScale + 1);
   let exponent = workScale - big.scale;
   if (root >= 4096 || !Number.isSafeInteger(workScale) || !Number.isSafeInteger(exponent)) {
@@ -80,7 +98,6 @@ export function sqrtInPlace(big: Big, root = 2, precision = DEFAULT_PRECISION): 
     exponent = Number(BigInt(root) * (BigInt(resultScale) + 1n) - BigInt(big.scale));
   }
   if (!Number.isSafeInteger(exponent)) throw new Error("Prec");
-
   const scaled = scaleRadicand(absolute, exponent);
   const roundedRoot = root === 2 ? bigIntSqrt(scaled) : bigIntRoot(scaled, root);
   let result = roundedRoot / TEN_BIGINT;
@@ -89,6 +106,18 @@ export function sqrtInPlace(big: Big, root = 2, precision = DEFAULT_PRECISION): 
   big.value = negative ? -result : result;
   big.scale = resultScale;
   return big;
+}
+
+function isPositiveOne(value: bigint, scale: number): boolean {
+  if (scale === 0) return value === ONE_BIGINT;
+  if (scale < 0 || value <= ZERO_BIGINT) return false;
+
+  const digits = value.toString();
+  if (digits.length - 1 !== scale || digits.charCodeAt(0) !== 49) return false;
+  for (let i = 1; i < digits.length; i++) {
+    if (digits.charCodeAt(i) !== 48) return false;
+  }
+  return true;
 }
 
 /** @deprecated Use {@link sqrt} for a non-mutating operation or {@link sqrtInPlace} to mutate explicitly. */
@@ -136,19 +165,17 @@ function bigIntSqrt(value: bigint): bigint {
 
   if (value < 2n) return value;
 
-  // Number is only a starting estimate. Verify it using BigInt so rounding
-  // in the conversion cannot affect the exact integer square root.
+  // The first integer Newton step is at least the floor of the exact root,
+  // even if Number produced an underestimate.
   const approximation = Math.sqrt(Number(value));
-  let x0: bigint;
-  if (Number.isFinite(approximation)) {
-    x0 = BigInt(Math.ceil(approximation));
-    if (x0 * x0 < value) x0 = value / x0 + ONE_BIGINT;
-  } else {
-    const bits = bigIntBitLength(value);
-    x0 = ONE_BIGINT << BigInt(Math.ceil(bits / 2));
-  }
+  let x0 = Number.isFinite(approximation)
+    ? BigInt(Math.ceil(approximation))
+    : ONE_BIGINT << BigInt(Math.ceil(bigIntBitLength(value) / 2));
   let x1 = (x0 + value / x0) >> ONE_BIGINT;
-
+  if (x1 > x0) {
+    x0 = x1;
+    x1 = (x0 + value / x0) >> ONE_BIGINT;
+  }
   while (x1 < x0) {
     x0 = x1;
     x1 = (x0 + value / x0) >> ONE_BIGINT;

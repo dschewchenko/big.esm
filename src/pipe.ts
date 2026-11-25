@@ -193,21 +193,16 @@ export const sqrt = (degree?: number, precision?: number): PipeOperator => bind(
  * pipe(subtotal, mul(quantity)).toString(); // "12"
  * ```
  */
-export function pipe(initial: BigValue, ...operators: PipeOperator[]): Big;
-export function pipe(
-  initial: BigValue,
-  first?: PipeOperator,
-  second?: PipeOperator,
-  third?: PipeOperator,
-  ...rest: PipeOperator[]
-): Big {
+export function pipe(initial: BigValue, ...operators: PipeOperator[]): Big {
   const working = new Big(initial);
-  const firstStep = first as BoundOperator | undefined;
-  const secondStep = second as BoundOperator | undefined;
-  const thirdStep = third as BoundOperator | undefined;
-  if (firstStep) firstStep.op(working, firstStep.input as never);
-  if (secondStep) secondStep.op(working, secondStep.input as never);
-  if (thirdStep) thirdStep.op(working, thirdStep.input as never);
-  for (const step of rest as BoundOperator[]) step.op(working, step.input as never);
+  const steps = operators as BoundOperator[];
+  const count = steps.length;
+  if (count > 0) steps[0].op(working, steps[0].input as never);
+  if (count > 1) steps[1].op(working, steps[1].input as never);
+  if (count > 2) steps[2].op(working, steps[2].input as never);
+  for (let index = 3; index < count; index++) {
+    const step = steps[index];
+    step.op(working, step.input as never);
+  }
   return working;
 }

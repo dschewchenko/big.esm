@@ -53,18 +53,19 @@ import { pipe } from "big.esm";
 console.log(pipe("1.03").roundToStep("0.05").toFixed(2)); // "1.05"
 ```
 
-Import named operators from `big.esm/pipe` to reuse groups of steps. Bundlers can drop operators and arithmetic code the application never imports.
+Use `big.esm/pipe` to calculate a subexpression once and use its `Big` result in other pipelines. Here `product` is the result of `3 × 4`.
 
 ```js
 import { add, mul, pipe, sub } from "big.esm/pipe";
 
-const pricing = [mul("0.9"), add("5")];
-const finalize = [sub(2)];
-console.log(pipe("100", ...pricing, ...finalize).toString()); // "93"
-console.log(pipe("200", ...pricing, ...finalize).toString()); // "183"
+const product = pipe(3, mul(4));
+
+console.log(pipe(2, add(product)).toString()); // "14"
+console.log(pipe(20, sub(product)).toString()); // "8"
+console.log(product.toString()); // "12"
 ```
 
-Steps run from left to right. For `(1.2 + 0.3) × (10 − 2)`, calculate each side with its own pipe and pass the resulting `Big` values into the multiplication. See [Composing pipelines](guides/pipelines.md) for the full example, reuse and the in-place form.
+These pipelines evaluate `2 + (3 × 4)` and `20 − (3 × 4)` using the same product. Steps within each pipeline run from left to right. See [Composing pipelines](guides/pipelines.md) for more examples and the in-place form.
 
 ## API at a glance
 
@@ -88,7 +89,7 @@ Use named ESM imports with Node.js 16+, Bun 1.0+ or a modern browser with native
 
 ## Benchmarks
 
-For the three-step pricing example above, the operator form bundles to 1,843 B gzip with Bun. The same calculation with the fluent API bundles to 4,728 B. See the [bundle comparison](https://github.com/dschewchenko/big.esm/blob/main/BENCHMARK.md#current-pipe-bundle-size) to reproduce the measurement and see the Vite results.
+For the three-step calculation `(100 × 0.9 + 5) − 2`, the operator form bundles to 1,843 B gzip with Bun. The same calculation with the fluent API bundles to 4,728 B. See the [bundle comparison](https://github.com/dschewchenko/big.esm/blob/main/BENCHMARK.md#current-pipe-bundle-size) to reproduce the measurement and see the Vite results.
 
 ## License
 

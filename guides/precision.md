@@ -60,10 +60,11 @@ divCompact("1", "3", 4).toString(); // "0.3333"
 Use `createCompactBig` and `toExponential` to keep large exponents compact from input to output.
 
 ```ts
-import { createCompactBig, serializeBig, toExponential } from "big.esm";
+import { createCompactBig, divCompact, serializeBig, toExponential } from "big.esm";
 
 const huge = createCompactBig("3e10000000000");
 toExponential(huge); // "3e+10000000000"
+toExponential(divCompact(huge, 2)); // "1.5e+10000000000"
 
 JSON.stringify(serializeBig(huge)); // {"value":"3","scale":-10000000000}
 ```
@@ -109,9 +110,11 @@ Use `toNumber` only when the consumer expects JavaScript floating-point arithmet
 
 ## Limits
 
-The scale itself must be a safe integer. `div`, `divCompact`, `toFixed` and `toPrecision` accept up to 1,000,000 requested decimal places or significant digits. Division and step rounding can reject scale alignment beyond 2,000,000 decimal places. Fixed-point output also rejects a request that would add over 2,000,000 zeros.
+The scale itself must be a safe integer. `div`, `divCompact` and `toFixed` accept up to 1,000,000 decimal places. `toPrecision` accepts up to 1,000,000 significant digits. Division and step rounding can reject scale alignment beyond 2,000,000 decimal places. Fixed-point output also rejects a request that would add over 2,000,000 zeros.
 
-`sqrt(value, degree, precision)` accepts a non-negative safe-integer precision. Root calculation uses intermediate integer values that grow with the requested precision, so very high precision can require substantial time and memory. Choose a precision that fits the application.
+`sumBig` combines terms at nearby scales before aligning distant groups. This allows terms to cancel without expanding an intermediate coefficient. If the exact result still requires expansion, the runtime's BigInt limits apply.
+
+`sqrt(value, degree, precision)` accepts a non-negative safe-integer precision. The library can compute some roots with large scale gaps without expanding the coefficient. Other root calculations stay subject to the runtime's BigInt limits.
 
 `pow` accepts a non-negative safe-integer exponent and rejects an unsafe resulting scale. Other large operations remain subject to the JavaScript runtime's BigInt and memory limits. String formatting needs memory proportional to the number of characters returned. Use `createCompactBig` and `toExponential` when fixed notation would require many zeros.
 

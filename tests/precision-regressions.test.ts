@@ -111,9 +111,9 @@ test("constructor and factory reject fractional BigObject scales consistently", 
   expect(() => new Big(value)).toThrow();
 });
 
-test("preserves division argument handling", () => {
-  expect(divBig(createBig(5), createBig(2), -1).toString()).toBe("3");
-  expect(divBig(createBig(5), createBig(2), 0, "invalid" as never).toString()).toBe("3");
+test("rejects invalid arguments through the legacy division alias", () => {
+  expect(() => divBig(createBig(5), createBig(2), -1)).toThrow(RangeError);
+  expect(() => divBig(createBig(5), createBig(2), 0, "invalid" as never)).toThrow(RangeError);
 });
 
 test.each([-1, 0.5, NaN, Infinity])("rejects invalid power of ten %s", (exp) => {

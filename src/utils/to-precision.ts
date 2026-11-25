@@ -2,7 +2,7 @@ import type { BigValue, RoundingMode } from "../types.js";
 import { MAX_DECIMAL_PLACES } from "./constants.js";
 import { pow10 } from "./pow10.js";
 import { readCompactOperand } from "./read-compact-operand.js";
-import { divideRounded } from "./rounding.js";
+import { divideRounded, validateRoundingMode } from "./rounding.js";
 
 /**
  * Formats a value with a fixed number of significant decimal digits, without mutating it.
@@ -32,16 +32,7 @@ export function toPrecision(
   if (!Number.isSafeInteger(significantDigits) || significantDigits < 1 || significantDigits > MAX_DECIMAL_PLACES) {
     throw new RangeError("Prec");
   }
-  if (
-    roundingMode !== "half-up" &&
-    roundingMode !== "half-even" &&
-    roundingMode !== "down" &&
-    roundingMode !== "up" &&
-    roundingMode !== "floor" &&
-    roundingMode !== "ceil"
-  ) {
-    throw new RangeError("Rounding");
-  }
+  if (roundingMode !== "half-up") validateRoundingMode(roundingMode);
 
   const big = readCompactOperand(value);
 
