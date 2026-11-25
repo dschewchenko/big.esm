@@ -1,3 +1,15 @@
+## [3.2.1](https://github.com/dschewchenko/big.esm/compare/v3.2.0...v3.2.1) (2026-11-25)
+
+
+### Bug Fixes
+
+* handle decimal arithmetic boundaries ([0bf614f](https://github.com/dschewchenko/big.esm/commit/0bf614f08b35b67732d2f85e8948562d4a63bd2b))
+
+
+### Performance Improvements
+
+* reduce formatting and pipe overhead ([16ce5ff](https://github.com/dschewchenko/big.esm/commit/16ce5ff685b248be219b3000771c6cec64362c0f))
+
 # [3.2.0](https://github.com/dschewchenko/big.esm/compare/v3.1.1...v3.2.0) (2026-11-23)
 
 
