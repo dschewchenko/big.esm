@@ -1,5 +1,6 @@
-export function trimZeros(value: string): string {
+// Finds the end of the fractional digits before trailing zeros.
+export function fractionalEnd(value: string, start: number): number {
   let end = value.length;
-  while (end > 0 && value.charCodeAt(end - 1) === 48) end--;
-  return end === value.length ? value : value.slice(0, end);
+  while (end > start && value.charCodeAt(end - 1) === 48) end--;
+  return end;
 }

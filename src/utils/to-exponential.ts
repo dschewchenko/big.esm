@@ -1,6 +1,6 @@
 import type { Big } from "../big.js";
 import { assertScale } from "./assert-scale.js";
-import { trimZeros } from "./trim-zeros.js";
+import { fractionalEnd } from "./trim-zeros.js";
 
 /**
  * Formats a Big in exact scientific notation, without mutating it or padding the coefficient with zeros.
@@ -16,12 +16,13 @@ import { trimZeros } from "./trim-zeros.js";
 export function toExponential(big: Big): string {
   assertScale(big.scale);
   if (big.value === 0n) return "0e+0";
-  const sign = big.value < 0n ? "-" : "";
-  const digits = (big.value < 0n ? -big.value : big.value).toString();
-  const highestPlace = digits.length - 1;
+  const digits = big.value.toString();
+  const start = digits.charCodeAt(0) === 45 ? 2 : 1;
+  const highestPlace = digits.length - start;
   const exponent = highestPlace - big.scale;
   const exactExponent = Number.isSafeInteger(exponent) ? exponent : BigInt(highestPlace) - BigInt(big.scale);
-  const fraction = trimZeros(digits.slice(1));
-  const mantissa = fraction ? `${digits[0]}.${fraction}` : digits[0];
-  return `${sign}${mantissa}e${exactExponent < 0 ? "" : "+"}${exactExponent}`;
+  const end = fractionalEnd(digits, start);
+  const integer = digits.slice(0, start);
+  const mantissa = end === start ? integer : `${integer}.${digits.slice(start, end)}`;
+  return `${mantissa}e${exactExponent < 0 ? "" : "+"}${exactExponent}`;
 }

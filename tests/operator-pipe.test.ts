@@ -35,6 +35,15 @@ describe("operator pipe", () => {
     expect(pipe(1, add(2), mul(3), sub(1), div(2), pow(2)).toString()).toBe("16");
   });
 
+  it.each([0, 1, 2, 3])("rejects undefined at operator position %i", (position) => {
+    const input = new Big("1.25");
+    const steps = [add(2), add(2), add(2), add(2)];
+    steps[position] = undefined as never;
+
+    expect(() => pipe(input, ...steps)).toThrow(TypeError);
+    expect(input.toString()).toBe("1.25");
+  });
+
   it("accepts ordinary decimal inputs and returns a Big copy", () => {
     const input = new Big("1.25");
     const result = pipe(input, add(2));

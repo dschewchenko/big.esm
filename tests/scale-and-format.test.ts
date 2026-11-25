@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { addBig, alignScale, Big, compareBig, createBig, subBig } from "../src";
+import { addBig, alignScale, Big, compareBig, createBig, subBig, toExponential } from "../src";
 
 const extremeScale = 10_000_000_000;
 
@@ -67,4 +67,12 @@ test("keeps leading fractional zeros and trims only the trailing zeros", () => {
   const prefix = `-0.${"0".repeat(scale - 4)}12`;
   expect(value.toString()).toBe(prefix);
   expect(value.toString(false)).toBe(`${prefix}00`);
+});
+
+test("keeps the negative sign when every fractional digit is trimmed", () => {
+  const value = new Big(-500n, 2);
+  expect(value.toString()).toBe("-5");
+  expect(value.toString(false)).toBe("-5.00");
+  expect(toExponential(value)).toBe("-5e+0");
+  expect(new Big(0n, 3).toString(false)).toBe("0.000");
 });
