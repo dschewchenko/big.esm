@@ -5,7 +5,7 @@ import { DEFAULT_PRECISION, MAX_DECIMAL_EXPANSION, MAX_DECIMAL_PLACES, ZERO_BIGI
 import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
 import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
-import { divideRounded, roundTinyAway } from "../utils/rounding.js";
+import { divideRounded, roundTinyAway, validateRoundingMode } from "../utils/rounding.js";
 
 /** @inline */
 type LegacyDivOperation = (dividend: Big, divisor: Big, precision?: number, roundingMode?: RoundingMode) => Big;
@@ -18,7 +18,7 @@ type LegacyDivOperation = (dividend: Big, divisor: Big, precision?: number, roun
  * @param precision - Decimal places to keep, from 0 to 1,000,000. Defaults to 20.
  * @param roundingMode - The rule used to round the quotient.
  * @returns A new Big instance containing the quotient.
- * @throws If the divisor is zero, precision is invalid, or expansion exceeds the limit.
+ * @throws If the divisor is zero, precision or roundingMode is invalid, or expansion exceeds the limit.
  *
  * @category Operations
  */
@@ -39,7 +39,7 @@ export function div(
  * @param precision - Decimal places to keep, from 0 to 1,000,000. Defaults to 20.
  * @param roundingMode - The rule used to round the quotient.
  * @returns The mutated dividend instance.
- * @throws If the divisor is zero, the precision is invalid, or scale alignment would expand by more than 2,000,000 places.
+ * @throws If the divisor is zero, precision or roundingMode is invalid, or scale alignment would expand by more than 2,000,000 places.
  *
  * @category Operations
  *
@@ -57,13 +57,17 @@ export function divInPlace(
   precision = DEFAULT_PRECISION,
   roundingMode: RoundingMode = "half-up"
 ): Big {
+  if (!Number.isSafeInteger(precision) || precision < 0 || precision > MAX_DECIMAL_PLACES) {
+    throw new RangeError("Prec");
+  }
+  if (roundingMode !== "half-up") validateRoundingMode(roundingMode);
+
   const divisor = readBigOperand(operand);
   if (divisor.value === ZERO_BIGINT) {
     throw new Error("Div0");
   }
 
-  const resultScale = Math.max(0, precision);
-  if (!Number.isSafeInteger(resultScale) || resultScale > MAX_DECIMAL_PLACES) throw new RangeError("Prec");
+  const resultScale = precision;
   assertScale(dividend.scale);
   assertScale(divisor.scale);
   if (dividend.value === ZERO_BIGINT) {

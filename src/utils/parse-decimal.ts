@@ -36,7 +36,7 @@ export function decimalScale(fractionLength: number, exponentText: string | unde
   return Number.isSafeInteger(exponent) ? fractionLength - exponent : NaN;
 }
 
-export function parseDecimal(num: string | number, ignoreFraction = false, compactPositiveExponent = false): BigObject {
+export function parseDecimal(num: string | number, ignoreFraction = false, maxExpandedZeros = Infinity): BigObject {
   if (typeof num === "number" && Number.isSafeInteger(num)) {
     return { value: BigInt(num), scale: 0 };
   }
@@ -60,7 +60,7 @@ export function parseDecimal(num: string | number, ignoreFraction = false, compa
   if (!Number.isSafeInteger(scale)) throw new Error("Exp");
   let digits = integer + fraction;
 
-  if (scale < 0 && !compactPositiveExponent) {
+  if (scale < 0 && -scale <= maxExpandedZeros) {
     if (/[1-9]/.test(digits)) digits += "0".repeat(-scale);
     scale = 0;
   } else if (ignoreFraction && scale > 0) {

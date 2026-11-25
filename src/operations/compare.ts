@@ -5,6 +5,8 @@ import { compareAbsoluteScaled } from "../utils/decimal-magnitude.js";
 import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
 
+const MAX_DIRECT_SCALE_DIFFERENCE = 21;
+
 /** @inline */
 type BigComparison = (a: Big, b: Big) => CompareResult;
 
@@ -22,7 +24,7 @@ type BigComparison = (a: Big, b: Big) => CompareResult;
  * compare(1n, "1.25"); // -1
  */
 export function compare(a: BigValue, b: BigValue): CompareResult {
-  return compareParts(readBigOperand(a), readBigOperand(b));
+  return compareParts(readBigOperand(a, MAX_DIRECT_SCALE_DIFFERENCE), readBigOperand(b, MAX_DIRECT_SCALE_DIFFERENCE));
 }
 
 /** Compares two Big instances without modifying them. */
@@ -41,7 +43,7 @@ function compareParts(a: BigObject, b: BigObject): CompareResult {
   if (a.value >= 0n && b.value < 0n) return 1;
 
   const scaleDifference = a.scale - b.scale;
-  if (Number.isSafeInteger(scaleDifference) && Math.abs(scaleDifference) <= 21) {
+  if (Number.isSafeInteger(scaleDifference) && Math.abs(scaleDifference) <= MAX_DIRECT_SCALE_DIFFERENCE) {
     const multiplier = pow10(Math.abs(scaleDifference));
     const alignedA = scaleDifference > 0 ? a.value : a.value * multiplier;
     const alignedB = scaleDifference < 0 ? b.value : b.value * multiplier;

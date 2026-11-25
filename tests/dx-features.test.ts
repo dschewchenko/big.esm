@@ -51,6 +51,34 @@ test("sums compact values without expanding zero operands", () => {
   expect(toExponential(huge)).toBe("3e+10000000000");
 });
 
+test("cancels opposite compact values before aligning very different scales", () => {
+  const exponent = Number.MAX_SAFE_INTEGER;
+  const large = createBig(1n, -exponent);
+  const opposite = createBig(-1n, -exponent);
+  const tiny = createBig(1n, exponent);
+
+  expect(sumBig([large, tiny, opposite])).toEqual(tiny);
+  expect(sumBig([tiny, opposite, large])).toEqual(tiny);
+  expect(sumBig([large, opposite, tiny])).toEqual(tiny);
+  expect(large.value).toBe(1n);
+  expect(sumBig([createCompactBig("3e10000000000"), "0.0001", createCompactBig("-3e10000000000")]).toString()).toBe(
+    "0.0001"
+  );
+});
+
+test("cancels across nearby scales while consuming an iterable once", () => {
+  const exponent = Number.MAX_SAFE_INTEGER;
+  const tiny = createBig(1n, exponent);
+  const values = (function* () {
+    yield createBig(1n, -exponent);
+    yield tiny;
+    yield createBig(-7n, 1 - exponent);
+    yield createBig(-30n, 2 - exponent);
+  })();
+
+  expect(sumBig(values)).toEqual(tiny);
+});
+
 test("validates a zero operand's scale before skipping it", () => {
   expect(() => sumBig([{ value: 0n, scale: 0.5 }])).toThrow("Scale");
 });

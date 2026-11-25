@@ -74,6 +74,6 @@ export function fromString(num: string | number, ignoreFraction = false, returnI
  */
 export function createCompactBig(value: PossibleNumber): Big {
   if (typeof value === "bigint") return new Big(value);
-  const parsed = parseDecimal(value, false, true);
+  const parsed = parseDecimal(value, false, 0);
   return new Big(parsed.value, parsed.scale);
 }

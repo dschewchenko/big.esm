@@ -2,7 +2,7 @@ import type { Big } from "../big.js";
 import type { RoundingMode } from "../types.js";
 import { assertScale } from "./assert-scale.js";
 import { MAX_DECIMAL_EXPANSION, MAX_DECIMAL_PLACES } from "./constants.js";
-import { roundCoefficient, validateDecimalPlaces } from "./rounding.js";
+import { roundCoefficient, validateDecimalPlaces, validateRoundingMode } from "./rounding.js";
 
 /**
  * Formats a Big with exactly the requested number of decimal places, without mutating it.
@@ -10,7 +10,7 @@ import { roundCoefficient, validateDecimalPlaces } from "./rounding.js";
  * @param big - The number to format.
  * @param decimalPlaces - Places to display, from 0 to 1,000,000, including trailing zeros. Defaults to zero.
  * @param roundingMode - The rounding rule. Defaults to half-up.
- * @throws If decimalPlaces is invalid or fixed notation would require more than 2,000,000 added zeros.
+ * @throws If decimalPlaces or roundingMode is invalid, or fixed notation would require more than 2,000,000 added zeros.
  *
  * @category Utilities
  *
@@ -20,6 +20,7 @@ import { roundCoefficient, validateDecimalPlaces } from "./rounding.js";
 export function toFixed(big: Big, decimalPlaces = 0, roundingMode: RoundingMode = "half-up"): string {
   validateDecimalPlaces(decimalPlaces);
   if (decimalPlaces > MAX_DECIMAL_PLACES) throw new RangeError("Prec");
+  if (roundingMode !== "half-up") validateRoundingMode(roundingMode);
   assertScale(big.scale);
   const scale = Math.min(big.scale, decimalPlaces);
   const coefficient = big.scale > scale ? roundCoefficient(big.value, big.scale - scale, roundingMode) : big.value;

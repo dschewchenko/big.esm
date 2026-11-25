@@ -6,6 +6,13 @@ export function validateDecimalPlaces(places: number): void {
   if (!Number.isSafeInteger(places) || places < 0) throw new RangeError("Prec");
 }
 
+export function validateRoundingMode(mode: RoundingMode): void {
+  if (mode === "half-up") return;
+  if (mode !== "half-even" && mode !== "down" && mode !== "up" && mode !== "floor" && mode !== "ceil") {
+    throw new RangeError("Rounding");
+  }
+}
+
 export function divideRounded(dividend: bigint, divisor: bigint, mode: RoundingMode): bigint {
   const quotient = dividend / divisor;
   if (mode === "down") return quotient;
