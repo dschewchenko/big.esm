@@ -1,5 +1,7 @@
 ## [3.2.1](https://github.com/dschewchenko/big.esm/compare/v3.2.0...v3.2.1) (2026-11-25)
 
+`createCompactBig` was intended for testing and was accidentally exported as part of the public API from 3.1.0 through 3.2.1.
+
 
 ### Bug Fixes
 
