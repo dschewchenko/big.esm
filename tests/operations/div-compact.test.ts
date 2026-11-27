@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { createBig, createCompactBig, divBig, divCompactBig, toExponential, toFixed } from "../../src";
+import { createBig, divBig, divCompactBig, toExponential, toFixed } from "../../src";
 
 test.each([
   ["1", "8", 20, "half-up", "0.125", 3],
@@ -21,7 +21,7 @@ test.each([
 });
 
 test("uses negative scale for an exact result with a huge integral part", () => {
-  const value = createCompactBig("3e10000000000");
+  const value = createBig("3e10000000000");
   expect(toExponential(divCompactBig(value, createBig(2)))).toBe("1.5e+10000000000");
   expect(value.value).toBe(15n);
   expect(value.scale).toBe(-9_999_999_999);
@@ -56,7 +56,7 @@ test("handles large powers of two and five with an exact integer reference", () 
 });
 
 test("division by itself is exact and mutates the aliased value safely", () => {
-  const value = createCompactBig("-1.2345e10000000000");
+  const value = createBig("-1.2345e10000000000");
   expect(divCompactBig(value, value).toString()).toBe("1");
   expect(value.scale).toBe(0);
 });
@@ -84,7 +84,7 @@ test("rejects an invalid scale before division or formatting, even for zero", ()
 });
 
 test("limits requested fractional places and oversized expansion before allocating", () => {
-  const huge = createCompactBig("1e10000000000");
+  const huge = createBig("1e10000000000");
   expect(() => divBig(huge, createBig(2))).toThrow(/expansion limit/);
   expect(() => divCompactBig(huge, createBig(3))).toThrow(/expansion limit/);
   expect(() => toFixed(huge, 2)).toThrow(/Use toExponential/);

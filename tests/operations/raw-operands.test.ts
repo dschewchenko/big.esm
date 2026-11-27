@@ -7,9 +7,28 @@ import { mod, modBig, modInPlace } from "../../src/operations/mod.js";
 import { mul, mulBig, mulInPlace } from "../../src/operations/mul.js";
 import { roundToIncrement } from "../../src/operations/round-to-increment.js";
 import { sub, subBig, subInPlace } from "../../src/operations/sub.js";
-import { createCompactBig } from "../../src/utils/from-string.js";
 
 suite("BigValue operands", () => {
+  test("adds equal-scale Big values in place and preserves validation", () => {
+    const value = new Big("1.25");
+    const other = new Big("2.75");
+    expect(addInPlace(value, other)).toBe(value);
+    expect(value.toString()).toBe("4");
+    expect(other.toString()).toBe("2.75");
+    expect(addInPlace(value, value).toString()).toBe("8");
+
+    const invalid = new Big(2n, 2);
+    invalid.value = "2" as unknown as bigint;
+    expect(() => addInPlace(new Big(1n, 2), invalid)).toThrow(TypeError);
+    invalid.value = 2n;
+    invalid.scale = 1.5;
+    const invalidLeft = new Big(1);
+    invalidLeft.scale = 1.5;
+    expect(() => addInPlace(invalidLeft, invalid)).toThrow(RangeError);
+    expect(() => addInPlace(new Big(1n, 2), { value: 2n, scale: "2" } as never)).toThrow(RangeError);
+    expect(() => mulInPlace(new Big(1n, 2), { value: 2n, scale: "2" } as never)).toThrow(RangeError);
+  });
+
   test("mutates the first Big for primitive right-hand operands", () => {
     const addend = new Big("1.20");
     expect(addInPlace(addend, "2.30")).toBe(addend);
@@ -25,7 +44,7 @@ suite("BigValue operands", () => {
   });
 
   test("uses the same positive exponent expansion and scale as createBig", () => {
-    const compactValue = createCompactBig("1e+10");
+    const compactValue = new Big(1n, -10);
     const result = addInPlace(compactValue, "1e+5");
 
     expect(result.value).toBe(10_000_100_000n);

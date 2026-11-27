@@ -41,23 +41,26 @@ export function toPrecision(
   const negative = big.value < 0n;
   const coefficient = negative ? -big.value : big.value;
   const digits = coefficient.toString();
-  let roundedExponent = BigInt(digits.length - 1) - BigInt(big.scale);
+  const scale = big.scale;
+  let highestPlace = digits.length - 1;
   const discardedDigits = digits.length - significantDigits;
   let roundedDigits = digits;
   if (discardedDigits > 0) {
     const rounded = divideRounded(big.value, pow10(discardedDigits), roundingMode);
     roundedDigits = (negative ? -rounded : rounded).toString();
-    if (roundedDigits.length > significantDigits) roundedExponent += 1n;
+    if (roundedDigits.length > significantDigits) highestPlace++;
   }
   const significand = roundedDigits.slice(0, significantDigits).padEnd(significantDigits, "0");
   const sign = negative ? "-" : "";
 
-  if (BigInt(significantDigits) <= roundedExponent || roundedExponent <= -7n || roundedExponent >= 21n) {
+  const exponent = highestPlace - scale;
+  if (significantDigits <= exponent || exponent <= -7 || exponent >= 21) {
+    const exactExponent = Number.isSafeInteger(exponent) ? exponent : BigInt(highestPlace) - BigInt(scale);
     const fraction = significantDigits === 1 ? "" : `.${significand.slice(1)}`;
-    return `${sign}${significand[0]}${fraction}e${roundedExponent < 0n ? "" : "+"}${roundedExponent}`;
+    return `${sign}${significand[0]}${fraction}e${exponent < 0 ? "" : "+"}${exactExponent}`;
   }
 
-  const decimalPoint = Number(roundedExponent + 1n);
+  const decimalPoint = exponent + 1;
   if (decimalPoint <= 0) return `${sign}0.${"0".repeat(-decimalPoint)}${significand}`;
   if (decimalPoint === significantDigits) return `${sign}${significand}`;
   return `${sign}${significand.slice(0, decimalPoint)}.${significand.slice(decimalPoint)}`;

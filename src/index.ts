@@ -24,7 +24,7 @@ export type { BigObject, BigValue, CompareResult, PossibleNumber, RoundingMode }
 export { alignScale } from "./utils/align-scale.js";
 export { cloneBig } from "./utils/clone.js";
 export { createBig } from "./utils/create.js";
-export { createCompactBig, fromString, isDecimalInput } from "./utils/from-string.js";
+export { fromString, isDecimalInput } from "./utils/from-string.js";
 // utils
 export { isBigObject } from "./utils/is-big-object.js";
 export { isNumericValue } from "./utils/numeric.js";

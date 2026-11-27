@@ -1,6 +1,6 @@
 import { Big as BigJS } from "big.js";
 import { expect, test } from "vitest";
-import { createBig, createCompactBig } from "../src";
+import { createBig } from "../src";
 import { toPrecision } from "../src/utils/to-precision.js";
 
 test.each([
@@ -60,8 +60,8 @@ test("applies floor and ceiling toward the correct signed infinity", () => {
 });
 
 test("formats huge exponents without expanding zeros and preserves the input", () => {
-  const positive = createCompactBig("1e10000000000");
-  const negative = createCompactBig("-1.2345e-10000000000");
+  const positive = createBig("1e10000000000");
+  const negative = createBig("-1.2345e-10000000000");
   const snapshot = { value: negative.value, scale: negative.scale };
 
   expect(toPrecision(positive, 3)).toBe("1.00e+10000000000");
@@ -70,6 +70,11 @@ test("formats huge exponents without expanding zeros and preserves the input", (
   expect(toPrecision(createBig(123n, -Number.MAX_SAFE_INTEGER), 3)).toBe("1.23e+9007199254740993");
   expect(toPrecision(createBig(-123n, Number.MAX_SAFE_INTEGER), 3)).toBe("-1.23e-9007199254740989");
   expect(toPrecision(createBig(0n, Number.MAX_SAFE_INTEGER), 3)).toBe("0.00");
+});
+
+test("keeps the exponent exact when rounding carries across the safe integer boundary", () => {
+  expect(toPrecision(createBig(99n, 1 - Number.MAX_SAFE_INTEGER), 1)).toBe("1e+9007199254740992");
+  expect(toPrecision(createBig(99n, -Number.MAX_SAFE_INTEGER), 1)).toBe("1e+9007199254740993");
 });
 
 test("accepts all BigValue forms", () => {

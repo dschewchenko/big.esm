@@ -11,6 +11,9 @@ export const MAX_DECIMAL_PLACES = 1_000_000;
 /** Maximum decimal expansion requested by a single division or fixed formatter. */
 export const MAX_DECIMAL_EXPANSION = 2 * MAX_DECIMAL_PLACES;
 
+/** Maximum zero padding for general coefficient and fixed-string expansion. */
+export const MAX_MATERIALIZED_ZEROS = 2 * MAX_DECIMAL_EXPANSION;
+
 /**
  * Zero as a BigInt.
  *
