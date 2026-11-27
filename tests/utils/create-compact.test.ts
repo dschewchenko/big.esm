@@ -1,5 +1,5 @@
 import { expect, suite, test } from "vitest";
-import { add, Big, createBig, fromString, sub, toExponential } from "../../src";
+import { add, Big, createBig, fromString, mulInPlace, sub, subInPlace, toExponential } from "../../src";
 import { parseDecimal } from "../../src/utils/parse-decimal.js";
 
 suite("automatic compact scientific input", () => {
@@ -48,6 +48,28 @@ suite("automatic compact scientific input", () => {
     expect(createBig("-1.25e-3")).toStrictEqual(new Big(-125n, 5));
     expect(createBig("-0e10000000000")).toStrictEqual(new Big(0n));
     expect(createBig("0.000e-10000000000")).toStrictEqual(new Big(0n));
+  });
+
+  test.each([Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER])(
+    "multiplies a zero after cancellation at scale %s",
+    (scale) => {
+      const operand = new Big(1n, scale);
+      const zero = subInPlace(new Big(operand), operand);
+      expect(zero).toEqual(new Big(0n, scale));
+      expect(mulInPlace(zero, operand)).toBe(zero);
+      expect(zero).toEqual(new Big(0n));
+
+      const receiver = new Big(operand);
+      expect(mulInPlace(receiver, new Big(0n, scale))).toBe(receiver);
+      expect(receiver).toEqual(new Big(0n));
+
+      expect(() => mulInPlace(operand, operand)).toThrow(/Scale/);
+      expect(operand).toEqual(new Big(1n, scale));
+    }
+  );
+
+  test("preserves the scale of zero products when the result fits", () => {
+    expect(mulInPlace(new Big(0n, 3), new Big(2n, 2))).toEqual(new Big(0n, 5));
   });
 
   test("accepts safe scale bounds and rejects unsafe or invalid inputs", () => {
