@@ -31,7 +31,11 @@ export function powInPlace(big: Big, exp = 2): Big {
 
   assertScale(big.scale);
   const scale = big.scale * exp;
-  if (!Number.isSafeInteger(scale)) throw new Error("Scale");
+  if (!Number.isSafeInteger(scale)) {
+    if (big.value !== 0n) throw new Error("Scale");
+    big.scale = 0;
+    return big;
+  }
   big.value = big.value ** BigInt(exp);
   big.scale = scale;
   return big;

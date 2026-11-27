@@ -1,5 +1,5 @@
 import { expect, suite, test } from "vitest";
-import { add, Big, createBig, fromString, mulInPlace, sub, subInPlace, toExponential } from "../../src";
+import { add, Big, createBig, fromString, mulInPlace, powInPlace, sub, subInPlace, toExponential } from "../../src";
 import { parseDecimal } from "../../src/utils/parse-decimal.js";
 
 suite("automatic compact scientific input", () => {
@@ -70,6 +70,24 @@ suite("automatic compact scientific input", () => {
 
   test("preserves the scale of zero products when the result fits", () => {
     expect(mulInPlace(new Big(0n, 3), new Big(2n, 2))).toEqual(new Big(0n, 5));
+  });
+
+  test.each([Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER])(
+    "raises a zero after cancellation at scale %s",
+    (scale) => {
+      const operand = new Big(1n, scale);
+      const zero = subInPlace(new Big(operand), operand);
+      expect(powInPlace(zero, 2)).toBe(zero);
+      expect(zero).toEqual(new Big(0n));
+      expect(powInPlace(new Big(0n, scale), 0).toString()).toBe("1");
+
+      expect(() => powInPlace(operand, 2)).toThrow(/Scale/);
+      expect(operand).toEqual(new Big(1n, scale));
+    }
+  );
+
+  test("preserves the scale of zero powers when the result fits", () => {
+    expect(powInPlace(new Big(0n, 3), 2)).toEqual(new Big(0n, 6));
   });
 
   test("accepts safe scale bounds and rejects unsafe or invalid inputs", () => {
