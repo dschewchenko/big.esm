@@ -116,8 +116,8 @@ The scale itself must be a safe integer. `div`, `divCompact` and `toFixed` accep
 
 Operations that align scales, such as `add` and `sub`, throw a `RangeError` if they need to append more than 4,000,000 zeros. `sumBig` first lets terms at nearby scales cancel and applies the same limit when aligning the remaining groups.
 
-`sqrt(value, degree, precision)` accepts a non-negative safe-integer precision. The library can compute some roots with large scale gaps without expanding the coefficient. Other root calculations stay subject to the runtime's BigInt limits.
+`sqrt(value, degree, precision)` accepts a non-negative safe-integer precision. Exact roots can stay compact when calculating at the requested fixed scale would exceed the expansion limit. Other root calculations can require coefficient expansion.
 
-`pow` accepts a non-negative safe-integer exponent and rejects an unsafe resulting scale. Other large operations remain subject to the JavaScript runtime's BigInt and memory limits. String formatting needs memory proportional to the number of characters returned. Use `createBig` and `toExponential` when fixed notation would require many zeros. `pow10` rejects exponents above 4,000,000 to prevent excessive expansion.
+`pow` accepts a non-negative safe-integer exponent. Multiplication and exponentiation store zero at scale `0` when the computed scale is unsafe. Large powers of `1` and `-1` also use scale `0` when their input representation would require more than 4,000,000 trailing zeros. Other results must fit a safe scale and the runtime's BigInt limits. Fixed notation requires memory proportional to the number of characters returned. Use `toExponential` for compact output. `pow10` rejects exponents above 4,000,000 to prevent excessive expansion.
 
 `isDecimalInput` checks decimal syntax and safe decimal scale/exponent without expanding the input. Number inputs must be finite. `isNumericValue` follows JavaScript's `Number` conversion and can accept hexadecimal strings or non-finite numbers. Use `isDecimalInput` to pre-check values intended for `Big`.
