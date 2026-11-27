@@ -35,7 +35,15 @@ export function powInPlace(big: Big, exp = 2): Big {
   assertScale(baseScale);
   const scale = baseScale * exp;
   if (!Number.isSafeInteger(scale) || scale > MAX_MATERIALIZED_ZEROS) return powerAtWideScale(big, exp, scale);
-  big.value = big.value ** BigInt(exp);
+  const value = big.value;
+  if (exp === 2) {
+    big.value = value * value;
+  } else if (exp === 4) {
+    const squared = value * value;
+    big.value = squared * squared;
+  } else {
+    big.value = value ** BigInt(exp);
+  }
   big.scale = scale;
   return big;
 }
