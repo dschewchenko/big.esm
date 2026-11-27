@@ -23,7 +23,8 @@ test.each([
   [-1n, 0, Number.MAX_SAFE_INTEGER - 1, 1n],
   [123n, 4, 0, 1n],
   [-12345n, 3, 3, -1881365963625n],
-  [123456789n, 3, 2, 15241578750190521n]
+  [123456789n, 3, 2, 15241578750190521n],
+  [-125n, -3, 4, 244140625n]
 ] as const)("raises %s × 10^-%i to exponent %i", (value, scale, exponent, expected) => {
   const input = new Big(value, scale);
   expect(powBig(input, exponent)).toBe(input);

@@ -23,9 +23,18 @@ function multiplyBy(a: Big, b: BigValue, leftScale: number): Big {
   if (typeof coefficient !== "bigint") throw new TypeError("Big");
   assertScale(rightScale);
   const scale = leftScale + rightScale;
-  if (!Number.isSafeInteger(scale)) throw new Error("Scale");
+  // The operands are safe integers, so only the magnitude of their sum can be invalid.
+  if (Math.abs(scale) > Number.MAX_SAFE_INTEGER) return multiplyWithUnsafeScale(a, coefficient);
   a.value *= coefficient;
   a.scale = scale;
+  return a;
+}
+
+function multiplyWithUnsafeScale(a: Big, coefficient: bigint): Big {
+  if (a.value !== 0n && coefficient !== 0n) throw new Error("Scale");
+  // Zero is exact even when the combined scale cannot be stored.
+  a.value = 0n;
+  a.scale = 0;
   return a;
 }
 

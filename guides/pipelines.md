@@ -58,6 +58,8 @@ withTax.toString(); // "12.3"
 
 `pipe` in the root entry creates a fluent chain with its own copy. Use `pipeInPlace` when you want the chain to update an existing `Big`.
 
+Each successful step of `pipeInPlace` updates the input immediately. If a later step throws, the earlier updates are still applied. Use `pipe` to run the steps on a copy.
+
 ```ts
 import { createBig, pipe, pipeInPlace } from "big.esm";
 

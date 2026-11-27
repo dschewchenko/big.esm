@@ -37,3 +37,16 @@ function toBigIntShift(shift: number | bigint): bigint {
   if (!Number.isSafeInteger(shift)) throw new Error("Exp");
   return BigInt(shift);
 }
+
+/** Checks whether a coefficient and scale represent positive one. */
+export function isPositiveOne(value: bigint, scale: number): boolean {
+  if (scale === 0) return value === 1n;
+  if (scale < 0 || value <= 0n) return false;
+
+  const digits = value.toString();
+  if (digits.length - 1 !== scale || digits.charCodeAt(0) !== 49) return false;
+  for (let i = 1; i < digits.length; i++) {
+    if (digits.charCodeAt(i) !== 48) return false;
+  }
+  return true;
+}

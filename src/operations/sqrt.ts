@@ -2,9 +2,11 @@ import type { Big } from "../big.js";
 import type { BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { boundedRoot } from "../utils/bounded-root.js";
-import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants.js";
+import { DEFAULT_PRECISION, MAX_MATERIALIZED_ZEROS, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants.js";
+import { isPositiveOne } from "../utils/decimal-magnitude.js";
 import { pow10 } from "../utils/pow10.js";
 import { copyBigWithExpansionLimit } from "../utils/read-big-operand.js";
+import { fractionalEnd } from "../utils/trim-zeros.js";
 
 /**
  * Calculates the real nth root of a value without mutating the input.
@@ -40,83 +42,107 @@ export function sqrt(value: BigValue, root = 2, precision = DEFAULT_PRECISION): 
  * sqrtInPlace(new Big("0.01"), 2, 3).toString(); // "0.1"
  */
 export function sqrtInPlace(big: Big, root = 2, precision = DEFAULT_PRECISION): Big {
-  assertScale(big.scale);
+  const scale = big.scale;
+  assertScale(scale);
   if (!Number.isSafeInteger(precision) || precision < 0) throw new Error("Prec");
-  const positiveOne =
-    (big.value === ONE_BIGINT && big.scale === 0) || (root === 1 && isPositiveOne(big.value, big.scale));
-  const unitShortcut = big.value === ZERO_BIGINT || positiveOne;
+  const value = big.value;
+  if (!Number.isSafeInteger(root) || root < 1 || (value < ZERO_BIGINT && root % 2 === 0)) throw new Error("Root");
+  if (value === ZERO_BIGINT) {
+    big.scale = precision;
+    return big;
+  }
+
+  const absolute = value < ZERO_BIGINT ? -value : value;
+  if (root === 1) {
+    if (!isPositiveOne(value, scale)) throw new Error("Root");
+    return storeUnitRoot(big, ONE_BIGINT, 0, precision);
+  }
+  if (absolute === ONE_BIGINT && scale % root === 0) return storeUnitRoot(big, value, scale / root, precision);
+
+  const workScale = root * (precision + 1);
+  const exponent = workScale - scale;
   if (
-    !Number.isSafeInteger(root) ||
-    (root < 2 && !(root === 1 && unitShortcut)) ||
-    (big.value < ZERO_BIGINT && root % 2 === 0)
+    exponent > MAX_MATERIALIZED_ZEROS ||
+    root >= 4096 ||
+    !Number.isSafeInteger(workScale) ||
+    !Number.isSafeInteger(exponent)
   ) {
-    throw new Error("Root");
+    return rootAtWideScale(big, absolute, root, precision, exponent);
   }
-  const resultScale = precision;
-  if (big.value === ZERO_BIGINT) {
-    big.scale = resultScale;
-    return big;
-  }
-  if (positiveOne) {
-    big.value = pow10(resultScale);
-    big.scale = resultScale;
-    return big;
-  }
-  if (big.scale === 0 && big.value === -ONE_BIGINT) {
-    big.value = -pow10(resultScale);
-    big.scale = resultScale;
-    return big;
-  }
+  return storeRoundedRoot(big, absolute, root, precision, exponent);
+}
 
-  const negative = big.value < ZERO_BIGINT;
-  const absolute = negative ? -big.value : big.value;
-  if (absolute === ONE_BIGINT && big.scale % root === 0) {
-    const coefficientPower = resultScale - big.scale / root;
-    if (coefficientPower < 0) {
-      big.value = ZERO_BIGINT;
-      big.scale = resultScale;
-      return big;
-    }
-    if (Number.isSafeInteger(coefficientPower) && Number.isSafeInteger(root * (coefficientPower + 1))) {
-      const exactPower = pow10(coefficientPower);
-      big.value = negative ? -exactPower : exactPower;
-      big.scale = resultScale;
-      return big;
-    }
+function storeUnitRoot(big: Big, coefficient: bigint, scale: number, precision: number): Big {
+  const zeros = precision - scale;
+  if (zeros > MAX_MATERIALIZED_ZEROS) {
+    big.value = coefficient;
+    big.scale = scale;
+  } else if (zeros < 0) {
+    big.value = ZERO_BIGINT;
+    big.scale = precision;
+  } else {
+    const magnitude = pow10(zeros);
+    big.value = coefficient < ZERO_BIGINT ? -magnitude : magnitude;
+    big.scale = precision;
   }
-
-  const workScale = root * (resultScale + 1);
-  let exponent = workScale - big.scale;
-  if (root >= 4096 || !Number.isSafeInteger(workScale) || !Number.isSafeInteger(exponent)) {
-    const rounded = boundedRoot(absolute, big.scale, root, resultScale);
-    if (rounded !== undefined) {
-      big.value = negative ? -rounded : rounded;
-      big.scale = resultScale;
-      return big;
-    }
-    if (!Number.isSafeInteger(big.scale)) throw new Error("Prec");
-    exponent = Number(BigInt(root) * (BigInt(resultScale) + 1n) - BigInt(big.scale));
-  }
-  if (!Number.isSafeInteger(exponent)) throw new Error("Prec");
-  const scaled = scaleRadicand(absolute, exponent);
-  const roundedRoot = root === 2 ? bigIntSqrt(scaled) : bigIntRoot(scaled, root);
-  let result = roundedRoot / TEN_BIGINT;
-  if (roundedRoot % TEN_BIGINT >= 5n) result += ONE_BIGINT;
-
-  big.value = negative ? -result : result;
-  big.scale = resultScale;
   return big;
 }
 
-function isPositiveOne(value: bigint, scale: number): boolean {
-  if (scale === 0) return value === ONE_BIGINT;
-  if (scale < 0 || value <= ZERO_BIGINT) return false;
-
-  const digits = value.toString();
-  if (digits.length - 1 !== scale || digits.charCodeAt(0) !== 49) return false;
-  for (let i = 1; i < digits.length; i++) {
-    if (digits.charCodeAt(i) !== 48) return false;
+function rootAtWideScale(big: Big, absolute: bigint, degree: number, precision: number, exponent: number): Big {
+  const scale = big.scale;
+  if (
+    exponent > MAX_MATERIALIZED_ZEROS &&
+    (degree < 4096 || precision - scale / degree >= MAX_MATERIALIZED_ZEROS) &&
+    storeExactCompactRoot(big, absolute, degree, precision)
+  ) {
+    return big;
   }
+  if (degree >= 4096 || !Number.isSafeInteger(degree * (precision + 1)) || !Number.isSafeInteger(exponent)) {
+    const rounded = boundedRoot(absolute, scale, degree, precision);
+    if (rounded !== undefined) {
+      big.value = big.value < ZERO_BIGINT ? -rounded : rounded;
+      big.scale = precision;
+      return big;
+    }
+    exponent = Number(BigInt(degree) * (BigInt(precision) + 1n) - BigInt(scale));
+  }
+  if (!Number.isSafeInteger(exponent)) throw new Error("Prec");
+  return storeRoundedRoot(big, absolute, degree, precision, exponent);
+}
+
+function storeRoundedRoot(big: Big, absolute: bigint, degree: number, precision: number, exponent: number): Big {
+  if (degree === 2) {
+    // Round using the floor of twice the root. Scaling by four preserves exact half ties.
+    const radicand = scaleRadicand(absolute << 2n, exponent - 2);
+    big.value = (bigIntSqrt(radicand) + ONE_BIGINT) >> ONE_BIGINT;
+  } else {
+    const scaled = scaleRadicand(absolute, exponent);
+    const rootWithGuard = bigIntRoot(scaled, degree);
+    let result = rootWithGuard / TEN_BIGINT;
+    if (rootWithGuard % TEN_BIGINT >= 5n) result += ONE_BIGINT;
+    big.value = big.value < ZERO_BIGINT ? -result : result;
+  }
+  big.scale = precision;
+  return big;
+}
+
+function storeExactCompactRoot(big: Big, coefficient: bigint, degree: number, precision: number): boolean {
+  const remainder = big.scale % degree;
+  let scale = big.scale / degree;
+  if (remainder !== 0) {
+    // Remove only the trailing zeros needed to make the scale divisible by the degree.
+    const zeros = remainder < 0 ? remainder + degree : remainder;
+    const digits = coefficient.toString();
+    const end = digits.length - zeros;
+    if (end < 1 || fractionalEnd(digits, 1) > end) return false;
+    coefficient = BigInt(digits.slice(0, end));
+    scale = Number((BigInt(big.scale) - BigInt(zeros)) / BigInt(degree));
+  }
+  if (scale > precision) return false;
+  const result = degree === 2 ? bigIntSqrt(coefficient) : bigIntRoot(coefficient, degree);
+  if (result ** BigInt(degree) !== coefficient) return false;
+  big.value = big.value < 0n ? -result : result;
+  big.scale = scale;
   return true;
 }
 
@@ -172,6 +198,7 @@ function bigIntSqrt(value: bigint): bigint {
     ? BigInt(Math.ceil(approximation))
     : ONE_BIGINT << BigInt(Math.ceil(bigIntBitLength(value) / 2));
   let x1 = (x0 + value / x0) >> ONE_BIGINT;
+  if (x1 === x0 || (Number.isFinite(approximation) && x1 * x1 <= value)) return x1;
   if (x1 > x0) {
     x0 = x1;
     x1 = (x0 + value / x0) >> ONE_BIGINT;
