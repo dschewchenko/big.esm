@@ -5,7 +5,7 @@ category: Guides
 
 # Composing pipelines
 
-Use the fluent pipeline from `big.esm` when a calculation reads naturally as one chain. Use configured operators from `big.esm/pipe` when you want to name, group or reuse steps.
+Use the fluent pipeline from `big.esm` to express a sequence of operations as one chain. Configured operators from `big.esm/pipe` also compose operations in one call and let you name, group and reuse steps or calculated results.
 
 ## Build a reusable operator group
 
