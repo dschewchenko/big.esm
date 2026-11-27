@@ -1,3 +1,10 @@
+## [3.2.2](https://github.com/dschewchenko/big.esm/compare/v3.2.1...v3.2.2) (2026-11-27)
+
+
+### Bug Fixes
+
+* fold compact creation into createBig ([47a2b8f](https://github.com/dschewchenko/big.esm/commit/47a2b8f965cda02836bc98573bb6fca280e49ec7))
+
 ## [3.2.1](https://github.com/dschewchenko/big.esm/compare/v3.2.0...v3.2.1) (2026-11-25)
 
 `createCompactBig` was intended for testing and was accidentally exported as part of the public API from 3.1.0 through 3.2.1.
