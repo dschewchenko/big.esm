@@ -3,6 +3,7 @@ import type { BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { boundedRoot } from "../utils/bounded-root.js";
 import { DEFAULT_PRECISION, ONE_BIGINT, TEN_BIGINT, ZERO_BIGINT } from "../utils/constants.js";
+import { isPositiveOne } from "../utils/decimal-magnitude.js";
 import { pow10 } from "../utils/pow10.js";
 import { copyBigWithExpansionLimit } from "../utils/read-big-operand.js";
 
@@ -106,18 +107,6 @@ export function sqrtInPlace(big: Big, root = 2, precision = DEFAULT_PRECISION): 
   big.value = negative ? -result : result;
   big.scale = resultScale;
   return big;
-}
-
-function isPositiveOne(value: bigint, scale: number): boolean {
-  if (scale === 0) return value === ONE_BIGINT;
-  if (scale < 0 || value <= ZERO_BIGINT) return false;
-
-  const digits = value.toString();
-  if (digits.length - 1 !== scale || digits.charCodeAt(0) !== 49) return false;
-  for (let i = 1; i < digits.length; i++) {
-    if (digits.charCodeAt(i) !== 48) return false;
-  }
-  return true;
 }
 
 /** @deprecated Use {@link sqrt} for a non-mutating operation or {@link sqrtInPlace} to mutate explicitly. */

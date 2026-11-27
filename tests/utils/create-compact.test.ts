@@ -90,6 +90,16 @@ suite("automatic compact scientific input", () => {
     expect(powInPlace(new Big(0n, 3), 2)).toEqual(new Big(0n, 6));
   });
 
+  test("raises scaled representations of one to large powers without padding", () => {
+    const positive = createBig("1.00");
+    const negative = createBig("-1.00");
+    expect(powInPlace(positive, 4_503_599_627_370_496)).toBe(positive);
+    expect(positive).toEqual(new Big(1n));
+    expect(powInPlace(negative, 4_503_599_627_370_497)).toBe(negative);
+    expect(negative).toEqual(new Big(-1n));
+    expect(powInPlace(createBig("-1.00"), 4_000_002)).toEqual(new Big(1n));
+  });
+
   test("accepts safe scale bounds and rejects unsafe or invalid inputs", () => {
     expect(createBig("1e9007199254740991").scale).toBe(-Number.MAX_SAFE_INTEGER);
     expect(createBig("1e-9007199254740991").scale).toBe(Number.MAX_SAFE_INTEGER);
