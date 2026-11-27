@@ -1,7 +1,7 @@
 import { Big } from "../big.js";
 import type { BigBinaryOperation, BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
-import { ZERO_BIGINT } from "../utils/constants.js";
+import { MAX_MATERIALIZED_ZEROS, ZERO_BIGINT } from "../utils/constants.js";
 import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
 
@@ -26,13 +26,13 @@ function subtractFrom(a: Big, b: BigValue): Big {
     return a;
   }
 
-  if (scaleDifference > 0) {
-    if (scaleDifference <= 63 || right.value !== ZERO_BIGINT) a.value -= right.value * pow10(scaleDifference);
+  if (scaleDifference > 0 && (scaleDifference <= MAX_MATERIALIZED_ZEROS || a.value !== ZERO_BIGINT)) {
+    if (right.value !== ZERO_BIGINT) a.value -= right.value * pow10(scaleDifference);
     return a;
   }
 
-  a.value =
-    scaleDifference >= -63 || a.value !== ZERO_BIGINT ? a.value * pow10(-scaleDifference) - right.value : -right.value;
+  if (right.value === ZERO_BIGINT && Math.abs(scaleDifference) > MAX_MATERIALIZED_ZEROS) return a;
+  a.value = a.value === ZERO_BIGINT ? -right.value : a.value * pow10(-scaleDifference) - right.value;
   a.scale = right.scale;
   return a;
 }

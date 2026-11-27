@@ -1,11 +1,26 @@
 ---
-title: Upgrading to 3.2
+title: Upgrading big.esm
 category: Guides
 ---
 
-# Upgrading to 3.2
+# Upgrading big.esm
 
-Version 3 keeps the ESM-only package format introduced in v3.0. Version 3.2 adds pure operations, explicit mutating variants and an operator pipeline entry. It keeps the existing root imports and older mutating names.
+The package uses ESM. For very large positive exponents, `createBig` stores the value compactly.
+
+## Replace `createCompactBig`
+
+Update imports from `big.esm` or `big.esm/dist/utils/from-string` to use `createBig` from `big.esm`.
+
+```ts
+import { createBig, toExponential } from "big.esm";
+
+const value = createBig("1e10000000000");
+toExponential(value); // "1e+10000000000"
+```
+
+For ordinary positive exponents, `createBig` may use a different coefficient and scale for the same numeric value. If your code requires a specific representation, use `new Big(coefficient, scale)`. Request exponential output with `toExponential` when fixed notation would exceed the [decimal expansion limit](precision.md#limits).
+
+The following sections also cover upgrades from releases before 3.2, when pure operations, explicit mutating variants and the operator pipeline were introduced.
 
 ## Use ESM imports
 

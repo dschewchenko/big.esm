@@ -1,5 +1,5 @@
 import type { BigObject } from "../types.js";
-import { ZERO_BIGINT } from "./constants.js";
+import { MAX_MATERIALIZED_ZEROS, ZERO_BIGINT } from "./constants.js";
 
 /** Reads a short plain decimal with an exact integer coefficient. */
 function parseShortDecimal(text: string): BigObject | undefined {
@@ -36,7 +36,11 @@ export function decimalScale(fractionLength: number, exponentText: string | unde
   return Number.isSafeInteger(exponent) ? fractionLength - exponent : NaN;
 }
 
-export function parseDecimal(num: string | number, ignoreFraction = false, maxExpandedZeros = Infinity): BigObject {
+export function parseDecimal(
+  num: string | number,
+  ignoreFraction = false,
+  maxExpandedZeros = MAX_MATERIALIZED_ZEROS
+): BigObject {
   if (typeof num === "number" && Number.isSafeInteger(num)) {
     return { value: BigInt(num), scale: 0 };
   }
@@ -60,9 +64,13 @@ export function parseDecimal(num: string | number, ignoreFraction = false, maxEx
   if (!Number.isSafeInteger(scale)) throw new Error("Exp");
   let digits = integer + fraction;
 
-  if (scale < 0 && -scale <= maxExpandedZeros) {
-    if (/[1-9]/.test(digits)) digits += "0".repeat(-scale);
-    scale = 0;
+  if (scale < 0 && /[1-9]/.test(digits)) {
+    if (-scale <= maxExpandedZeros) {
+      digits += "0".repeat(-scale);
+      scale = 0;
+    } else if (ignoreFraction) {
+      throw RangeError("size limit");
+    }
   } else if (ignoreFraction && scale > 0) {
     digits = scale >= digits.length ? "0" : digits.slice(0, -scale);
     scale = 0;

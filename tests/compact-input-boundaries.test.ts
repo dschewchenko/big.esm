@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Big, compare, createCompactBig, divCompact, sumBig, toExponential } from "../src/index.js";
+import { Big, compare, createBig, divCompact, sumBig, toExponential } from "../src/index.js";
 
 test("compares very large scientific notation without expanding its coefficient", () => {
   expect(compare("3e10000000000", 1)).toBe(1);
@@ -9,7 +9,7 @@ test("compares very large scientific notation without expanding its coefficient"
 });
 
 test("divides compact scientific notation without expanding the coefficient", () => {
-  const quotient = divCompact(createCompactBig("3e10000000000"), 2);
+  const quotient = divCompact(createBig("3e10000000000"), 2);
 
   expect(quotient.value).toBe(15n);
   expect(quotient.scale).toBe(-9_999_999_999);
@@ -22,8 +22,8 @@ test("uses the existing coefficient and scale for ordinary scientific notation",
 });
 
 test("handles a very large compact divisor and still rejects zero", () => {
-  expect(divCompact(3, createCompactBig("2e10000000000"))).toMatchObject({ value: 0n, scale: 20 });
-  expect(() => divCompact(createCompactBig("3e10000000000"), createCompactBig("0e10000000000"))).toThrow("Div0");
+  expect(divCompact(3, createBig("2e10000000000"))).toMatchObject({ value: 0n, scale: 20 });
+  expect(() => divCompact(createBig("3e10000000000"), createBig("0e10000000000"))).toThrow("Div0");
 });
 
 test("keeps rounded division of large expanded scientific literals", () => {
@@ -83,5 +83,5 @@ test("sums distant terms exactly when the coefficient fits in a BigInt", () => {
 });
 
 test("rejects sums that still exceed the runtime's BigInt limit after cancellation", () => {
-  expect(() => sumBig([createCompactBig("3e10000000000"), 1, createCompactBig("-2e10000000000")])).toThrow(RangeError);
+  expect(() => sumBig([createBig("3e10000000000"), 1, createBig("-2e10000000000")])).toThrow(RangeError);
 });

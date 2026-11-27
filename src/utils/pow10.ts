@@ -1,4 +1,4 @@
-import { ONE_BIGINT, TEN_BIGINT } from "./constants.js";
+import { MAX_MATERIALIZED_ZEROS, ONE_BIGINT, TEN_BIGINT } from "./constants.js";
 
 /** Returns ten raised to a non-negative safe integer exponent without a growing cache. */
 export function pow10(exp: number): bigint {
@@ -78,6 +78,7 @@ export function pow10(exp: number): bigint {
     return block * pow10(exp & 15);
   }
   if (exp > 255) {
+    if (exp > MAX_MATERIALIZED_ZEROS) throw RangeError("size limit");
     const exponent = BigInt(exp);
     // Compute the smaller odd factor before shifting, since 10ᵉ = 5ᵉ × 2ᵉ.
     return (5n ** exponent) << exponent;

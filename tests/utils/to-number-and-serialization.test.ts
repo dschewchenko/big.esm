@@ -1,7 +1,7 @@
 import { expect, suite, test } from "vitest";
 import { Big } from "../../src/big.js";
 import type { BigObject } from "../../src/types.js";
-import { createCompactBig } from "../../src/utils/from-string.js";
+import { createBig } from "../../src/utils/create.js";
 import { deserializeBig, type SerializedBig, serializeBig } from "../../src/utils/serialization.js";
 import { toNumber } from "../../src/utils/to-number.js";
 
@@ -37,6 +37,15 @@ suite("toNumber", () => {
     expect(toNumber(new Big(0n, -Number.MAX_SAFE_INTEGER))).toBe(0);
   });
 
+  test("uses digits beyond a long zero run when rounding to binary64", () => {
+    const halfway = ((1n << 53n) + 1n) * 5n ** 53n * 10n ** 1000n;
+    const scale = 1053;
+
+    expect(toNumber(new Big(halfway - 1n, scale))).toBe(1);
+    expect(toNumber(new Big(halfway, scale))).toBe(1);
+    expect(toNumber(new Big(halfway + 1n, scale))).toBe(1 + Number.EPSILON);
+  });
+
   test("rejects invalid decimal inputs and invalid mutated Big state", () => {
     expect(() => toNumber("not a number")).toThrow();
     expect(() => toNumber(Infinity)).toThrow();
@@ -67,7 +76,7 @@ suite("serializeBig and deserializeBig", () => {
     const object: BigObject = { value: 12300n, scale: 4 };
     expect(serializeBig(object)).toStrictEqual({ value: "12300", scale: 4 });
     expect(serializeBig("1e10000000000")).toStrictEqual({ value: "1", scale: -10000000000 });
-    expect(serializeBig(createCompactBig("1.25e-10000000000"))).toStrictEqual({
+    expect(serializeBig(createBig("1.25e-10000000000"))).toStrictEqual({
       value: "125",
       scale: 10000000002
     });

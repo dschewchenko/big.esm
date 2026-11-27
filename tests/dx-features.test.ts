@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { compare, createBig, createCompactBig, pipe, pipeBig, pipeInPlace, sumBig, toExponential } from "../src";
+import { compare, createBig, pipe, pipeBig, pipeInPlace, sumBig, toExponential } from "../src";
 
 test("rounds and formats a pipeline without constructing operands", () => {
   expect(pipe("1.03").roundToStep("0.05").toFixed(2)).toBe("1.05");
@@ -43,9 +43,40 @@ test("sums an iterable of mixed inputs without mutating its items", () => {
   expect(sumBig([original])).not.toBe(original);
 });
 
+test("sums prepared same-scale coefficients past the safe integer range", () => {
+  const first = Object.freeze(createBig(9007199254740991n, 8));
+  const second = Object.freeze({ value: 9007199254740993n, scale: 8 });
+
+  expect(sumBig([first, second, createBig(-1n, 8)])).toMatchObject({ value: 18014398509481983n, scale: 8 });
+  expect(first).toMatchObject({ value: 9007199254740991n, scale: 8 });
+  expect(second).toEqual({ value: 9007199254740993n, scale: 8 });
+});
+
+test("adopts the next nonzero term's scale after a mixed-scale sum cancels", () => {
+  const zero = createBig(0n, Number.MAX_SAFE_INTEGER);
+
+  expect(sumBig(["1.0", "-1.00", zero, createBig(3n, -5)])).toMatchObject({ value: 3n, scale: -5 });
+  expect(sumBig(["1.00", "-1.0", zero, createBig(3n, -5)])).toMatchObject({ value: 3n, scale: -5 });
+});
+
+test("closes a generator when a zero operand has an invalid scale", () => {
+  let closed = false;
+  function* values() {
+    try {
+      yield createBig("1.00000000");
+      yield { value: 0n, scale: 8.5 };
+    } finally {
+      closed = true;
+    }
+  }
+
+  expect(() => sumBig(values())).toThrow("Scale");
+  expect(closed).toBe(true);
+});
+
 test("sums compact values without expanding zero operands", () => {
-  const huge = createCompactBig("3e10000000000");
-  const sameMagnitude = createCompactBig("4e10000000000");
+  const huge = createBig("3e10000000000");
+  const sameMagnitude = createBig("4e10000000000");
   const sum = sumBig([0n, huge, "0.00", sameMagnitude]);
   expect(toExponential(sum)).toBe("7e+10000000000");
   expect(toExponential(huge)).toBe("3e+10000000000");
@@ -61,9 +92,7 @@ test("cancels opposite compact values before aligning very different scales", ()
   expect(sumBig([tiny, opposite, large])).toEqual(tiny);
   expect(sumBig([large, opposite, tiny])).toEqual(tiny);
   expect(large.value).toBe(1n);
-  expect(sumBig([createCompactBig("3e10000000000"), "0.0001", createCompactBig("-3e10000000000")]).toString()).toBe(
-    "0.0001"
-  );
+  expect(sumBig([createBig("3e10000000000"), "0.0001", createBig("-3e10000000000")]).toString()).toBe("0.0001");
 });
 
 test("cancels across nearby scales while consuming an iterable once", () => {

@@ -1,13 +1,46 @@
 # Benchmark
 
-> The results below are historical measurements from 2025 using the previous benchmark methodology. The current `benchmarks/benchmark.js` validates results and runs samples in isolated processes; its output is not directly comparable to the figures below.
+## Published package comparison
+
+The following measurements compare published `big.esm@3.2.1`, `decimal.js@10.6.0` and `bignumber.js@11.1.5` on an Apple M1. Times are the median of five isolated processes performing one million operations with prepared operands. Lower is better.
+
+| Runtime and operation | big.esm | decimal.js | bignumber.js |
+| --- | ---: | ---: | ---: |
+| Node.js 26.13.1, addition | 29.7 ms | 228.8 ms | 143.0 ms |
+| Node.js 26.13.1, division | 94.8 ms | 1,480.8 ms | 1,465.8 ms |
+| Bun 1.4.4, addition | 23.4 ms | 90.5 ms | 70.5 ms |
+| Bun 1.4.4, division | 101.7 ms | 1,459.6 ms | 1,409.6 ms |
+
+Addition uses 256 varying input pairs with up to eight decimal places. Division uses the same set of four starting pairs and variations, including `-12345.67809 / 6789.123456`. All libraries round to 20 fractional places using half-up rounding. For decimal.js, the one-integer-digit quotients use 21 significant digits to produce the same result. Every input pair is checked against an integer arithmetic reference.
+
+The next measurement holds one million multiplication results in memory. Both operands have 40-digit coefficients. Values are median peak RSS for the whole isolated process, including the runtime, prepared operands and retained results.
+
+| Runtime | big.esm | decimal.js | bignumber.js |
+| --- | ---: | ---: | ---: |
+| Node.js 26.13.1 | 236.3 MiB | 360.6 MiB | 349.5 MiB |
+| Bun 1.4.4 | 143.9 MiB | 309.2 MiB | 210.2 MiB |
+
+Browser bundles use Bun 1.4.4 with minification and gzip level 9. Each addition entry accepts two decimal strings and produces the same result.
+
+| Browser bundle | big.esm | decimal.js | bignumber.js |
+| --- | ---: | ---: | ---: |
+| Addition only | 1.55 KiB | 12.54 KiB | 8.53 KiB |
+| Full namespace | 6.62 KiB | 12.66 KiB | 8.64 KiB |
+
+These measurements cover the stated workloads. Other inputs, engines, operations and usage patterns can produce different results. The published peer comparison was run separately from the repository benchmark described below.
+
+## Repository benchmark
+
+The historical results later in this document use a previous methodology. They are separate from the current `benchmarks/benchmark.js` output.
 
 The speed benchmark compares built `big.esm` artifacts with `big.js`, validating results before timing.
 
 - `operation-only` prepares fresh operands before timing on both sides. For a pipeline it still measures pipeline construction and calls. Peak RSS includes the prepared inputs and the runtime.
 - `end-to-end` also times operand construction. It reports the change in retained heap after forced garbage collection. That figure measures surviving data at the end of the sample.
 
-The JSON includes the runtime, host CPU, entry file hashes, sample range and median absolute deviation. Point `--current` at `dist/core.js` to record a hash of the actual bundled implementation when the package entry is a re-export.
+The JSON includes the runtime, host CPU, entry and bundled core hashes, sample range and median absolute deviation.
+
+`benchmark:prepared` measures in-place multiplication with varying prepared operands. It resets operands outside the timed intervals, checks every result from the final round with exact `BigInt` arithmetic and reports whole-process peak RSS. A small working set and a large working set can behave differently; use `--count` to compare them. Resetting and reusing the same objects means this measures a different workload from the fresh operands used by `benchmark`.
 
 The historical speed measurements used `50_000` iterations per operation (median of 3 runs).
 Size benchmarks use `bun build --minify` + Brotli quality `11` (minified + brotli sizes).
@@ -25,6 +58,12 @@ bun run benchmark:compare --baseline /path/to/before.js --current /path/to/after
 
 # Focus on remainder at a 30-place scale difference.
 bun run benchmark --operation remainder --input moderateScaleGap --repeats 7
+
+# Compare prepared multiplication with 1,048,576 operations per sample.
+bun run benchmark:prepared --baseline /path/to/before.js --count 262144 --rounds 4 --input large --scales equal
+
+# Repeat with small coefficients and varying scales.
+bun run benchmark:prepared --baseline /path/to/before.js --count 262144 --rounds 4 --input small --scales mixed
 
 # Bundle size from the built package entry. Saves a timestamped result.
 bun run benchmark:weight

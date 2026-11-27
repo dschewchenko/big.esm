@@ -1,5 +1,6 @@
 import type { BigValue, PossibleNumber } from "./types.js";
 import { assertScale } from "./utils/assert-scale.js";
+import { MAX_MATERIALIZED_ZEROS } from "./utils/constants.js";
 import { parseDecimal } from "./utils/parse-decimal.js";
 import { fractionalEnd } from "./utils/trim-zeros.js";
 
@@ -131,11 +132,17 @@ export class Big {
     const scale = this.scale;
     assertScale(scale);
     const value = this.value.toString();
-    if (scale < 0) return value === "0" ? value : value + "0".repeat(-scale);
-    if (!(scale > 0) || (shouldTrimZeros && value === "0")) return value;
+    if (scale < 0) {
+      if (value === "0") return value;
+      if (-scale > MAX_MATERIALIZED_ZEROS) throw RangeError("size limit");
+      return value + "0".repeat(-scale);
+    }
+    if (scale === 0 || (shouldTrimZeros && value === "0")) return value;
 
     const firstDigit = value.charCodeAt(0) === 45 ? 1 : 0;
-    const point = Math.max(firstDigit, value.length - scale);
+    const decimalPoint = value.length - scale;
+    if (firstDigit - decimalPoint > MAX_MATERIALIZED_ZEROS) throw RangeError("size limit");
+    const point = Math.max(firstDigit, decimalPoint);
     const integer = point > firstDigit ? value.slice(0, point) : firstDigit ? "-0" : "0";
     const end = shouldTrimZeros ? fractionalEnd(value, point) : value.length;
     if (end === point) return integer;

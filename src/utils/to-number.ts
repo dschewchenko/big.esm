@@ -1,8 +1,8 @@
 import type { BigValue } from "../types.js";
 import { readCompactOperand } from "./read-compact-operand.js";
 
-const MAX_FINITE_DECIMAL_EXPONENT = 308n;
-const MIN_NONZERO_DECIMAL_EXPONENT = -324n;
+const MAX_FINITE_DECIMAL_EXPONENT = 308;
+const MIN_NONZERO_DECIMAL_EXPONENT = -324;
 
 /**
  * Converts a decimal value to the nearest JavaScript `Number` (IEEE 754 binary64).
@@ -35,13 +35,12 @@ export function toNumber(input: BigValue): number {
 
   const negative = big.value < 0n;
   const digits = (negative ? -big.value : big.value).toString();
-  const exponent = BigInt(digits.length - 1) - BigInt(big.scale);
+  const scale = big.scale;
+  // The decimal order is only compared with the two small cutoffs.
+  const exponent = digits.length - 1 - scale;
 
   if (exponent > MAX_FINITE_DECIMAL_EXPONENT) return negative ? -Infinity : Infinity;
   if (exponent < MIN_NONZERO_DECIMAL_EXPONENT) return negative ? -0 : 0;
 
-  const mantissa = digits.length === 1 ? digits : `${digits[0]}.${digits.slice(1)}`;
-  const sign = negative ? "-" : "";
-  const exponentSign = exponent < 0n ? "" : "+";
-  return Number(`${sign}${mantissa}e${exponentSign}${exponent}`);
+  return Number(`${negative ? "-" : ""}${digits}e${-scale}`);
 }

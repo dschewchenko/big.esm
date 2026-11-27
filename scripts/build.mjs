@@ -65,7 +65,7 @@ const publicFacades = {
   "utils/align-scale.js": "alignScale",
   "utils/clone.js": "cloneBig",
   "utils/create.js": "createBig",
-  "utils/from-string.js": "createCompactBig, fromString, isDecimalInput",
+  "utils/from-string.js": "fromString, isDecimalInput",
   "utils/is-big-object.js": "isBigObject",
   "utils/numeric.js": "isNumericValue",
   "utils/pow10.js": "pow10",

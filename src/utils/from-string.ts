@@ -59,21 +59,3 @@ export function fromString(num: string | number, ignoreFraction = false, returnI
   const parsed = parseDecimal(num, ignoreFraction);
   return returnInstance ? new Big(parsed.value, parsed.scale) : parsed;
 }
-
-/**
- * Creates a Big using a negative scale for positive scientific exponents, avoiding zero-padding the coefficient.
- *
- * @param value - A finite number, bigint, or decimal string.
- * @returns A Big whose coefficient and scale compactly represent the input.
- * @throws If the input is invalid or its exponent produces an unsafe scale.
- *
- * @category Utilities
- *
- * @example
- * createCompactBig("1e10000000000"); // Big { value: 1n, scale: -10000000000 }
- */
-export function createCompactBig(value: PossibleNumber): Big {
-  if (typeof value === "bigint") return new Big(value);
-  const parsed = parseDecimal(value, false, 0);
-  return new Big(parsed.value, parsed.scale);
-}

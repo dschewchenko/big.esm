@@ -118,7 +118,7 @@ try {
   }
 
   const esm = `import api, { Big, BigPipe, abs, absBig, absInPlace, add, addBig, addInPlace, alignScale, cloneBig,
-      compare, compareBig, createBig, createCompactBig, deserializeBig, div, divBig, divCompact, divCompactBig,
+      compare, compareBig, createBig, deserializeBig, div, divBig, divCompact, divCompactBig,
       divCompactInPlace, divInPlace, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, mod,
       modBig, modInPlace, mul, mulBig, mulInPlace, pipe, pipeBig, pipeInPlace, pow, pow10, powBig, powInPlace,
       round, roundBig, roundInPlace, roundToIncrement, roundToStep, roundToStepInPlace, serializeBig, sqrt,
@@ -138,7 +138,7 @@ try {
     import { toPrecision as deepPrecision } from "big.esm/dist/utils/to-precision.js";
     import { divCompactBig as coreDivide } from "big.esm/dist/core.js";
     const namedApi = { Big, BigPipe, abs, absBig, absInPlace, add, addBig, addInPlace, alignScale, cloneBig,
-      compare, compareBig, createBig, createCompactBig, deserializeBig, div, divBig, divCompact, divCompactBig,
+      compare, compareBig, createBig, deserializeBig, div, divBig, divCompact, divCompactBig,
       divCompactInPlace, divInPlace, fromString, isBigObject, isDecimalInput, isNumericValue, maxBig, minBig, mod,
       modBig, modInPlace, mul, mulBig, mulInPlace, pipe, pipeBig, pipeInPlace, pow, pow10, powBig, powInPlace,
       round, roundBig, roundInPlace, roundToIncrement, roundToStep, roundToStepInPlace, serializeBig, sqrt,
@@ -176,9 +176,9 @@ try {
     if (roundBig(rounded, 2, "half-even") !== rounded || rounded.toString() !== "1.12" ||
         toFixed(createBig("1.005"), 2, "half-even") !== "1.00" ||
         toExponential(createBig("1e-10000000000")) !== "1e-10000000000" ||
-        createCompactBig("1e10000000000").scale !== -10000000000 ||
+        createBig("1e10000000000").scale !== -10000000000 ||
         divCompactBig(createBig(1), createBig(8)).toString() !== "0.125" ||
-        toExponential(divCompactBig(createCompactBig("3e10000000000"), createBig(2))) !== "1.5e+10000000000" ||
+        toExponential(divCompactBig(createBig("3e10000000000"), createBig(2))) !== "1.5e+10000000000" ||
         roundToStep("-1.025", "0.05", "half-even").toString() !== "-1" ||
         compare("1.2", "1.19") !== 1 || div("1", 8, 3).toString() !== "0.125" ||
         mod("5", "3").toString() !== "2" || abs("-2.5").toString() !== "2.5" ||

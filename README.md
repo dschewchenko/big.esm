@@ -41,11 +41,11 @@ addInPlace(balance, "0.25");
 console.log(balance.toString()); // "12.75"
 ```
 
-Legacy helpers such as `addBig` still mutate their first argument. See [Upgrading to 3.2](guides/migration.md) for equivalent calls and copy behavior.
+Legacy helpers such as `addBig` still mutate their first argument. See the [upgrade guide](guides/migration.md#make-mutation-explicit) for equivalent calls and copy behavior.
 
 ## Pipelines
 
-For a short chain, use `pipe(value)` from `big.esm`. The chain owns a working value. Call `.value()` to get its `Big` or finish with a formatter.
+Use `pipe(value)` from `big.esm` to express a sequence of operations as a chain. The chain owns a working value. Call `.value()` to get its `Big` or finish with a formatter.
 
 ```js
 import { pipe } from "big.esm";
@@ -53,7 +53,7 @@ import { pipe } from "big.esm";
 console.log(pipe("1.03").roundToStep("0.05").toFixed(2)); // "1.05"
 ```
 
-Use `big.esm/pipe` to calculate a subexpression once and use its `Big` result in other pipelines. Here `product` is the result of `3 × 4`.
+Use `big.esm/pipe` to compose operations in a single call and group calculations. You can calculate a subexpression once and use its `Big` result in other pipelines. Here `product` is the result of `3 × 4`.
 
 ```js
 import { add, mul, pipe, sub } from "big.esm/pipe";
@@ -85,11 +85,15 @@ These pipelines evaluate `2 + (3 × 4)` and `20 − (3 × 4)` using the same pro
 
 ## Compatibility
 
-Use named ESM imports with Node.js 16+, Bun 1.0+ or a modern browser with native `BigInt` and ES modules. The package has been checked with Node.js 16 and 26. The [upgrade guide](guides/migration.md) covers the ESM transition and existing deep import paths.
+Use named ESM imports with Node.js 16+, Bun 1.0+ or a modern browser with native `BigInt` and ES modules. The package has been checked with Node.js 16 and 26. The [upgrade guide](guides/migration.md) covers replacing `createCompactBig`, the ESM transition and existing deep import paths.
 
 ## Benchmarks
 
-For the three-step calculation `(100 × 0.9 + 5) − 2`, the operator form bundles to 1,843 B gzip with Bun. The same calculation with the fluent API bundles to 4,728 B. See the [bundle comparison](https://github.com/dschewchenko/big.esm/blob/main/BENCHMARK.md#current-pipe-bundle-size) to reproduce the measurement and see the Vite results.
+Named imports and operators from `big.esm/pipe` are tree-shakeable. In one minified browser build, an addition using `big.esm@3.2.1` was 1.55 KiB gzip. Equivalent bundles using `decimal.js@10.6.0` and `bignumber.js@11.1.5` were 12.54 and 8.53 KiB.
+
+Using the same package versions on an Apple M1 with Node.js 26, one million divisions with prepared operands and 20 decimal places took 94.8 ms with big.esm, 1,480.8 ms with decimal.js and 1,465.8 ms with bignumber.js. For one million multiplications of 40-digit coefficients, peak process RSS was 236.3, 360.6 and 349.5 MiB respectively, with every result retained.
+
+These figures describe specific workloads. See the [benchmark details](https://github.com/dschewchenko/big.esm/blob/main/BENCHMARK.md#published-package-comparison) for inputs, rounding, memory and bundle measurement conditions, along with Node and Bun results.
 
 ## License
 

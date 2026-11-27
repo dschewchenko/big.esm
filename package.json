@@ -16,6 +16,7 @@
     "lint:fix": "bun run lint -- --write",
     "benchmark": "bun benchmarks/benchmark.js",
     "benchmark:compare": "bun benchmarks/benchmark.js",
+    "benchmark:prepared": "bun benchmarks/prepared-multiplication.mjs",
     "benchmark:weight": "bun benchmarks/size-compare.js",
     "semantic-release": "bunx --bun semantic-release",
     "prepare": "bunx --bun is-ci || bunx --bun husky"

@@ -2,6 +2,7 @@ import { Big } from "../big.js";
 import type { BigValue } from "../types.js";
 import { assertScale } from "../utils/assert-scale.js";
 import { MAX_DECIMAL_EXPANSION } from "../utils/constants.js";
+import { pow10 } from "../utils/pow10.js";
 import { readBigOperand } from "../utils/read-big-operand.js";
 import { addInPlace } from "./add.js";
 
@@ -12,55 +13,64 @@ import { addInPlace } from "./add.js";
  *
  * @param values - The decimals to add. Primitives, Big and BigObject are accepted.
  * @returns A new Big holding the sum.
- * @throws If an input scale is invalid or the exact sum exceeds the runtime's BigInt limits.
+ * @throws If an input scale is invalid or the exact sum exceeds the decimal expansion limit.
  * @category Operations
  * @example
  * sumBig(["0.1", "0.2", 1n]).toString(); // "1.3"
  */
 export function sumBig(values: Iterable<BigValue>): Big {
-  let result = new Big(0n);
+  let coefficient = 0n;
+  let scale = 0;
   let byScale: Map<number, bigint> | undefined;
-  for (const value of values) {
-    const operand = readBigOperand(value);
-    assertScale(operand.scale);
-    if (operand.value === 0n) continue;
+  for (const input of values) {
+    const operand = readBigOperand(input);
+    const operandScale = operand.scale;
+    const sameScale = scale === operandScale;
+    // Equal scales have already been validated through the running scale.
+    if (!sameScale) assertScale(operandScale);
+    const operandValue = operand.value;
+    if (operandValue === 0n) continue;
     if (byScale) {
-      addAtScale(byScale, operand.scale, operand.value);
-    } else if (result.value === 0n) {
-      result.value = operand.value;
-      result.scale = operand.scale;
-    } else if (result.scale === operand.scale) {
-      result.value += operand.value;
-    } else if (Math.abs(result.scale - operand.scale) > MAX_DECIMAL_EXPANSION) {
-      byScale = new Map([[result.scale, result.value]]);
-      addAtScale(byScale, operand.scale, operand.value);
+      addAtScale(byScale, operandScale, operandValue);
+    } else if (coefficient === 0n) {
+      coefficient = operandValue;
+      scale = operandScale;
+    } else if (sameScale) {
+      coefficient += operandValue;
     } else {
-      addInPlace(result, operand);
-    }
-  }
-  if (byScale) {
-    const groups: Big[] = [];
-    result.value = 0n;
-    result.scale = 0;
-    const scales = [...byScale.keys()].sort((a, b) => a - b);
-    for (const scale of scales) {
-      const value = byScale.get(scale)!;
-      if (result.value === 0n) {
-        result.value = value;
-        result.scale = scale;
-      } else if (scale - result.scale > MAX_DECIMAL_EXPANSION) {
-        groups.push(result);
-        result = new Big(value, scale);
+      const difference = scale - operandScale;
+      if (Math.abs(difference) > MAX_DECIMAL_EXPANSION) {
+        byScale = new Map([[scale, coefficient]]);
+        addAtScale(byScale, operandScale, operandValue);
+      } else if (difference > 0) {
+        coefficient += operandValue * pow10(difference);
       } else {
-        addInPlace(result, { value, scale });
+        coefficient = coefficient * pow10(-difference) + operandValue;
+        scale = operandScale;
       }
     }
-    // Align distant groups only after each group has had a chance to cancel.
-    for (let index = groups.length - 1; index >= 0; index--) {
-      const group = groups[index];
-      if (result.value !== 0n) addInPlace(group, result);
-      result = group;
+  }
+  if (!byScale) return new Big(coefficient, scale);
+  let result = new Big(0n);
+  const groups: Big[] = [];
+  const scales = [...byScale.keys()].sort((a, b) => a - b);
+  for (const scale of scales) {
+    const value = byScale.get(scale)!;
+    if (result.value === 0n) {
+      result.value = value;
+      result.scale = scale;
+    } else if (scale - result.scale > MAX_DECIMAL_EXPANSION) {
+      groups.push(result);
+      result = new Big(value, scale);
+    } else {
+      addInPlace(result, { value, scale });
     }
+  }
+  // Align distant groups only after each group has had a chance to cancel.
+  for (let index = groups.length - 1; index >= 0; index--) {
+    const group = groups[index];
+    if (result.value !== 0n) addInPlace(group, result);
+    result = group;
   }
   return result;
 }

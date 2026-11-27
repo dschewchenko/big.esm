@@ -4,18 +4,21 @@
  * bun run benchmark
  * bun run benchmark -- --baseline /path/to/before.js --current /path/to/after.js
  * bun run benchmark -- --operation remainder --input mixedScale --iterations 5000
+ * bun run benchmark -- --operation sum_prepared --iterations 1000000
  * bun run benchmark -- --mode end-to-end
  * node --expose-gc benchmarks/benchmark.js --baseline before.js --current after.js
  *
  * Operation-only mode prepares fresh operands before timing. End-to-end mode
  * includes construction. Post-GC retained heap is not total allocation volume.
+ * Peak RSS is the child process lifetime high-water mark.
+ * Prepared sum cases time one aggregate over --iterations inputs and report time per input.
  * stdout is JSON; progress goes to stderr. No files are modified by the benchmark.
  */
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { cpus, release } from "node:os";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import BigJS from "big.js";
 
@@ -33,6 +36,10 @@ const inputs = {
   negativeDivisor: ["12345.67809", "-78901.23456"]
 };
 const operations = ["add", "subtract", "multiply", "divide", "remainder", "power", "square_root", "chain"];
+const sumInputs = {
+  sum_prepared: 2450012345678n,
+  sum_prepared_wide: 1234567890123456789012345n
+};
 
 function gc() {
   if (globalThis.Bun) globalThis.Bun.gc(true);
@@ -107,12 +114,13 @@ function median(values) {
   return sorted[Math.floor(sorted.length / 2)];
 }
 
-function summary(samples, iterations) {
+function summary(samples, iterations, unit = "operation") {
   const values = (key) => samples.map((item) => item[key]);
   const elapsed = values("elapsedMs");
   const elapsedMedian = median(elapsed);
+  const rate = unit === "input" ? "nsPerInput" : "nsPerOperation";
   return {
-    nsPerOperation: elapsedMedian * 1e6 / iterations,
+    [rate]: elapsedMedian * 1e6 / iterations,
     elapsedRangeMs: [Math.min(...elapsed), Math.max(...elapsed)],
     elapsedMedianAbsoluteDeviationMs: median(elapsed.map((sample) => Math.abs(sample - elapsedMedian))),
     peakRssKiB: median(values("peakRssKiB")),
@@ -127,18 +135,22 @@ function summary(samples, iterations) {
 async function worker(artifact, api, operation, inputName, iterations, mode) {
   const library = api === "big.js" ? null : await import(pathToFileURL(resolve(artifact)).href);
   const args = inputs[inputName];
-  const warmupIterations = Math.min(2000, iterations);
+  const warmupIterations = Math.min(20000, iterations);
   const fn = createOperation(library, api, operation, args, iterations + warmupIterations + 1, mode);
   const reference = runReference(operation, new BigJS(args[0]), new BigJS(args[1]));
   const initial = fn().toString();
   if (!new BigJS(initial).eq(reference)) throw new Error(`Expected ${reference}, received ${initial}`);
-  for (let i = 0; i < warmupIterations; i++) fn();
+  const runBatch = (count) => {
+    let result;
+    for (let i = 0; i < count; i++) result = fn();
+    return result;
+  };
+  runBatch(warmupIterations);
   gc();
   // Prebuilt mutable operands end up holding their results, so retained heap is only comparable end to end.
   const heapBefore = mode === "end-to-end" ? process.memoryUsage().heapUsed : null;
-  let sink;
   const start = performance.now();
-  for (let i = 0; i < iterations; i++) sink = fn();
+  const sink = runBatch(iterations);
   const elapsedMs = performance.now() - start;
   if (!new BigJS(sink.toString()).eq(new BigJS(initial))) throw new Error("Output changed during measurement");
   if (heapBefore !== null) gc();
@@ -150,8 +162,34 @@ async function worker(artifact, api, operation, inputName, iterations, mode) {
   };
 }
 
-async function specialWorker(artifact, name, iterations) {
+function preparedSumWorker(library, coefficient, count, mode) {
+  const scale = 8;
+  const prepare = (length) => Array.from({ length }, (_, index) => library.createBig(coefficient + BigInt(index), scale));
+  const warmupCount = Math.min(count, 40000);
+  for (let i = 0; i < 3; i++) library.sumBig(prepare(warmupCount));
+  const prepared = mode === "operation-only" ? prepare(count) : null;
+  gc();
+  const heapBefore = process.memoryUsage().heapUsed;
+  const start = performance.now();
+  const values = prepared ?? prepare(count);
+  const result = library.sumBig(values);
+  const elapsedMs = performance.now() - start;
+  const peakRssKiB = process.resourceUsage().maxRSS;
+  gc();
+  const postGcRetainedHeapDeltaBytes = process.memoryUsage().heapUsed - heapBefore;
+  const terms = BigInt(count);
+  const offset = terms - 1n;
+  const expected = coefficient * terms + terms * offset / 2n;
+  const first = values[0];
+  const last = values[count - 1];
+  const correct = result.value === expected && result.scale === scale &&
+    first.value === coefficient && first.scale === scale && last.value === coefficient + offset && last.scale === scale;
+  return { elapsedMs, correct, postGcRetainedHeapDeltaBytes, peakRssKiB };
+}
+
+async function specialWorker(artifact, name, iterations, mode) {
   const library = await import(pathToFileURL(resolve(artifact)).href);
+  if (Object.hasOwn(sumInputs, name)) return preparedSumWorker(library, sumInputs[name], iterations, mode);
   let a = library.createBig(12345n, 2);
   const b = library.createBig(6789n, 3);
   let index = 0;
@@ -270,15 +308,18 @@ function parseOptions(args) {
     throw new Error("Mode must be operation-only or end-to-end");
   }
   if (options.input !== null && !Object.hasOwn(inputs, options.input)) throw new Error(`Unknown input ${options.input}`);
-  if (options.operation !== null && !operations.includes(options.operation)) {
+  if (options.operation !== null && !operations.includes(options.operation) && !Object.hasOwn(sumInputs, options.operation)) {
     throw new Error(`Unknown operation ${options.operation}`);
+  }
+  if (options.input !== null && Object.hasOwn(sumInputs, options.operation)) {
+    throw new Error("The prepared sum operation already selects its input");
   }
   return options;
 }
 
 if (process.argv[2] === "--worker-special") {
-  const [, , , artifact, name, count] = process.argv;
-  console.log(JSON.stringify(await specialWorker(artifact, name, Number(count))));
+  const [, , , artifact, name, count, mode] = process.argv;
+  console.log(JSON.stringify(await specialWorker(artifact, name, Number(count), mode)));
 } else if (process.argv[2] === "--worker") {
   const [, , , artifact, api, operation, inputName, count, mode] = process.argv;
   console.log(JSON.stringify(await worker(artifact, api, operation, inputName, Number(count), mode)));
@@ -286,8 +327,9 @@ if (process.argv[2] === "--worker-special") {
   const options = parseOptions(process.argv.slice(2));
   const bun = Boolean(globalThis.Bun);
   const cases = [];
+  const isPreparedSum = Object.hasOwn(sumInputs, options.operation);
   const selectedInputs = options.input ? [options.input] : Object.keys(inputs);
-  const selectedOperations = options.operation ? [options.operation] : operations;
+  const selectedOperations = isPreparedSum ? [] : options.operation ? [options.operation] : operations;
   for (const inputName of selectedInputs) {
     for (const operation of selectedOperations) {
       const iterations = operation === "square_root" ? Math.max(1, Math.floor(options.iterations / 4)) : options.iterations;
@@ -320,6 +362,10 @@ if (process.argv[2] === "--worker-special") {
     cube_root: Math.max(1, Math.floor(options.iterations / 4)),
     square_root_large_finite: Math.max(1, Math.floor(options.iterations / 10)),
     square_root_beyond_number: Math.max(1, Math.floor(options.iterations / 10)), retained_pow10: 1 };
+  if (isPreparedSum) specialCases[options.operation] = options.iterations;
+  else if (!options.input && !options.operation) {
+    for (const operation of Object.keys(sumInputs)) specialCases[operation] = options.iterations;
+  }
   for (const [operation, iterations] of Object.entries(specialCases)) {
     const variants = [
       ...(options.baseline ? [{ name: "baseline", artifact: options.baseline }] : []),
@@ -330,19 +376,25 @@ if (process.argv[2] === "--worker-special") {
       const order = repeat % 2 ? [...variants].reverse() : variants;
       for (const variant of order) {
         const args = [...(bun ? [] : ["--expose-gc"]), fileURLToPath(import.meta.url), "--worker-special",
-          variant.artifact, operation, String(iterations)];
+          variant.artifact, operation, String(iterations), options.mode];
         const child = spawnSync(process.execPath, args, { encoding: "utf8", timeout: 120000 });
         if (child.status !== 0) throw new Error(`${operation} ${variant.name}: ${child.error || child.stderr}`);
         samples[variant.name].push(JSON.parse(child.stdout.trim()));
       }
     }
-    const results = Object.fromEntries(variants.map(({ name }) => [name, summary(samples[name], iterations)]));
-    cases.push({ input: "supplemental", operation, iterations, results });
+    const unit = Object.hasOwn(sumInputs, operation) ? "input" : undefined;
+    const results = Object.fromEntries(variants.map(({ name }) => [name, summary(samples[name], iterations, unit)]));
+    cases.push({ input: "supplemental", operation, iterations, unit, results });
     console.error(`supplemental ${operation} complete`);
   }
   const entryHash = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
-  const artifacts = { currentEntrySha256: entryHash(options.current),
-    baselineEntrySha256: options.baseline ? entryHash(options.baseline) : null };
+  const coreHash = (path) => {
+    const core = resolve(dirname(path), "core.js");
+    return existsSync(core) ? entryHash(core) : null;
+  };
+  const artifacts = { currentEntrySha256: entryHash(options.current), currentCoreSha256: coreHash(options.current),
+    baselineEntrySha256: options.baseline ? entryHash(options.baseline) : null,
+    baselineCoreSha256: options.baseline ? coreHash(options.baseline) : null };
   console.log(JSON.stringify({ runtime: bun ? `Bun ${Bun.version} (JSC)` : `Node ${process.version} (V8 ${process.versions.v8})`,
     platform: `${process.platform} ${process.arch} ${release()}`, cpu: cpus()[0]?.model,
     precision: PRECISION, artifacts, options, cases }, null, 2));
