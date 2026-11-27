@@ -98,3 +98,10 @@ test.each([10n ** 90n + 3n, 10n ** 160n - 1n])("rounds a large square root aroun
   expect(sqrt(new Big(midpoint, 42), 2, 20)).toEqual(new Big(root + 1n, 20));
   expect(sqrt(new Big(midpoint + 1n, 42), 2, 20)).toEqual(new Big(root + 1n, 20));
 });
+
+test.each([7n, 10n ** 90n + 3n])("rounds integer radicands on either side of a square root midpoint", (root) => {
+  const belowMidpoint = root * (root + 1n);
+
+  expect(sqrt(new Big(belowMidpoint, 40), 2, 20)).toEqual(new Big(root, 20));
+  expect(sqrt(new Big(belowMidpoint + 1n, 40), 2, 20)).toEqual(new Big(root + 1n, 20));
+});

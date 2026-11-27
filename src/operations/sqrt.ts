@@ -111,11 +111,17 @@ function rootAtWideScale(big: Big, absolute: bigint, degree: number, precision: 
 }
 
 function storeRoundedRoot(big: Big, absolute: bigint, degree: number, precision: number, exponent: number): Big {
-  const scaled = scaleRadicand(absolute, exponent);
-  const rootWithGuard = degree === 2 ? bigIntSqrt(scaled) : bigIntRoot(scaled, degree);
-  let result = rootWithGuard / TEN_BIGINT;
-  if (rootWithGuard % TEN_BIGINT >= 5n) result += ONE_BIGINT;
-  big.value = big.value < ZERO_BIGINT ? -result : result;
+  if (degree === 2) {
+    // Round using the floor of twice the root. Scaling by four preserves exact half ties.
+    const radicand = scaleRadicand(absolute << 2n, exponent - 2);
+    big.value = (bigIntSqrt(radicand) + ONE_BIGINT) >> ONE_BIGINT;
+  } else {
+    const scaled = scaleRadicand(absolute, exponent);
+    const rootWithGuard = bigIntRoot(scaled, degree);
+    let result = rootWithGuard / TEN_BIGINT;
+    if (rootWithGuard % TEN_BIGINT >= 5n) result += ONE_BIGINT;
+    big.value = big.value < ZERO_BIGINT ? -result : result;
+  }
   big.scale = precision;
   return big;
 }
@@ -192,6 +198,7 @@ function bigIntSqrt(value: bigint): bigint {
     ? BigInt(Math.ceil(approximation))
     : ONE_BIGINT << BigInt(Math.ceil(bigIntBitLength(value) / 2));
   let x1 = (x0 + value / x0) >> ONE_BIGINT;
+  if (x1 === x0 || (Number.isFinite(approximation) && x1 * x1 <= value)) return x1;
   if (x1 > x0) {
     x0 = x1;
     x1 = (x0 + value / x0) >> ONE_BIGINT;
