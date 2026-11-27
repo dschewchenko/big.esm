@@ -1,3 +1,19 @@
+## [3.2.3](https://github.com/dschewchenko/big.esm/compare/v3.2.2...v3.2.3) (2026-11-27)
+
+
+### Bug Fixes
+
+* keep exact roots compact at extreme scales ([c90364a](https://github.com/dschewchenko/big.esm/commit/c90364ae4f3ee55a05b55e1e3c50a56be6b914d8))
+* keep large powers of one compact ([b23279c](https://github.com/dschewchenko/big.esm/commit/b23279cb182b1b3530f087fd7dbb8274b1526bcc))
+* preserve zero powers at unsafe scales ([f9f3e07](https://github.com/dschewchenko/big.esm/commit/f9f3e072a756d28697a1b64b6c7ba393e5a2c963))
+* preserve zero products at unsafe scales ([ed4357d](https://github.com/dschewchenko/big.esm/commit/ed4357d1bf49c6efc9250c86c8f7ddb19bf2352c))
+
+
+### Performance Improvements
+
+* accelerate squares and fourth powers ([5c806a6](https://github.com/dschewchenko/big.esm/commit/5c806a6fb821e9ce80ec827beffc1a645a7d7e8d))
+* reduce square root rounding work ([5d06958](https://github.com/dschewchenko/big.esm/commit/5d06958b3feefd68864ab1021cb8156d1d08f508))
+
 ## [3.2.2](https://github.com/dschewchenko/big.esm/compare/v3.2.1...v3.2.2) (2026-11-27)
 
 
