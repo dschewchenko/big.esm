@@ -38,6 +38,33 @@ test("keeps exact compact powers of ten in the result", () => {
   expect(sqrt("1e3000000", 4_000, 0)).toEqual(result);
 });
 
+test("keeps exact roots compact when fixed precision would need too many zeros", () => {
+  const square = new Big(1n, -9_007_199_254_740_990);
+  const cube = new Big(-1n, -9_007_199_254_740_990);
+  const precision = 4_000_001;
+
+  expect(sqrtBig(square)).toBe(square);
+  expect(square).toEqual(new Big(1n, -4_503_599_627_370_495));
+  expect(sqrtBig(cube, 3)).toBe(cube);
+  expect(cube).toEqual(new Big(-1n, -3_002_399_751_580_330));
+  expect(sqrt("1.00", 1, precision)).toEqual(new Big(1n));
+  expect(sqrt(-1, 3, precision)).toEqual(new Big(-1n));
+  expect(sqrt(new Big(1n, 10_000_000), 2, 10_000_000)).toEqual(new Big(1n, 5_000_000));
+});
+
+test("keeps exact compact roots with non-unit coefficients and rejects inexact expansion", () => {
+  const square = new Big(40n, -9_999_999_999);
+  const cube = new Big(-27n, -9_999_999_999);
+  const inexact = new Big(2n, -10_000_000_000);
+
+  expect(sqrtBig(square)).toBe(square);
+  expect(square).toEqual(new Big(2n, -5_000_000_000));
+  expect(sqrtBig(cube, 3)).toBe(cube);
+  expect(cube).toEqual(new Big(-3n, -3_333_333_333));
+  expect(() => sqrtBig(inexact)).toThrow(RangeError);
+  expect(inexact).toEqual(new Big(2n, -10_000_000_000));
+});
+
 test("degree one recognizes positive one independent of its stored scale", () => {
   const big = new Big("1.000");
   const result = sqrtBig(big, 1, 4);
